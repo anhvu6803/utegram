@@ -1,0 +1,107 @@
+body {
+  background-color: #fafafa; 
+  background-image: url('../../assets/background.png');  
+  background-size: cover;  
+  background-position: center;  
+  background-repeat: no-repeat; 
+  font-family: 'Arial', sans-serif;
+  }
+  
+  .top-left-logo {
+    position: absolute;
+    z-index: 10;  
+  }
+  .top-left-logo img {
+    height: 180px;  
+    width: 180px;
+  }
+  
+  .login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  
+  .login-box {
+    background-color: white;
+    border: 1px solid #dbdbdb;
+    padding: 40px;
+    text-align: center;
+    width: 350px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+  }
+  
+  .logo h1 {
+    font-family: 'Instagram Sans', cursive;
+    font-size: 3rem;
+    color: #262626;
+    margin-bottom: 30px;
+  }
+  
+  .login-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .input-group {
+    margin-bottom: 15px;
+  }
+  
+  .input-group input {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    background-color: #fafafa;
+  }
+  
+  .login-btn {
+    background-color: #0095f6;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  
+  .login-btn:disabled {
+    background-color: #b2dffc;
+  }
+  
+  .login-options {
+    margin-top: 20px;
+  }
+  
+  .signup-box {
+    background-color: white;
+    text-align: center;
+    width: 350px;
+    font-size: 14px;
+    margin-top: 5px;  
+    padding: 10px;  
+    border-radius: 5px;
+  }
+  
+  .forgot-password {
+    color: #0095f6;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  
+  .signup-link {
+    color: #0095f6;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
+  .signup-link:hover {
+    text-decoration: underline;
+  }
+  
