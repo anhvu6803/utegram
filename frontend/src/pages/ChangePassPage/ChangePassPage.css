@@ -1,0 +1,136 @@
+body {
+  background-color: #fafafa;
+  font-family: 'Arial', sans-serif;
+}
+.header {
+  background-color: #ffffff;  
+  display: flex;  
+  padding: 5px 10px;  
+  justify-content: flex-start;  
+  align-items: center;  
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  
+  position: relative;  
+  margin-bottom: 10px; 
+}
+.changepass-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 60px); 
+}
+.img-change {
+  width: 150px;
+  height: 150px;
+  margin-bottom: 20px;
+}
+.changepass-box {
+  background-color: white;
+  border: 1px solid #dbdbdb;
+  padding: 40px; 
+  text-align: center;
+  width: 350px; 
+  margin: 0;
+  border-radius: 8px;  
+}
+.logo-container {
+  margin-bottom: 10px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+
+}
+
+.logo-text {
+  font-family: 'Instagram Sans', cursive;  
+  font-size: 2.5rem; 
+  color: #262626;  
+  margin: 0;  
+  margin-left: 100px;
+  
+}
+
+
+.input-born-title {
+  font-size: 1.5rem;
+  color: #262626;
+  margin-bottom: 15px;
+}
+
+.text-born {
+  font-size: 1rem;
+  color: #8e8e8e;
+  margin-bottom: 30px;
+}
+
+.changepass-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group {
+  margin-bottom: 15px;
+  width: 100%;
+  
+}
+.send-link-btn {
+  background-color: #0095f6;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.signup-text {
+  margin-top: 20px;
+}
+
+.signup-link {
+  color: #0095f6;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}
+
+.back-login-box {
+  margin-top: 20px;
+}
+
+.login-link {
+  color: #0095f6;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+.line-with-text {
+  display: flex;
+  align-items: center; 
+  justify-content: center;  
+  margin: 20px 0;  
+}
+
+.line-with-text::before,
+.line-with-text::after {
+  content: ''; 
+  flex: 1;  
+  border-top: 2px solid #dbdbdb; 
+  margin: 0 10px;  
+}
+
+.line-text {
+  font-size: 20px; 
+  color: #666; 
+  white-space: nowrap; 
+}
