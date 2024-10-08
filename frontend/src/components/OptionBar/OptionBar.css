@@ -8,8 +8,27 @@
     display: flex;
     flex-direction: column;
     align-items: left;
-    border-right: 1px solid #ccc;
+    border-right: 1px solid #777777;
     padding: 20px 0;
+}
+
+.navbar.collapsed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 90px;
+    height: 100%;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    border-right: 1px solid #777777;
+    transition: width 0.3s ease;
+    padding: 20px 0;
+}
+
+.navbar.collapsed .icon span {
+    display: none;
 }
 
 .navbar .appname {
