@@ -34,10 +34,10 @@ const SearchForm = () => {
     const [suggestions, setSuggestions] = useState([]);
 
     const handleSearch = (event) => {
-        const searchValue = event.target.value.toLowerCase(); 
+        const searchValue = event.target.value.toLowerCase();
         console.log(searchValue);
         setSearchTerm(searchValue);
-    
+
         if (searchValue) {
             const filteredSuggestions = items.filter(({ username }) =>
                 username.toLowerCase().includes(searchValue)
@@ -81,7 +81,7 @@ const SearchForm = () => {
                                 <ListItem key={index} disablePadding>
                                     <ListItemButton href={`/profile/${item.username}`}>
                                         <ListItemAvatar>
-                                            <Avatar src={item.avatar} sx={{ width: 35, height: 35 }} />
+                                            <Avatar src={avatar} sx={{ width: 35, height: 35 }} />
                                         </ListItemAvatar>
                                         <ListItemText primary={item.username} secondary={item.state} />
                                     </ListItemButton>
@@ -91,20 +91,18 @@ const SearchForm = () => {
                     </div>
                 </div>
             ) : (<div className="result-search-box">
-                <div className="recent-box">
-                    <List sx={{ width: '100%', height: '100%' }}>
-                        {suggestions.map((item, index) => (
-                            <ListItem key={index} disablePadding>
-                                <ListItemButton href={`/profile/${item.username}`}>
-                                    <ListItemAvatar>
-                                        <Avatar src={item.avatar} sx={{ width: 35, height: 35 }} />
-                                    </ListItemAvatar>
-                                    <ListItemText primary={item.username} secondary={item.state} />
-                                </ListItemButton>
-                            </ListItem>
-                        ))}
-                    </List>
-                </div>
+                <List sx={{ width: '100%', height: '100%' }}>
+                    {suggestions.map((item, index) => (
+                        <ListItem key={index} disablePadding>
+                            <ListItemButton href={`/profile/${item.username}`}>
+                                <ListItemAvatar>
+                                    <Avatar src={avatar} sx={{ width: 35, height: 35 }} />
+                                </ListItemAvatar>
+                                <ListItemText primary={item.username} secondary={item.state} />
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
+                </List>
             </div>)
             }
         </div>

@@ -10,6 +10,7 @@
     align-items: left;
     border-right: 1px solid #777777;
     padding: 20px 0;
+    z-index: 500;
 }
 
 .navbar.collapsed {
@@ -25,6 +26,7 @@
     border-right: 1px solid #777777;
     transition: width 0.3s ease;
     padding: 20px 0;
+    z-index: 500;
 }
 
 .navbar.collapsed .icon span {

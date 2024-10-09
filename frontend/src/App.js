@@ -1,13 +1,14 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LoginPage from './pages/LoginPage/LoginPage';
-import OptionBar from './components/OptionBar/OptionBar';
-import SearchForm from './components/SearchBar/SearchBar';
+
+import HomePage from './pages/HomePage/HomePage';
 
 const App = () => {
   return (
     <Router>
-      <OptionBar />
+      <Routes>
+        <Route path="/home" element={<HomePage />} />
+      </Routes>
     </Router>
   );
 }
