@@ -35,7 +35,7 @@ const Navbar = () => {
     return (
         <div className={`navbar ${isCollapsed ? 'collapsed' : ''}`}>
             <a
-                href="#home"
+                href="/home"
                 className='appname'
                 onClick={() => {
                     handleIconClick('home');
@@ -46,7 +46,7 @@ const Navbar = () => {
                 {isCollapsed === true ? < InstagramIcon sx={{ color: '#000', fontSize: 30 , marginBottom: '4px'}} /> : <>UTEGRAM</>}
             </a>
             <a
-                href="#home"
+                href="/home"
                 className={`icon ${active === 'home' ? 'active' : ''}`}
                 onClick={() => {
                     handleIconClick('home');
@@ -71,7 +71,7 @@ const Navbar = () => {
             </a>
 
             <a
-                href="#discover"
+                href="/discover"
                 className={`icon ${active === 'discover' ? 'active' : ''}`}
                 onClick={() => {
                     handleIconClick('discover');
@@ -83,7 +83,7 @@ const Navbar = () => {
                 <span>Khám phá</span>
             </a>
             <a
-                href="#videos"
+                href="/videos"
                 className={`icon ${active === 'videos' ? 'active' : ''}`}
                 onClick={() => {
                     handleIconClick('videos');
@@ -106,7 +106,7 @@ const Navbar = () => {
                 <span>Nhắn tin</span>
             </a>
             <a
-                href="#notification"
+                href="/notification"
                 className={`icon ${active === 'notification' ? 'active' : ''}`}
                 onClick={() => {
                     handleIconClick('notification');
@@ -125,7 +125,7 @@ const Navbar = () => {
                 <span>Tạo</span>
             </a>
             <a
-                href="#profile"
+                href="/profile"
                 className={`icon ${active === 'profile' ? 'active' : ''}`}
                 onClick={() => {
                     handleIconClick('profile');
