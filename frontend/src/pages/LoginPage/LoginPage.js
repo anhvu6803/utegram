@@ -1,19 +1,20 @@
-import React  from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import './LoginPage.css'; 
 import logo from '../../assets/logo.jpg';
+
 const LoginPage = () => {
   return (
-    <div>
+    <div className="login-page">  
       <div className="top-left-logo">
-        <img src={logo} alt="Logo"/>
+        <img src={logo} alt="Logo" />
       </div>
       <div className="login-container">
         <div className="login-box">
           <div className="logo">
             <h1>UTEGRAM</h1>
           </div>
-          <form  className="login-form">
+          <form className="login-form">
             <div className="input-group">
               <input
                 type="text"
@@ -39,15 +40,16 @@ const LoginPage = () => {
               Quên mật khẩu?
             </Link>
           </div>
-          <div className="signup-box">
-            Bạn chưa có tài khoản?{' '}
-            <Link className="signup-link">
-              Đăng ký
-            </Link>
-          </div>
+        </div>
+        <div className="signup-group">
+          Bạn chưa có tài khoản?{' '}
+          <Link to="/signup" className="signup-link">
+            Đăng ký
+          </Link>
         </div>
       </div>
     </div>
   );
 };
+
 export default LoginPage;
