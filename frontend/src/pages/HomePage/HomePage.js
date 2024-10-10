@@ -1,14 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './HomePage.css';
-import OptionBar from '../../components/OptionBar/OptionBar'
-
-//Cloudinary
-import {AdvancedVideo} from '@cloudinary/react';
-import {Cloudinary} from "@cloudinary/url-gen";
-import {fill} from "@cloudinary/url-gen/actions/resize";
-import {FocusOn} from "@cloudinary/url-gen/qualifiers/focusOn";
-import {Gravity} from "@cloudinary/url-gen/qualifiers";
-import {AutoFocus} from "@cloudinary/url-gen/qualifiers/autoFocus";
+import OptionBar from '../../components/OptionBar/OptionBar';
+import avatar from '../../assets/user.png';
 
 
 //// Material UI 
@@ -22,7 +15,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 
 // Material UI icon
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -32,106 +25,64 @@ import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutline
 import BookmarkBorderOutlinedIcon from '@mui/icons-material/BookmarkBorderOutlined';
 import BookmarkOutlinedIcon from '@mui/icons-material/BookmarkOutlined';
 
+function srcset(image, size, rows = 1, cols = 1) {
+    return {
+        src: `${image}?w=${size * cols}&h=${size * rows}&fit=crop&auto=format`,
+        srcSet: `${image}?w=${size * cols}&h=${size * rows
+            }&fit=crop&auto=format&dpr=2 2x`,
+    };
+}
+
 const HomePage = () => {
-    const [likedItems, setLikedItems] = useState(itemData.map(() => false));
-
-    const handleLikeClick = (index) => {
-        const updatedLikedItems = likedItems.map((liked, i) =>
-            i === index ? !liked : liked // Toggle the clicked item only
-        );
-        setLikedItems(updatedLikedItems);
-    };
-
-    const [bookMarkItems, setBookMarkItems] = useState(itemData.map(() => false));
-
-    const handleBookMarkClick = (index) => {
-        const updatedBookMarkedItems = bookMarkItems.map((bookMarked, i) =>
-            i === index ? !bookMarked : bookMarked // Toggle the clicked item only
-        );
-        setBookMarkItems(updatedBookMarkedItems);
-    };
-
-    const cld = new Cloudinary({
-        cloud: {
-          cloudName: 'dbmynlh3f'
-        }
-      }); 
-
-    const myVideo = cld.video('ruumym3pwvbqtr3q1dbj').toURL();
-
-    const img = cld
-        .image('cld-sample-5')
-        .format('auto')
-        .quality('auto');
 
     return (
         <div>
             <OptionBar />
+            <div className='appname'>
+                Bài viết gợi ý
+            </div>
             <div className='home-container'>
-                <List cols={1} sx={{ width: '900px', height: '100%' }}>
-                    {itemData.map((item, index) => (
-                        <ListItem key={item.img} sx={{ marginLeft: '150px', marginBottom: '50px', marginTop: '30px' }}>
-
-                            <Box display="flex" alignItems="center" justifyContent="center">
-                                <Box sx={{ width: '400px', height: '534px', padding: '0px' }} >
-                                    {/* <AdvancedImage image={img}
-                                        loading="lazy"
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    /> */}
-                                    {/* <AdvancedVideo cldVid={myVideo} cldPoster={myVideo.format('jpg')} controls autoPlay/> */}
-                                    <video controls autoPlay  style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
-                                        <source src={myVideo} type='video/mp4'/>
-                                    </video>
-                                </Box>
-                                <Box border={1} borderColor="black" >
-                                    <ListItem sx={{ width: '100%', height: '40px', padding: '0px', borderBottom: 1 }} >
-                                        <ListItemAvatar >
-                                            <Avatar src={item.avatar} sx={{ color: '#000', width: '30px', height: '30px', marginLeft: '10px' }} />
-                                        </ListItemAvatar>
-                                        <Box display="flex" alignItems="center">
-                                            <ListItemText
-                                                primary={item.username}
-                                                sx={{ width: 'fit-content' }}
-                                            />
-                                            <Typography
-                                                variant="body2"
-                                                sx={{ color: '#0095F6', marginLeft: 5 }} // marginLeft để tạo khoảng cách giữa primary và secondary
-                                            >
-                                                Theo dõi
-                                            </Typography>
-                                        </Box>
-                                        <IconButton sx={{ marginLeft: 'auto' }}>
-                                            <MoreHorizIcon sx={{ color: '#000', fontSize: 20 }} />
-                                        </IconButton>
-
-                                    </ListItem>
-                                    <Box sx={{ width: '400px', height: '400px', padding: '0px', borderBottom: 1 }} />
-                                    <ListItem sx={{ width: '100%', height: '100%', padding: '0px', borderBottom: 1 }}>
-                                        <IconButton
-                                            onClick={() => handleLikeClick(index)}
-                                        >
-                                            {likedItems[index] ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 25 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />}
-                                        </IconButton>
-                                        <IconButton
-                                            onClick={() => { }}
-                                        >
-                                            <ChatBubbleOutlineOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />
-                                        </IconButton>
-                                        <IconButton
-                                            onClick={() => { handleBookMarkClick(index) }}
-                                            sx={{ marginLeft: 'auto' }}
-                                        >
-                                            {bookMarkItems[index] ? <BookmarkOutlinedIcon sx={{ color: '#000', fontSize: 25 }} /> : <BookmarkBorderOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />}
-                                        </IconButton>
-                                    </ListItem>
-                                    <Box sx={{ width: '400px', height: '50px', padding: '0px' }} />
-                                </Box>
-                            </Box>
+                <ImageList cols={2} sx={{ width: '620px', height: '100%', marginTop: '50px' }}>
+                    {itemData.map((item) => (
+                        <ImageListItem key={item.img}>
+                            <img
+                                srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                src={`${item.img}?w=248&fit=crop&auto=format`}
+                                alt={item.title}
+                                loading="lazy"
+                                style={{ width: '300px', height: '300px' }}
+                            />
+                        </ImageListItem>
+                    ))}
+                </ImageList>
+                <List sx={{ width: '300px', height: '100%', marginLeft: '100px', marginTop: '30px'}}>
+                    <ListItemText
+                        primary='Gợi ý cho bạn'
+                        primaryTypographyProps={{ style: { fontSize: 13, fontWeight: 'bold' } }}/>
+                    {itemData.map((item) => (
+                        <ListItem>
+                            <ListItemAvatar>
+                                <IconButton sx={{ width: '30px', height: '30px' }}>
+                                    <Avatar src={avatar} sx={{ color: '#000', width: '30px', height: '30px' }} />
+                                </IconButton>
+                            </ListItemAvatar>
+                            <ListItemText
+                                primary={item.username}
+                                secondary='21,5 triệu người theo dõi'
+                                primaryTypographyProps={{ style: { fontSize: 13 } }}
+                                secondaryTypographyProps={{ style: { fontSize: 11 } }} />
+                            <ListItemButton sx={{ width: 'auto' }}>
+                                <ListItemText
+                                    primary='Theo dõi'
+                                    primaryTypographyProps={{ style: { fontSize: 11, fontWeight: 'bold' } }}
+                                    sx={{ marginLeft: 'auto', color: '#0095F6' }} />
+                            </ListItemButton>
                         </ListItem>
                     ))}
                 </List>
+
             </div>
-        </div >
+        </div>
     );
 }
 
