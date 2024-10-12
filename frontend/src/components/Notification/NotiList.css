@@ -1,0 +1,36 @@
+/* Make the entire list display in a horizontal (inline) format */
+.noti-list .noti-item {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.noti-username {
+    font-weight: bold; 
+    margin-right: 5px;
+    color: #000;
+}
+
+.noti-action {
+    font-weight: normal;
+    color: #555;
+}
+
+.MuiListItemButton-root {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.MuiListItemText-root {
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.MuiListItemAvatar-root {
+    margin-right:
+    10px;
+}
