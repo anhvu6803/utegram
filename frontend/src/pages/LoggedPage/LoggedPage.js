@@ -23,13 +23,14 @@ const LoggedPage = () => {
               Tiếp tục dưới tên {username}
             </button>
           </form>
-          <div className="signup-group">
+          
+        </div>
+        <div className="signup-group">
             Không phải {username}?{' '}
             <Link to="/" className="signup-link">
               Chuyển tài khoản
             </Link>
           </div>
-        </div>
       </div>
     </div>
   );
