@@ -1,0 +1,28 @@
+.profile-tabs {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    margin-left: 450px;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.tab.active {
+    border-top: 2px solid black;
+}
+
+.tab span {
+    margin-left: 5px;
+}
+
+.tab-content {
+    display: flex;
+    justify-content: center; /* Centers the content horizontally */
+    align-items: center;     /* Centers the content vertically */
+    min-height: 200px;      /* Adjust height as needed to ensure proper centering */
+}

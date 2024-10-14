@@ -3,7 +3,7 @@ import './Notification.css';
 import NotiList from '../Notification/NotiList'; 
 import CircleHeart from '../../assets/circleheart.jpg';
 import SuggestFollow from '../SuggestFollow/SuggestFollow';
-
+import { Avatar } from '@mui/material';
 const notifications = [
     // {
     //     username: 'JohnDoe',
@@ -30,25 +30,14 @@ const notifications = [
 
 const friendSuggestions = [
     {
-        username: 'AliceDoe',
-        avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
+        username: 'Anh Vũ',
+        avatar: Avatar,
     },
     {
-        username: 'BobSmith',
-        avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
+        username: 'Nhật Nguyên',
+        avatar: Avatar,
     },
-    {
-        username: 'AliceDoe',
-        avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-    },
-    {
-        username: 'AliceDoe',
-        avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-    },
-    {
-        username: 'CharlieBrown',
-        avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-    }
+   
 ];
 
 const Notification = () => {
