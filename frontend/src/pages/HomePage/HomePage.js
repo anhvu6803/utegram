@@ -32,13 +32,14 @@ const HomePage = () => {
     };
 
     const [modalIsOpen, setIsOpen] = useState(false);
-    const [selectedPost, setSelectedPost] = useState(null);
+    const [selectedPost, setSelectedPost] = useState(itemData[0]);
 
     const openModal = (post) => {
         setSelectedPost(post);
         setIsOpen(true);
     };
 
+    console.log(selectedPost.id);
     const closeModal = () => setIsOpen(false);
 
     return (
@@ -51,7 +52,7 @@ const HomePage = () => {
 
                 <Modal open={modalIsOpen} onClose={closeModal} >
                     <Box sx={{ marginTop: '50px' }}>
-                        <PostForm postId={`${selectedPost.id}`} />
+                        <PostForm postId={selectedPost.id} />
                     </Box>
                 </Modal>
 
