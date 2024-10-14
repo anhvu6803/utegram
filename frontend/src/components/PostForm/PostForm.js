@@ -23,9 +23,7 @@ import BookmarkBorderOutlinedIcon from '@mui/icons-material/BookmarkBorderOutlin
 import BookmarkOutlinedIcon from '@mui/icons-material/BookmarkOutlined';
 
 const PostForm = ({ postId }) => {
-    const item = itemData.find((item) => item.id ===  postId);
-
-    console.log(postId);
+    const item = itemData.find((item) => item.id === postId);
 
     const [liked, setLiked] = useState(false); // Boolean state for a single item
 
