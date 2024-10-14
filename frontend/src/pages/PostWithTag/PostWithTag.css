@@ -1,0 +1,15 @@
+.home-container {             
+    width: 1200px;               
+    height: 100%;            
+    display: flex;                  
+    background-color: #fff;    
+}
+.appname {
+    display: flex;
+    color: #000000;
+    margin-top: 30px;
+    margin-left: 400px;
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: bold;
+}
