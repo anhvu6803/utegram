@@ -5,13 +5,13 @@ import OptionBar from '../../components/OptionBar/OptionBar'
 const MessagePage = () => {
     const [contacts, setContacts] = useState([
         { id: 1, name: 'Anh Vũ', profilePic: imgava },
-        { id: 2, name: 'Nhật Nguyên', profilePic: imgava },
+       
 
     ]);
 
     const predefinedMessages = {
         1: [{ content: 'Hello', sender: 'me' }, { content: 'Hi', sender: 'Anh Vũ' }],
-        2: [{ content: 'Hi', sender: 'me' }, { content: 'Alo', sender: 'Nhật Nguyên' }],
+
     };
 
     const [activeChat, setActiveChat] = useState(null);
