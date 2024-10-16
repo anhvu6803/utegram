@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import './ExplorePage.css';
 import OptionBar from '../../components/OptionBar/OptionBar';
-import avatar from '../../assets/user.png';
 import PostForm from '../../components/PostForm/PostForm';
 
 //// Material UI 
-import List from '@mui/material/List';
 import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import { Modal, Box } from '@mui/material';
 
