@@ -8,7 +8,6 @@ import PostForm from '../../components/PostForm/PostForm';
 //// Material UI 
 import List from '@mui/material/List';
 import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
@@ -39,7 +38,6 @@ const HomePage = () => {
         setIsOpen(true);
     };
 
-    console.log(selectedPost.id);
     const closeModal = () => setIsOpen(false);
 
     return (
