@@ -54,11 +54,16 @@ const PostForm = ({ postId, closeModal }) => {
 
     let [index, setIndexImage] = useState(0);
 
+    if(index >= item.url.length){
+        setIndexImage(0);
+    }
+    
     const handleIndexImageIncrease = () => {
         index++;
         if (index < item.url.length) {
             setIndexImage(index);
         }
+
     }
 
     const handleIndexImageDecrease = () => {
@@ -97,7 +102,6 @@ const PostForm = ({ postId, closeModal }) => {
                             sx={{ color: 'white', fontSize: 25 }}
                         />
                     </IconButton>
-                    <ArrowCircleLeftIcon sx={{ marginRight: '100px', color: 'white', fontSize: 40 }} />
                     {item.type === 'video' ?
                         <Box border={1} borderColor="black" sx={{ width: '400px', height: '633.4px', padding: '0px' }} >
                             <video controls autoPlay style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
@@ -266,7 +270,6 @@ const PostForm = ({ postId, closeModal }) => {
                         </Box>
                         <Box sx={{ width: '400px', height: '50px', padding: '0px' }} />
                     </Box>
-                    <ArrowCircleRightIcon sx={{ marginLeft: '100px', color: 'white', fontSize: 40 }} />
                 </Box>
             </Box>
         </div>

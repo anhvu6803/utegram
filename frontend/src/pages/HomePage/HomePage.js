@@ -19,6 +19,8 @@ import { Modal, Box } from '@mui/material';
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import { ListItemButton } from '@mui/material';
+import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
+import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 
 const HomePage = () => {
     const [followedItems, setFollowedItems] = useState(itemData.map(() => false));
@@ -31,17 +33,33 @@ const HomePage = () => {
     };
 
     const [modalIsOpen, setIsOpen] = useState(false);
-    const [selectedPost, setSelectedPost] = useState(itemData[0]);
+    const [indexPost, setIndexPost] = useState(0);
 
-    const openModal = (post) => {
-        setSelectedPost(post);
+    const openModal = (index) => {
+        setIndexPostNext(index);
+        setIndexPost(index);
         setIsOpen(true);
     };
+
+    let [indexPostNext, setIndexPostNext] = useState(indexPost);
+
+    const handleIncreseIndex = () => {
+        indexPostNext++
+        if (indexPostNext < itemData.length) {
+            setIndexPostNext(indexPostNext);
+        }
+    }
+    const handleDecreseIndex = () => {
+        indexPostNext--;
+        if (indexPostNext < itemData.length) {
+            setIndexPostNext(indexPostNext);
+        }
+    }
 
     const closeModal = () => setIsOpen(false);
 
     return (
-        <div>
+        <Box sx={{ background: '#fff' }}>
             <OptionBar pages={'home'} />
             <div className='appname'>
                 Bài viết gợi ý
@@ -50,15 +68,53 @@ const HomePage = () => {
 
                 <Modal open={modalIsOpen} onClose={closeModal} >
                     <Box sx={{ marginTop: '35px' }}>
+                        {indexPostNext > 0 &&
+                            <IconButton
+                                onClick={() => {
+                                    handleDecreseIndex();
+                                }}
+                                sx={{
+                                    position: 'absolute', bottom: '50%', left: '6.5%',
+                                    transform: 'translateX(-50%)',
+                                }}
+                            >
+                                <ArrowCircleLeftIcon
+                                    sx={{
+                                        color: 'white',
+                                        fontSize: 40,
+                                        zIndex: 1000,
+                                    }}
+                                />
+                            </IconButton>
+                        }
                         <PostForm
-                            postId={selectedPost.id}
+                            postId={itemData[indexPostNext].id}
                             closeModal={closeModal}
                         />
+                        {itemData.length > 1 && indexPostNext < itemData.length - 1 &&
+                            <IconButton
+                                onClick={() => {
+                                    handleIncreseIndex();
+                                }}
+                                sx={{
+                                    position: 'absolute', bottom: '50%', left: '93.5%',
+                                    transform: 'translateX(-50%)',
+                                }}
+                            >
+                                <ArrowCircleRightIcon
+                                    sx={{
+                                        color: 'white',
+                                        fontSize: 40,
+                                        zIndex: 1000,
+                                    }}
+                                />
+                            </IconButton>
+                        }
                     </Box>
                 </Modal>
 
                 <ImageList cols={2} sx={{ width: '620px', height: '100%', marginTop: '50px' }}>
-                    {itemData.map((item) => (
+                    {itemData.map((item, index) => (
                         <ListItemButton
                             key={item.id}
                             sx={{
@@ -67,7 +123,7 @@ const HomePage = () => {
                                     'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)'
                             }}
                             onClick={() => {
-                                openModal(item)
+                                openModal(index)
                             }}
 
                         >
@@ -142,7 +198,7 @@ const HomePage = () => {
                 </List>
 
             </div>
-        </div>
+        </Box>
     );
 }
 
