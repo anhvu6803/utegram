@@ -9,6 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import Avatar from '@mui/material/Avatar';
+import { Box } from '@mui/material';
 
 const items = [
     {
@@ -52,19 +53,25 @@ const SearchForm = () => {
     return (
         <div className="search-container">
             <div className="search-box">
-                <a className='title'>
-                    Tìm kiếm
-                </a>
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    className="search-input"
-                />
+                <Box sx={{ marginLeft: '20px', marginBottom: '30px', marginTop: '40px' }}>
+                    <a className='title' >
+                        Tìm kiếm
+                    </a>
+                    <Box sx={{ marginTop: '20px' }}>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm"
+                            value={searchTerm}
+                            onChange={handleSearch}
+                            className="search-input"
+                        />
+                    </Box>
+                </Box>
+
             </div>
             {suggestions <= 0 ? (
                 <div className="result-search-box">
+
                     <div className="recent-box">
                         <a className='recent-text'>
                             Gần đây
@@ -75,6 +82,7 @@ const SearchForm = () => {
                             </a>
                         }
                     </div>
+
                     <div className="recent-list-box">
                         <List sx={{ width: '100%', height: '100%' }}>
                             {items.map((item, index) => (
@@ -83,7 +91,7 @@ const SearchForm = () => {
                                         <ListItemAvatar>
                                             <Avatar src={avatar} sx={{ width: 35, height: 35 }} />
                                         </ListItemAvatar>
-                                        <ListItemText primary={item.username} secondary={item.state} />
+                                        <ListItemText style={{ display: 'block' }} primary={item.username} secondary={item.state} />
                                     </ListItemButton>
                                 </ListItem>
                             ))}
@@ -105,7 +113,7 @@ const SearchForm = () => {
                 </List>
             </div>)
             }
-        </div>
+        </div >
     );
 };
 

@@ -4,6 +4,9 @@ import avatar from '../../assets/user.png';
 import SearchForm from '../SearchBar/SearchBar';
 import Notification from '../Notification/Notification'; // Import Notification component
 
+// Material UI
+import { Box } from '@mui/material';
+
 // Material UI Icons
 import HomeIcon from '@mui/icons-material/Home';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
@@ -21,8 +24,8 @@ import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import InstagramIcon from '@mui/icons-material/Instagram';
 
-const Navbar = () => {
-    const [active, setActive] = useState('home');
+const Navbar = ({ pages }) => {
+    const [active, setActive] = useState(pages);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false); // State for notifications
@@ -30,13 +33,10 @@ const Navbar = () => {
     const handleIconClick = (icon) => {
         setActive(icon);
         if (icon === 'notification') {
-            setShowNotifications((prev) => !prev); // Toggle notifications
+            setShowNotifications((prev) => !prev);
         } else {
-            setShowNotifications(false); // Hide notifications for other icons
+            setShowNotifications(false);
         }
-        // Reset other states based on the clicked icon
-        setIsCollapsed(icon === 'search' || icon === 'message' || icon === 'notification');
-        setIsSearchVisible(icon === 'search');
     };
 
     return (
@@ -44,15 +44,23 @@ const Navbar = () => {
             <a
                 href="/home"
                 className='appname'
-                onClick={() => handleIconClick('home')}
+                onClick={() => {
+                    handleIconClick('home')
+                    setIsCollapsed(false)
+                    setIsSearchVisible(false)
+                }}
             >
                 {isCollapsed ? <InstagramIcon sx={{ color: '#000', fontSize: 30, marginBottom: '4px' }} /> : <>UTEGRAM</>}
             </a>
-            
+
             <a
                 href="/home"
                 className={`icon ${active === 'home' ? 'active' : ''}`}
-                onClick={() => handleIconClick('home')}
+                onClick={() => {
+                    handleIconClick('home')
+                    setIsCollapsed(false)
+                    setIsSearchVisible(false)
+                }}
             >
                 {active === 'home' ? <HomeIcon sx={{ color: '#000', fontSize: 34 }} /> : <HomeOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                 <span>Trang chủ</span>
@@ -60,25 +68,37 @@ const Navbar = () => {
 
             <a
                 className={`icon ${active === 'search' ? 'active' : ''}`}
-                onClick={() => handleIconClick('search')}
+                onClick={() => {
+                    handleIconClick('search')
+                    setIsCollapsed(true)
+                    setIsSearchVisible(true)
+                }}
             >
                 {active === 'search' ? <SearchIcon sx={{ color: '#000', fontSize: 34 }} /> : <SearchIcon sx={{ color: '#000', fontSize: 30 }} />}
                 <span>Tìm kiếm</span>
             </a>
 
             <a
-                href="/discover"
-                className={`icon ${active === 'discover' ? 'active' : ''}`}
-                onClick={() => handleIconClick('discover')}
+                href="/explore"
+                className={`icon ${active === 'explore' ? 'active' : ''}`}
+                onClick={() => {
+                    handleIconClick('explore')
+                    setIsCollapsed(false)
+                    setIsSearchVisible(false)
+                }}
             >
-                {active === 'discover' ? <ExploreIcon sx={{ color: '#000', fontSize: 34 }} /> : <ExploreOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
+                {active === 'explore' ? <ExploreIcon sx={{ color: '#000', fontSize: 34 }} /> : <ExploreOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                 <span>Khám phá</span>
             </a>
 
             <a
                 href="/videos"
                 className={`icon ${active === 'videos' ? 'active' : ''}`}
-                onClick={() => handleIconClick('videos')}
+                onClick={() => {
+                    handleIconClick('videos')
+                    setIsCollapsed(false)
+                    setIsSearchVisible(false)
+                }}
             >
                 {active === 'videos' ? <MovieIcon sx={{ color: '#000', fontSize: 34 }} /> : <MovieCreationOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                 <span>Video</span>
@@ -86,7 +106,11 @@ const Navbar = () => {
 
             <a
                 className={`icon ${active === 'message' ? 'active' : ''}`}
-                onClick={() => handleIconClick('message')}
+                onClick={() => {
+                    handleIconClick('message')
+                    setIsCollapsed(true)
+                    setIsSearchVisible(false)
+                }}
             >
                 {active === 'message' ? <ChatBubbleOutlinedIcon sx={{ color: '#000', fontSize: 34 }} /> : <ChatBubbleOutlineOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                 <span>Nhắn tin</span>
@@ -94,7 +118,11 @@ const Navbar = () => {
 
             <a
                 className={`icon ${active === 'notification' ? 'active' : ''}`}
-                onClick={() => handleIconClick('notification')}
+                onClick={() => {
+                    handleIconClick('notification')
+                    setIsCollapsed(true)
+                    setIsSearchVisible(false)
+                }}
             >
                 {active === 'notification' ? <FavoriteOutlinedIcon sx={{ color: '#000', fontSize: 34 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                 <span>Thông báo</span>
@@ -122,13 +150,16 @@ const Navbar = () => {
                 <span>Trang cá nhân</span>
             </a>
 
-            <a
-                className={`icon ${active === 'menu' ? 'active' : ''}`}
-                onClick={() => handleIconClick('menu')}
-            >
-                {active === 'menu' ? <MenuOutlinedIcon sx={{ color: '#000', fontSize: 34 }} /> : <MenuOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
-                <span>Xem thêm</span>
-            </a>
+            <Box sx={{ marginTop: '50px' }}>
+                <a
+                    className={`icon ${active === 'menu' ? 'active' : ''}`}
+                    onClick={() => handleIconClick('menu')}
+
+                >
+                    {active === 'menu' ? <MenuOutlinedIcon sx={{ color: '#000', fontSize: 34 }} /> : <MenuOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
+                    <span>Xem thêm</span>
+                </a>
+            </Box>
 
             {isSearchVisible && (
                 <div>
