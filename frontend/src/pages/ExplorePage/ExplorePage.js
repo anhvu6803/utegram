@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import './HomePage.css';
+import './ExplorePage.css';
 import OptionBar from '../../components/OptionBar/OptionBar';
 import avatar from '../../assets/user.png';
 import PostForm from '../../components/PostForm/PostForm';
@@ -21,7 +21,7 @@ import SlideshowIcon from '@mui/icons-material/Slideshow';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import { ListItemButton } from '@mui/material';
 
-const HomePage = () => {
+const ExplorePage = () => {
     const [followedItems, setFollowedItems] = useState(itemData.map(() => false));
 
     const handleFollowedClick = (index) => {
@@ -38,16 +38,12 @@ const HomePage = () => {
         setSelectedPost(post);
         setIsOpen(true);
     };
-
-    console.log(selectedPost.id);
+    
     const closeModal = () => setIsOpen(false);
 
     return (
         <div>
-            <OptionBar pages={'home'} />
-            <div className='appname'>
-                Bài viết gợi ý
-            </div>
+            <OptionBar pages={'explore'} />
             <div className='home-container'>
 
                 <Modal open={modalIsOpen} onClose={closeModal} >
@@ -59,7 +55,7 @@ const HomePage = () => {
                     </Box>
                 </Modal>
 
-                <ImageList cols={2} sx={{ width: '620px', height: '100%', marginTop: '50px' }}>
+                <ImageList cols={3} sx={{ width: '920px', height: '100%', marginTop: '50px' }}>
                     {itemData.map((item) => (
                         <ListItemButton
                             key={item.id}
@@ -99,56 +95,12 @@ const HomePage = () => {
                         </ListItemButton>
                     ))}
                 </ImageList>
-                <List sx={{ width: '300px', height: '100%', marginLeft: '100px', marginTop: '30px' }}>
-                    <ListItemText
-                        primary='Gợi ý cho bạn'
-                        primaryTypographyProps={{ style: { fontSize: 13, fontWeight: 'bold' } }} />
-                    {itemData.map((item, index) => (
-                        <ListItem>
-                            <IconButton
-                                sx={{ width: '30px', height: '30px' }}
-                                href='/profile'
-                            >
-                                <Avatar src={avatar} sx={{ color: '#000', width: '30px', height: '30px' }} />
-                            </IconButton>
-                            <ListItemText
-                                sx={{ width: '150px' }}
-                                style={{ display: 'block' }}
-                                primary={
-                                    <Link to='/profile/' style={{ textDecoration: 'none', color: 'inherit' }}>
-                                        {item.username}
-                                    </Link>
-                                }
-                                secondary='Gợi ý cho bạn'
-                                primaryTypographyProps={{ style: { fontSize: 13 } }}
-                                secondaryTypographyProps={{ style: { fontSize: 11 } }} />
-                            <ListItemText
-                                onClick={() => handleFollowedClick(index)}
-                                primary={followedItems[index] ? 'Đã theo dõi' : 'Theo dõi'}
-                                primaryTypographyProps={{ style: { fontSize: 11, fontWeight: 'bold', textAlign: 'center', } }}
-                                sx={{
-                                    marginLeft: 'auto',
-                                    color: followedItems[index] ? '#000' : '#0095F6', // Initial text color
-                                    cursor: 'pointer',
-                                    transition: 'color 0.2s', // Transition for color change
-                                    '&:hover': {
-                                        color: followedItems[index] ? '#E9E9E9' : '#007bbd', // Light gray for hover on "Đã theo dõi", darker blue for "Theo dõi"
-                                    },
-                                    '&:active': {
-                                        color: followedItems[index] ? '#D3D3D3' : '#005a9e', // Darker gray for active on "Đã theo dõi", darker blue for active on "Theo dõi"
-                                    },
-                                }}
-                            />
-                        </ListItem>
-                    ))}
-                </List>
-
             </div>
         </div>
     );
 }
 
-export default HomePage;
+export default ExplorePage;
 
 const itemData = [
     {
