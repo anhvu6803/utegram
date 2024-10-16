@@ -24,13 +24,6 @@ import { ListItemButton } from '@mui/material';
 const ExplorePage = () => {
     const [followedItems, setFollowedItems] = useState(itemData.map(() => false));
 
-    const handleFollowedClick = (index) => {
-        const updatedFollowedItems = followedItems.map((followed, i) =>
-            i === index ? !followed : followed // Toggle the clicked item only
-        );
-        setFollowedItems(updatedFollowedItems);
-    };
-
     const [modalIsOpen, setIsOpen] = useState(false);
     const [selectedPost, setSelectedPost] = useState(itemData[0]);
 
