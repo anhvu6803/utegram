@@ -22,8 +22,6 @@ import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import { ListItemButton } from '@mui/material';
 
 const ExplorePage = () => {
-    const [followedItems, setFollowedItems] = useState(itemData.map(() => false));
-
     const [modalIsOpen, setIsOpen] = useState(false);
     const [selectedPost, setSelectedPost] = useState(itemData[0]);
 
