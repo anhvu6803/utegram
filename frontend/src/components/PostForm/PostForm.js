@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import MoreForm from '../MoreForm/MoreForm';
 import avatar from '../../assets/user.png';
+import { Link } from 'react-router-dom';
 
 // Cloudinary
 import { Cloudinary } from '@cloudinary/url-gen';
@@ -12,7 +13,7 @@ import List from '@mui/material/List';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import { Box, Modal } from '@mui/material';
-import ListSubheader from '@mui/material/ListSubheader';
+import TextField from '@mui/material/TextField';
 
 // Material UI icon
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -26,14 +27,34 @@ import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import CircleIcon from '@mui/icons-material/Circle';
 import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
+import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 
-const PostForm = ({ postId, closeModal }) => {
+function calculateDaysFrom(dateString) {
+
+    const [day, month, year] = dateString.split('/').map(Number);
+
+    const givenDate = new Date(year, month - 1, day);
+
+    const currentDate = new Date();
+
+    const timeDifference = currentDate - givenDate.getTime();
+
+    const dayDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+
+    const countDay = Math.floor(dayDifference / 7);
+
+    return countDay < 1 ? dayDifference + ' ngày' : countDay + ' tuần'
+}
+
+const PostForm = ({ postId, closeModal, focusText }) => {
     const item = itemData.find((item) => item.id === postId);
 
-    const [liked, setLiked] = useState(false); // Boolean state for a single item
+    const CommentCoutByPostId = commentData.filter((item) => item.postId === postId).length;
 
-    const handleLikeClick = () => {
-        setLiked((prevLiked) => !prevLiked); // Toggle the boolean value
+    const [likedPost, setLikedPost] = useState(false); // Boolean state for a single item
+
+    const handleLikePostClick = () => {
+        setLikedPost((prevLiked) => !prevLiked); // Toggle the boolean value
     };
 
     const [bookmarked, setBookmarked] = useState(false); // Boolean state for a single item
@@ -54,10 +75,10 @@ const PostForm = ({ postId, closeModal }) => {
 
     let [index, setIndexImage] = useState(0);
 
-    if(index >= item.url.length){
+    if (index >= item.url.length) {
         setIndexImage(0);
     }
-    
+
     const handleIndexImageIncrease = () => {
         index++;
         if (index < item.url.length) {
@@ -73,7 +94,11 @@ const PostForm = ({ postId, closeModal }) => {
         }
     }
 
+    const [textComment, setTextCommnent] = useState('');
 
+    const handleTextChange = (event) => {
+        setTextCommnent(event.target.value);
+    };
 
     const cld = new Cloudinary({
         cloud: {
@@ -82,6 +107,53 @@ const PostForm = ({ postId, closeModal }) => {
     });
 
     const myVideo = cld.video('ruumym3pwvbqtr3q1dbj').toURL();
+
+    //Commnent section
+
+    const textFieldRef = useRef(null);
+
+    const [isReplied, setReplied] = useState(false);
+
+    const handleReplyClick = () => {
+        setReplied(!isReplied);
+        if (textFieldRef.current) {
+            textFieldRef.current.focus(); // Step 3: Focus the TextField
+        }
+    };
+
+    // const [isViewRelied, setViewRelied] = useState(false);
+
+    const itemComment = commentData.filter((item) => item.postId === postId);
+
+    // //const countRelies = item[index].replies.length;
+
+    // const [openRely, setOpenRely] = useState(true);
+
+    // const [liked, setLiked] = useState(false); // Boolean state for a single item
+
+    // const handleLikeClick = () => {
+    //     setLiked((prevLiked) => !prevLiked); // Toggle the boolean value
+    // };
+
+    // const [likedItems, setLikedItems] = React.useState(item[index].replies.map(() => false));
+
+    // const handleLikeRelyClick = (index) => {
+    //     const updatedLikedItems = likedItems.map((liked, i) =>
+    //         i === index ? !liked : liked // Toggle the clicked item only
+    //     );
+    //     setLikedItems(updatedLikedItems);
+    // };
+
+    const [likedCommentItems, setLikedCommentItems] = useState(itemComment.map(() => false));
+
+    const handleLikeCommentClick = (index) => {
+        const updatedLikedItems = likedCommentItems.map((liked, i) =>
+            i === index ? !liked : liked // Toggle the clicked item only
+        );
+        setLikedCommentItems(updatedLikedItems);
+    };
+
+
     return (
         <div>
             <Modal open={modalIsOpen} onClose={closeMoreModal} >
@@ -103,7 +175,7 @@ const PostForm = ({ postId, closeModal }) => {
                         />
                     </IconButton>
                     {item.type === 'video' ?
-                        <Box border={1} borderColor="black" sx={{ width: '400px', height: '633.4px', padding: '0px' }} >
+                        <Box border={1} borderColor="black" sx={{ width: '400px', height: '636px', padding: '0px' }} >
                             <video controls autoPlay style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
                                 <source src={myVideo} type='video/mp4' />
                             </video>
@@ -114,7 +186,7 @@ const PostForm = ({ postId, closeModal }) => {
                             border={1}
                             borderColor="black"
                             alignItems="center"
-                            sx={{ width: '600px', height: '633.4px', padding: '0px', position: 'relative', display: 'inline-block' }}
+                            sx={{ width: '600px', height: '636px', padding: '0px', position: 'relative', display: 'inline-block' }}
                         >
                             {index > 0 &&
                                 <IconButton
@@ -137,7 +209,7 @@ const PostForm = ({ postId, closeModal }) => {
                                 src={`${item.url[index]}?w=248&fit=crop&auto=format`}
                                 loading="lazy"
 
-                                style={{ width: '600px', height: '633.4px', objectFit: 'cover', zIndex: 1 }}
+                                style={{ width: '600px', height: '636px', objectFit: 'cover', zIndex: 1 }}
                             />
                             {item.url.length > 1 &&
                                 <Box
@@ -148,7 +220,7 @@ const PostForm = ({ postId, closeModal }) => {
                                 >
                                     <List>
                                         {Array.from({ length: item.url.length }, (_, i) => (
-                                            <ListItem key={i} sx={{ display: 'inline', width: '15px', height: '15px', padding:'2px' }}>
+                                            <ListItem key={i} sx={{ display: 'inline', width: '15px', height: '15px', padding: '2px' }}>
                                                 {index === i ?
                                                     <CircleIcon sx={{ color: 'white', fontSize: 8, zIndex: 1000, }} /> :
                                                     <CircleOutlinedIcon sx={{ color: 'white', fontSize: 8, zIndex: 1000, }} />
@@ -178,12 +250,12 @@ const PostForm = ({ postId, closeModal }) => {
 
                     }
                     <Box border={1} borderColor="black" sx={{ backgroundColor: 'white' }}>
-                        <ListItem sx={{ width: '100%', height: '50px', padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB' }} >
-                            <Avatar src={avatar} sx={{ color: '#000', width: '30px', height: '30px', marginLeft: '10px' }} />
+                        <ListItem sx={{ width: '100%', height: '60px', padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB' }} >
+                            <Avatar src={avatar} sx={{ color: '#000', width: '40px', height: '40px', marginLeft: '10px' }} />
                             <Box display="flex" alignItems="center">
                                 <ListItemText
                                     primary='wasabi1234'
-                                    primaryTypographyProps={{ style: { fontSize: 14, textAlign: 'center', } }}
+                                    primaryTypographyProps={{ style: { fontSize: 14, textAlign: 'center', fontWeight: 'bold' } }}
                                     sx={{ width: 'fit-content' }}
                                 />
                                 <ListItemText
@@ -216,44 +288,157 @@ const PostForm = ({ postId, closeModal }) => {
                             </IconButton>
 
                         </ListItem>
-                        <Box sx={{ width: '400px', height: '430px', padding: '0px' }}>
-                            <List
-                                sx={{
-                                    width: '100%',
-                                    bgcolor: 'background.paper',
-                                    position: 'relative',
-                                    overflow: 'auto',
-                                    maxHeight: '430px',
-                                    '&::-webkit-scrollbar': {
-                                        display: 'none',  // Ẩn thanh cuộn trên Chrome/Safari
-                                    },
-                                    '-ms-overflow-style': 'none',  // Ẩn thanh cuộn trên IE/Edge
-                                    'scrollbar-width': 'none',
-                                    '& ul': { padding: 0 },
-                                }}
-                                subheader={<li />}
-                            >
-                                {[0, 1, 2, 3, 4].map((sectionId) => (
-                                    <li key={`section-${sectionId}`}>
-                                        <ul>
-                                            <ListSubheader>{`I'm sticky ${sectionId}`}</ListSubheader>
-                                            {[0, 1, 2].map((item) => (
-                                                <ListItem key={`item-${sectionId}-${item}`}>
-                                                    <ListItemText primary={`Item ${item}`} />
-                                                </ListItem>
-                                            ))}
-                                        </ul>
-                                    </li>
-                                ))}
-                            </List>
+                        <Box
+                            sx={{
+                                width: '400px', height: '420px', padding: '0px',
+                                bgcolor: 'background.paper',
+                                position: 'relative',
+                                overflow: 'auto',
+                                maxHeight: '420px',
+                                '&::-webkit-scrollbar': {
+                                    display: 'none',  // Ẩn thanh cuộn trên Chrome/Safari
+                                },
+                                '-ms-overflow-style': 'none',  // Ẩn thanh cuộn trên IE/Edge
+                                'scrollbar-width': 'none',
+                            }}
+                        >
+                            <Box sx={{
+                                width: '400px',
+                                height: 'auto',
+                                display: 'flex',
+                                marginTop: '10px',
+                            }}>
+                                <IconButton
+                                    sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
+                                    href='/profile'
+                                >
+                                    <Avatar src={item.url} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                </IconButton>
+                                <Box sx={{ bgcolor: 'background.paper', display: 'flex' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+                                        <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px' }}>
+                                            <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                {item.username}
+                                            </Link>
+                                        </span>
+
+                                        <span style={{
+                                            marginLeft: '10px',
+                                            width: '300px',
+                                            height: 'auto',
+                                            maxHeight: '420px',
+                                            fontSize: 14,
+                                            overflow: 'auto',  // Allows scrolling if content exceeds maxHeight
+                                            wordWrap: 'break-word',  // Break long words and wrap to the next line
+                                            whiteSpace: 'normal',
+                                        }}>
+                                            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                                        </span>
+                                    </div>
+                                </Box>
+                            </Box>
+                            <div>
+                                {CommentCoutByPostId > 0 ?
+                                    <List sx={{ width: '100%' }}>
+                                        {Array.from({ length: CommentCoutByPostId }, (_, i) => (
+                                            <ListItem sx={{ width: '100%', padding: '0px', marginTop: '20px' }} >
+                                                <Box sx={{
+                                                    width: '400px',
+                                                    height: 'auto',
+                                                    display: 'flex',
+                                                    marginTop: '10px',
+                                                }}>
+                                                    <IconButton
+                                                        sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
+                                                        href='/profile'
+                                                    >
+                                                        <Avatar src={itemComment[i].url} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                                    </IconButton>
+
+                                                    <IconButton
+                                                        sx={{
+                                                            width: '15px', height: '15px',
+                                                            position: 'absolute', left: '96%',
+                                                            transform: 'translateX(-50%)',
+                                                        }}
+                                                        onClick={() => handleLikeCommentClick(i)}
+                                                    >
+                                                        {likedCommentItems[i] ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 15 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 15 }} />}
+                                                    </IconButton>
+
+                                                    <Box sx={{ bgcolor: 'background.paper', display: 'flex' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+                                                            <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px' }}>
+                                                                <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                                    {itemComment[i].username}
+                                                                </Link>
+                                                            </span>
+
+                                                            <span style={{
+                                                                marginLeft: '10px',
+                                                                width: '300px',
+                                                                height: 'auto',
+                                                                maxHeight: '420px',
+                                                                fontSize: 14,
+                                                                overflow: 'auto',  // Allows scrolling if content exceeds maxHeight
+                                                                wordWrap: 'break-word',  // Break long words and wrap to the next line
+                                                                whiteSpace: 'normal',
+                                                            }}>
+                                                                {itemComment[i].content}
+                                                            </span>
+
+                                                            <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', marginTop: '10px' }}>
+                                                                <span style={{ fontSize: 12, color: '#737373' }}>
+                                                                    {calculateDaysFrom(itemComment[i].date)}
+                                                                </span>
+                                                                {itemComment[i].likes > 0 &&
+                                                                    <span style={{ fontSize: 12, color: '#737373', marginLeft: '10px' }}>
+                                                                        {itemComment[i].likes + ' lượt thích'}
+                                                                    </span>
+                                                                }
+                                                                <span
+                                                                    onClick={() => {
+                                                                        handleReplyClick()
+                                                                    }}
+                                                                    style={{
+                                                                        fontSize: 12, color: '#737373',
+                                                                        fontWeight: 'bold',
+                                                                        marginLeft: '10px',
+                                                                        cursor: 'pointer'
+                                                                    }}
+                                                                >
+                                                                    Trả lời
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </Box>
+                                                </Box>
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                    :
+                                    <Box sx={{ width: '400px', height: '420px', bgcolor: 'background.paper', alignItems: 'center', display: 'flex', justifyContent: 'center' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <span style={{ fontSize: 24, fontWeight: 'bold' }}>Chưa có bình luận nào.</span>
+                                            <span style={{ fontSize: 14, marginLeft: '70px', marginTop: '10px' }}>Bắt đầu trò chuyện.</span>
+                                        </div>
+                                    </Box>
+                                }
+                            </div>
                         </Box>
 
-                        <Box sx={{ width: '400px', height: '100px', padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB', borderTop: 1, borderTopColor: '#DBDBDB' }}>
-                            <ListItem>
+                        <Box sx={{ width: '400px', height: '100px', padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB', borderTop: 1, borderTopColor: '#DBDBDB', display: 'flex', flexDirection: 'column' }}>
+                            <ListItem
+                                sx={{
+                                    width: '400px', height: '25px', padding: '0px', marginTop: '15px'
+                                }}
+                            >
                                 <IconButton
-                                    onClick={() => handleLikeClick()}
+                                    onClick={() => handleLikePostClick()}
                                 >
-                                    {liked ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 25 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />}
+                                    {likedPost ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 25 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />}
                                 </IconButton>
                                 <IconButton
                                     onClick={() => { }}
@@ -267,8 +452,64 @@ const PostForm = ({ postId, closeModal }) => {
                                     {bookmarked ? <BookmarkOutlinedIcon sx={{ color: '#000', fontSize: 25 }} /> : <BookmarkBorderOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />}
                                 </IconButton>
                             </ListItem>
+                            <span style={{ fontSize: 14, fontWeight: 'bold', marginTop: '20px', marginLeft: '10px' }}>21.900 Lượt thích</span>
+                            <span
+                                style={{
+                                    fontSize: 12,
+                                    color: '#737373',
+                                    fontWeight: 'normal',
+                                    marginLeft: '10px',
+                                    marginTop: '5px'
+                                }}>
+                                21 tháng 9 2024
+                            </span>
                         </Box>
-                        <Box sx={{ width: '400px', height: '50px', padding: '0px' }} />
+                        <Box sx={{ width: '400px', height: '55px', padding: '0px', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <SentimentSatisfiedAltIcon sx={{ fontSize: 30, marginLeft: '10px' }} />
+                            <Box
+                                sx={{
+                                    width: '300px', height: 'auto',
+                                    padding: '0px', display: 'flex',
+                                    overflow: 'auto',
+                                }}
+                            >
+                                <TextField
+                                    fullWidth
+                                    variant="outlined"
+                                    multiline
+                                    maxRows={2}
+                                    placeholder="Thêm bình luận..."
+                                    value={textComment}
+                                    onChange={handleTextChange}
+                                    inputRef={textFieldRef}
+                                    slotProps={{
+                                        input: {
+                                            sx: {
+                                                height: '100%',
+                                                overflow: 'auto',
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    border: 'none', // Ẩn border của TextField
+                                                },
+                                            },
+                                        }
+                                    }}
+                                />
+                            </Box>
+                            <ListItemText
+                                onClick={() => { }}
+                                primary={'Đăng'}
+                                primaryTypographyProps={{ style: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', marginLeft: '10px' } }}
+                                sx={{
+                                    marginLeft: 'auto',
+                                    color: textComment.trim() ? '#0095F6' : '#AACFDD',
+                                    cursor: textComment.trim() ? 'pointer' : 'default',
+                                    transition: 'color 0.2s',
+                                    '&:hover': {
+                                        color: '#AACFDD',
+                                    },
+                                }}
+                            />
+                        </Box>
                     </Box>
                 </Box>
             </Box>
@@ -376,5 +617,145 @@ const itemData = [
         title: 'Bike',
         author: '@southside_customs',
         type: 'image',
+    },
+];
+
+const commentData = [
+    {
+        postId: '10',
+        username: 'wasabi123',
+        content: 'niceaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
+        likes: 10,
+        author: '@rollelflex_graphy726',
+        replies: [
+            {
+                username: 'wasabi123',
+                content: 'nice',
+                date: '12/3/2024',
+                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
+                likes: 1,
+                author: '@rollelflex_1',
+            },
+            {
+                username: 'wasabi123',
+                content: 'nice',
+                date: '12/3/2024',
+                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
+                likes: 1,
+                author: '@rollelflex_2',
+            },
+        ]
+    },
+    {
+        postId: '10',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
+        likes: 10,
+        author: '@rollelflex_graphy726',
+        replies: []
+    },
+    {
+        postId: '2',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1522770179533-24471fcdba45',
+        likes: 15,
+        author: '@helloimnik',
+        replies: []
+    },
+    {
+        postId: '3',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c',
+        likes: 0,
+        author: '@nolanissac',
+        replies: []
+    },
+    {
+        postId: '4',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1533827432537-70133748f5c8',
+        likes: 0,
+        author: '@hjrc33',
+        replies: []
+    },
+    {
+        postId: '5',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62',
+        likes: 0,
+        author: '@arwinneil',
+        replies: []
+    },
+    {
+        postId: '6',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1516802273409-68526ee1bdd6',
+        likes: 2,
+        author: '@tjdragotta',
+        replies: []
+    },
+    {
+        postId: '7',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1518756131217-31eb79b20e8f',
+        likes: 5,
+        author: '@katie_wasserman',
+        replies: []
+    },
+    {
+        postId: '8',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1597645587822-e99fa5d45d25',
+        likes: 1,
+        author: '@silverdalex',
+        replies: []
+    },
+    {
+        postId: '9',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1567306301408-9b74779a11af',
+        likes: 0,
+        author: '@shelleypauls',
+        replies: []
+    },
+    {
+        postId: '10',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1',
+        likes: 0,
+        author: '@peterlaster',
+        replies: []
+    },
+    {
+        postId: '11',
+        username: 'wasabi123',
+        content: 'nice',
+        date: '12/3/2024',
+        url: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6',
+        likes: 0,
+        author: '@southside_customs',
+        replies: []
     },
 ];
