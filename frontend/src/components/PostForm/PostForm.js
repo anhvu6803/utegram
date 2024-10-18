@@ -108,8 +108,12 @@ const PostForm = ({ postId, closeModal, focusText }) => {
 
     const myVideo = cld.video('ruumym3pwvbqtr3q1dbj').toURL();
 
+    const [typeMoreOption, setTypeMoreOption] = useState('post');
+
     //Commnent section
 
+    const itemComment = commentData.filter((item) => item.postId === postId);
+    
     const textFieldRef = useRef(null);
 
     const [isReplied, setReplied] = useState(false);
@@ -121,19 +125,16 @@ const PostForm = ({ postId, closeModal, focusText }) => {
         }
     };
 
-    const [isViewRelied, setViewRelied] = useState(false);
+    const [isViewRelied, setViewRelied] = useState(itemComment.map(() => false));
 
-    const itemComment = commentData.filter((item) => item.postId === postId);
+    const handleViewReliedClick = (index) => {
+        const updatedViewReliedItems = isViewRelied.map((view, i) =>
+            i === index ? !view : view // Toggle the clicked item only
+        );
+        setViewRelied(updatedViewReliedItems);
+    };
 
     const [relyLengthItems] = useState(itemComment.map((item) => item.replies.length));
-
-    // const [openRely, setOpenRely] = useState(true);
-
-    // const [liked, setLiked] = useState(false); // Boolean state for a single item
-
-    // const handleLikeClick = () => {
-    //     setLiked((prevLiked) => !prevLiked); // Toggle the boolean value
-    // };
 
     const [likedRelyItems, setLikedRelyItems] = useState(itemComment.map((item) => item.replies.map(() => false)));
 
@@ -169,7 +170,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
         <div>
             <Modal open={modalIsOpen} onClose={closeMoreModal} >
                 <Box display="flex" alignItems="center" justifyContent="center" sx={{ height: '100%' }}>
-                    <MoreForm closeModal={closeMoreModal} author={author} />
+                    <MoreForm closeModal={closeMoreModal} author={author} type={typeMoreOption} />
                 </Box>
             </Modal>
 
@@ -292,6 +293,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                 onClick={() => {
                                     setIsOpen(true)
                                     setAuthor(item.author)
+                                    setTypeMoreOption('post')
                                 }}
 
                             >
@@ -422,6 +424,17 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                                                 >
                                                                     Trả lời
                                                                 </span>
+                                                                <IconButton
+                                                                    sx={{ marginLeft: '10px', height: '15px', width: '15px' }}
+                                                                    onClick={() => {
+                                                                        setIsOpen(true)
+                                                                        setAuthor(itemComment[i].author)
+                                                                        setTypeMoreOption('comment')
+                                                                    }}
+
+                                                                >
+                                                                    <MoreHorizIcon sx={{ color: '#737373', fontSize: 15 }} />
+                                                                </IconButton>
                                                             </div>
 
                                                             {relyLengthItems[i] > 0 &&
@@ -429,8 +442,8 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                                                     <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', marginTop: '20px', alignItems: 'center' }}>
                                                                         <Box sx={{ width: '25px', height: '0.5px', backgroundColor: '#737373' }} />
                                                                         <ListItemText
-                                                                            onClick={() => setViewRelied(!isViewRelied)}
-                                                                            primary={isViewRelied ? 'Ẩn câu trả lời' : `Xem câu trả lời (${relyLengthItems[i]})`}
+                                                                            onClick={() => handleViewReliedClick(i)}
+                                                                            primary={isViewRelied[i] ? 'Ẩn câu trả lời' : `Xem câu trả lời (${relyLengthItems[i]})`}
                                                                             primaryTypographyProps={{ style: { fontSize: 12, fontWeight: 'bold', textAlign: 'center' } }}
                                                                             sx={{
                                                                                 marginLeft: '10px',
@@ -438,13 +451,13 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                                                                 cursor: 'pointer',
                                                                                 transition: 'color 0.2s',
                                                                                 '&:hover': {
-                                                                                    color: isViewRelied ? '#E9E9E9' : '#737373',
+                                                                                    color: isViewRelied[i] ? '#E9E9E9' : '#737373',
                                                                                 },
                                                                             }}
                                                                         />
                                                                     </div>
 
-                                                                    <Collapse in={isViewRelied} timeout="auto" unmountOnExit>
+                                                                    <Collapse in={isViewRelied[i]} timeout="auto" unmountOnExit>
                                                                         <List>
                                                                             {itemComment[i].replies.map((item, index) => (
                                                                                 <ListItem sx={{ width: '100%', padding: '0px', marginTop: '20px' }} >
@@ -515,6 +528,17 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                                                                                     >
                                                                                                         Trả lời
                                                                                                     </span>
+                                                                                                    <IconButton
+                                                                                                        sx={{ marginLeft: '10px', height: '15px', width: '15px' }}
+                                                                                                        onClick={() => {
+                                                                                                            setIsOpen(true)
+                                                                                                            setAuthor(itemComment[i].author)
+                                                                                                            setTypeMoreOption('comment')
+                                                                                                        }}
+
+                                                                                                    >
+                                                                                                        <MoreHorizIcon sx={{ color: '#737373', fontSize: 15 }} />
+                                                                                                    </IconButton>
                                                                                                 </div>
                                                                                             </div>
                                                                                         </Box>

@@ -6,15 +6,23 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import Divider from '@mui/material/Divider';
+import { type } from '@testing-library/user-event/dist/type';
 
-export default function SelectedListItem({ closeModal, author }) {
+export default function SelectedListItem({ closeModal, author, type }) {
     const [selectedIndex, setSelectedIndex] = React.useState([]);
 
     const handleListItemClick = (event, index) => {
         setSelectedIndex(index);
     };
 
-    const data = author === '@helloimnik' ? optionItem[1] : optionItem[0]
+    let data
+
+    if (type === 'post') {
+        data = author === '@helloimnik' ? optionItem[1].content[1] : optionItem[1].content[0]
+    }
+    else if (type === 'comment') {
+        data = author === '@helloimnik' ? optionItem[1].content[1] : optionItem[1].content[0]
+    }
 
     return (
         <Box sx={{ width: '400px', bgcolor: 'background.paper', marginTop: '100px', border: 1, borderColor: '#777777', borderRadius: 3 }}>
@@ -57,12 +65,29 @@ export default function SelectedListItem({ closeModal, author }) {
 
 const optionItem = [
     {
-        top: 'Báo cáo',
-        body: ['Đi đến bài viết', 'Sao chép liên kết'],
+        type: 'post',
+        content: [
+            {
+                top: 'Báo cáo',
+                body: ['Đi đến bài viết', 'Sao chép liên kết'],
+            },
+            {
+                top: 'Xóa',
+                body: ['Chỉnh sửa', 'Đi đến bài viết', 'Sao chép liên kết'],
+            }
+        ]
     },
     {
-        top: 'Xóa',
-        body: ['Chỉnh sửa', 'Đi đến bài viết', 'Sao chép liên kết'],
+        type: 'comment',
+        content: [
+            {
+                top: 'Báo cáo',
+                body: [],
+            },
+            {
+                top: 'Xóa',
+                body: [],
+            }
+        ]
     }
-
 ]
