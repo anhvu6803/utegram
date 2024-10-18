@@ -12,7 +12,7 @@ import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
-import { Box, Modal } from '@mui/material';
+import { Box, Modal, Collapse } from '@mui/material';
 import TextField from '@mui/material/TextField';
 
 // Material UI icon
@@ -121,11 +121,11 @@ const PostForm = ({ postId, closeModal, focusText }) => {
         }
     };
 
-    // const [isViewRelied, setViewRelied] = useState(false);
+    const [isViewRelied, setViewRelied] = useState(false);
 
     const itemComment = commentData.filter((item) => item.postId === postId);
 
-    // //const countRelies = item[index].replies.length;
+    const [relyLengthItems] = useState(itemComment.map((item) => item.replies.length));
 
     // const [openRely, setOpenRely] = useState(true);
 
@@ -135,14 +135,25 @@ const PostForm = ({ postId, closeModal, focusText }) => {
     //     setLiked((prevLiked) => !prevLiked); // Toggle the boolean value
     // };
 
-    // const [likedItems, setLikedItems] = React.useState(item[index].replies.map(() => false));
+    const [likedRelyItems, setLikedRelyItems] = useState(itemComment.map((item) => item.replies.map(() => false)));
 
-    // const handleLikeRelyClick = (index) => {
-    //     const updatedLikedItems = likedItems.map((liked, i) =>
-    //         i === index ? !liked : liked // Toggle the clicked item only
-    //     );
-    //     setLikedItems(updatedLikedItems);
-    // };
+    console.log(itemComment.map((item) => item.replies.map(() => false)))
+
+    const handleLikeRelyClick = (indexComment, indexRely) => {
+        setLikedRelyItems(prevLikedRelyItems => {
+            // Tạo một bản sao của mảng hiện tại để không thay đổi trực tiếp state cũ
+            const updatedLikedRelyItems = prevLikedRelyItems.map((commentLikes, commentIndex) =>
+                commentIndex === indexComment
+                    ? commentLikes.map((replyLiked, replyIndex) =>
+                        replyIndex === indexRely ? !replyLiked : replyLiked
+                    )
+                    : commentLikes
+            );
+
+            return updatedLikedRelyItems; // Cập nhật trạng thái mới
+        });
+
+    };
 
     const [likedCommentItems, setLikedCommentItems] = useState(itemComment.map(() => false));
 
@@ -412,6 +423,108 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                                                     Trả lời
                                                                 </span>
                                                             </div>
+
+                                                            {relyLengthItems[i] > 0 &&
+                                                                <div>
+                                                                    <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', marginTop: '20px', alignItems: 'center' }}>
+                                                                        <Box sx={{ width: '25px', height: '0.5px', backgroundColor: '#737373' }} />
+                                                                        <ListItemText
+                                                                            onClick={() => setViewRelied(!isViewRelied)}
+                                                                            primary={isViewRelied ? 'Ẩn câu trả lời' : `Xem câu trả lời (${relyLengthItems[i]})`}
+                                                                            primaryTypographyProps={{ style: { fontSize: 12, fontWeight: 'bold', textAlign: 'center' } }}
+                                                                            sx={{
+                                                                                marginLeft: '10px',
+                                                                                color: '#737373',
+                                                                                cursor: 'pointer',
+                                                                                transition: 'color 0.2s',
+                                                                                '&:hover': {
+                                                                                    color: isViewRelied ? '#E9E9E9' : '#737373',
+                                                                                },
+                                                                            }}
+                                                                        />
+                                                                    </div>
+
+                                                                    <Collapse in={isViewRelied} timeout="auto" unmountOnExit>
+                                                                        <List>
+                                                                            {itemComment[i].replies.map((item, index) => (
+                                                                                <ListItem sx={{ width: '100%', padding: '0px', marginTop: '20px' }} >
+                                                                                    <Box sx={{
+                                                                                        width: '350px',
+                                                                                        height: 'auto',
+                                                                                        display: 'flex',
+                                                                                    }}>
+                                                                                        <IconButton
+                                                                                            sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
+                                                                                            href='/profile'
+                                                                                        >
+                                                                                            <Avatar src={item.url} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                                                                        </IconButton>
+
+                                                                                        <IconButton
+                                                                                            sx={{
+                                                                                                width: '15px', height: '15px',
+                                                                                                position: 'absolute', left: '96%',
+                                                                                                transform: 'translateX(-50%)',
+                                                                                            }}
+                                                                                            onClick={() => { handleLikeRelyClick(i, index) }}
+                                                                                        >
+                                                                                            {likedRelyItems[i][index] ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 15 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 15 }} />}
+                                                                                        </IconButton>
+
+                                                                                        <Box sx={{ bgcolor: 'background.paper', display: 'flex' }}>
+                                                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+                                                                                                <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px' }}>
+                                                                                                    <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                                                                        {item.username}
+                                                                                                    </Link>
+                                                                                                </span>
+
+                                                                                                <span style={{
+                                                                                                    marginLeft: '10px',
+                                                                                                    width: '250px',
+                                                                                                    height: 'auto',
+                                                                                                    maxHeight: '420px',
+                                                                                                    fontSize: 14,
+                                                                                                    overflow: 'auto',  // Allows scrolling if content exceeds maxHeight
+                                                                                                    wordWrap: 'break-word',  // Break long words and wrap to the next line
+                                                                                                    whiteSpace: 'normal',
+                                                                                                }}>
+                                                                                                    {item.content}
+                                                                                                </span>
+
+                                                                                                <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', marginTop: '10px' }}>
+                                                                                                    <span style={{ fontSize: 12, color: '#737373' }}>
+                                                                                                        {calculateDaysFrom(item.date)}
+                                                                                                    </span>
+                                                                                                    {item.likes > 0 &&
+                                                                                                        <span style={{ fontSize: 12, color: '#737373', marginLeft: '10px' }}>
+                                                                                                            {item.likes + ' lượt thích'}
+                                                                                                        </span>
+                                                                                                    }
+                                                                                                    <span
+                                                                                                        onClick={() => {
+                                                                                                            handleReplyClick()
+                                                                                                        }}
+                                                                                                        style={{
+                                                                                                            fontSize: 12, color: '#737373',
+                                                                                                            fontWeight: 'bold',
+                                                                                                            marginLeft: '10px',
+                                                                                                            cursor: 'pointer'
+                                                                                                        }}
+                                                                                                    >
+                                                                                                        Trả lời
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </Box>
+                                                                                    </Box>
+                                                                                </ListItem>
+                                                                            ))}
+                                                                        </List>
+                                                                    </Collapse>
+                                                                </div>
+                                                            }
                                                         </div>
                                                     </Box>
                                                 </Box>
@@ -632,7 +745,7 @@ const commentData = [
         replies: [
             {
                 username: 'wasabi123',
-                content: 'nice',
+                content: 'niceaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
                 date: '12/3/2024',
                 url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
                 likes: 1,
@@ -656,7 +769,16 @@ const commentData = [
         url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
         likes: 10,
         author: '@rollelflex_graphy726',
-        replies: []
+        replies: [
+            {
+                username: 'wasabi123',
+                content: 'nice',
+                date: '12/3/2024',
+                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
+                likes: 1,
+                author: '@rollelflex_2',
+            },
+        ]
     },
     {
         postId: '2',
@@ -746,7 +868,32 @@ const commentData = [
         url: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1',
         likes: 0,
         author: '@peterlaster',
-        replies: []
+        replies: [
+            {
+                username: 'wasabi123',
+                content: 'nice',
+                date: '12/3/2024',
+                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
+                likes: 1,
+                author: '@rollelflex_2',
+            },
+            {
+                username: 'wasabi123',
+                content: 'nice',
+                date: '12/3/2024',
+                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
+                likes: 1,
+                author: '@rollelflex_2',
+            },
+            {
+                username: 'wasabi123',
+                content: 'nice',
+                date: '12/3/2024',
+                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
+                likes: 1,
+                author: '@rollelflex_2',
+            },
+        ]
     },
     {
         postId: '11',
