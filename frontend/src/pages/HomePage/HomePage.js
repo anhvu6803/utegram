@@ -160,10 +160,10 @@ const HomePage = () => {
                     {itemData.map((item, index) => (
                         <ListItem>
                             <IconButton
-                                sx={{ width: '30px', height: '30px' }}
+                                sx={{ width: '40px', height: '40px' }}
                                 href='/profile'
                             >
-                                <Avatar src={avatar} sx={{ color: '#000', width: '30px', height: '30px' }} />
+                                <Avatar src={avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
                             </IconButton>
                             <ListItemText
                                 sx={{ width: '150px' }}
