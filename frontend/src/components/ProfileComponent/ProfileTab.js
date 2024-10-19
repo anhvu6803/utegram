@@ -6,7 +6,7 @@ import TurnedInNotIcon from '@mui/icons-material/TurnedInNot';
 import ProfilePost from './Post/ProfilePost';
 import ProfileVideo from './Video/ProfileVideo';
 const PostsContent = () => (
-    <ProfilePost />
+    <ProfilePost  />
 );
 
 const VideosContent = () => (
