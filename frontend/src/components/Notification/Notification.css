@@ -55,14 +55,16 @@
 }
 
 .suggest-follow-container {
-    padding: 20px;
+    padding: 10px;
     border-top: 1px solid #e5e4e4;
     max-height: 100%;
+    margin-top: 10px;
 }
 
 .suggest-follow-container h4 {
     font-size: 18px;
     margin-bottom: 10px;
+    margin-top: 10px;
 }
 
 .no-noti {

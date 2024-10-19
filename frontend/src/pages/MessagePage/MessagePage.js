@@ -1,29 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './MessagePage.css';  
-import imgava from '../../assets/avatar_default.jpg'
-import OptionBar from '../../components/OptionBar/OptionBar'
+import './MessagePage.css';
+import imgava from '../../assets/avatar_default.jpg';
+import OptionBar from '../../components/OptionBar/OptionBar';
+
 const MessagePage = () => {
+    // State for contacts and active chat
     const [contacts, setContacts] = useState([
         { id: 1, name: 'Anh Vũ', profilePic: imgava },
-       
-
     ]);
 
+    // Predefined messages
     const predefinedMessages = {
         1: [{ content: 'Hello', sender: 'me' }, { content: 'Hi', sender: 'Anh Vũ' }],
-
     };
 
+    // Manage state for active chat, messages, new message, and scroll
     const [activeChat, setActiveChat] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const messageEndRef = useRef(null);
 
+    // State for collapsing the sidebar
+    const [isCollapsed, setIsCollapsed] = useState(false);  // New state for controlling collapse
+
+    // Handle chat selection
     const handleChatClick = (contact) => {
         setActiveChat(contact);
         setMessages(predefinedMessages[contact.id] || []);
+        setIsCollapsed(true);  // Collapse sidebar when a chat is selected
     };
 
+    // Handle sending a new message
     const handleSendMessage = () => {
         if (newMessage.trim()) {
             const newMsg = { content: newMessage, sender: 'me' };
@@ -32,18 +39,32 @@ const MessagePage = () => {
         }
     };
 
+    // Scroll to the bottom of the chat when new messages are added
     useEffect(() => {
         messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    // Handle sending a message by pressing Enter key
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSendMessage();
+        }
+    };
+
     return (
         <div className="messenger-page">
-            <OptionBar></OptionBar>
-            <div className="contacts-sidebar">
+            {/* Pass isCollapsed and setIsCollapsed to OptionBar */}
+            <OptionBar pages="message" isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+
+            <div className={`contacts-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
                 <h3>Chats</h3>
                 <ul>
                     {contacts.map((contact) => (
-                        <li key={contact.id} onClick={() => handleChatClick(contact)} className={activeChat && activeChat.id === contact.id ? 'active-contact' : ''}>
+                        <li
+                            key={contact.id}
+                            onClick={() => handleChatClick(contact)}
+                            className={activeChat && activeChat.id === contact.id ? 'active-contact' : ''}
+                        >
                             <img className="profile-pic" src={contact.profilePic} alt={contact.name} />
                             <div className="contact-info">
                                 <div className="contact-name">{contact.name}</div>
@@ -76,6 +97,7 @@ const MessagePage = () => {
                                 placeholder="Aa"
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
+                                onKeyDown={handleKeyPress}
                             />
                             <button onClick={handleSendMessage}>Send</button>
                         </div>

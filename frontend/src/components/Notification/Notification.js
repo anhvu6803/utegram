@@ -37,7 +37,10 @@ const friendSuggestions = [
         username: 'Nhật Nguyên',
         avatar: Avatar,
     },
-   
+    {
+        username: 'nhatnguyen.hcmute',
+        avatar: Avatar,
+    }
 ];
 
 const Notification = () => {

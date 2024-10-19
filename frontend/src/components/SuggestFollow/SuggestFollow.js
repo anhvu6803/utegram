@@ -1,13 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './SuggestFollow.css';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
 
 const SuggestFollow = ({ friendSuggestions }) => {
+   
+    const [followedUsers, setFollowedUsers] = useState([]);
+
+    const handleFollowClick = (username) => {
+        if (followedUsers.includes(username)) {
+            setFollowedUsers(followedUsers.filter(user => user !== username));
+            console.log(`Đã bỏ theo dõi: ${username}`);
+        } else {
+            setFollowedUsers([...followedUsers, username]);
+            console.log(`Đã theo dõi: ${username}`);
+        }
+    };
+
     return (
         <List sx={{ width: '100%', height: '100%' }} className="suggest-list">
             {friendSuggestions.map((item, index) => (
@@ -18,14 +30,12 @@ const SuggestFollow = ({ friendSuggestions }) => {
                         </ListItemAvatar>
                         <div className="suggestion-content">
                             <span className="suggest-username">{item.username}</span>
-                            <Button 
-                                variant="contained" 
-                                color="primary"
-                                size="small"
-                                className="add-friend-button"
+                            <button
+                                className={`follow-button ${followedUsers.includes(item.username) ? 'followed' : ''}`}
+                                onClick={() => handleFollowClick(item.username)}
                             >
-                                Follow
-                            </Button>
+                                {followedUsers.includes(item.username) ? 'Đã theo dõi' : 'Theo dõi'}
+                            </button>
                         </div>
                     </ListItemButton>
                 </ListItem>
