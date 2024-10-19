@@ -113,7 +113,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
     //Commnent section
 
     const itemComment = commentData.filter((item) => item.postId === postId);
-    
+
     const textFieldRef = useRef(null);
 
     const [isReplied, setReplied] = useState(false);
@@ -170,7 +170,12 @@ const PostForm = ({ postId, closeModal, focusText }) => {
         <div>
             <Modal open={modalIsOpen} onClose={closeMoreModal} >
                 <Box display="flex" alignItems="center" justifyContent="center" sx={{ height: '100%' }}>
-                    <MoreForm closeModal={closeMoreModal} author={author} type={typeMoreOption} />
+                    <MoreForm
+                        closeModal={closeMoreModal}
+                        author={author}
+                        type={typeMoreOption}
+                        {...(typeMoreOption === 'post' && { postId })}
+                    />
                 </Box>
             </Modal>
 
@@ -753,6 +758,42 @@ const itemData = [
         url: ['https://images.unsplash.com/photo-1589118949245-7d38baf380d6', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
         title: 'Bike',
         author: '@southside_customs',
+        type: 'image',
+    },
+    {
+        id: 'w1',
+        username: 'wasabi123',
+        date: '12/3/2024',
+        url: ['https://images.unsplash.com/photo-1551782450-a2132b4ba21d', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
+        title: 'Burger',
+        author: '@rollelflex_graphy726',
+        type: 'image',
+    },
+    {
+        id: 'w2',
+        username: 'wasabi123',
+        date: '12/3/2024',
+        url: ['https://images.unsplash.com/photo-1551782450-a2132b4ba21d', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
+        title: 'Burger',
+        author: '@rollelflex_graphy726',
+        type: 'image',
+    },
+    {
+        id: 'w3',
+        username: 'wasabi123',
+        date: '12/3/2024',
+        url: ['https://images.unsplash.com/photo-1551782450-a2132b4ba21d', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
+        title: 'Burger',
+        author: '@rollelflex_graphy726',
+        type: 'image',
+    },
+    {
+        id: 'w4',
+        username: 'wasabi123',
+        date: '12/3/2024',
+        url: ['https://images.unsplash.com/photo-1551782450-a2132b4ba21d', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
+        title: 'Burger',
+        author: '@rollelflex_graphy726',
         type: 'image',
     },
 ];
