@@ -8,11 +8,11 @@ import ImageList from '@mui/material/ImageList';
 import IconButton from '@mui/material/IconButton';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import { Modal, Box } from '@mui/material';
+import { ListItemButton } from '@mui/material';
 
 // Material icon
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-import { ListItemButton } from '@mui/material';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Material UI
 import Box from '@mui/material/Box';
@@ -8,17 +9,22 @@ import ListItemButton from '@mui/material/ListItemButton';
 import Divider from '@mui/material/Divider';
 import { type } from '@testing-library/user-event/dist/type';
 
-export default function SelectedListItem({ closeModal, author, type }) {
-    const [selectedIndex, setSelectedIndex] = React.useState([]);
+export default function SelectedListItem({ closeModal, author, type, postId }) {
 
-    const handleListItemClick = (event, index) => {
-        setSelectedIndex(index);
+    const navigate = useNavigate();
+
+    const handleMoreFormPostClick = (item) => {
+        if (item === 'Đi đến bài viết') {
+            navigate(`/post/${postId}`);
+        }
     };
 
     let data
 
+    console.log(type +' '+ postId)
+
     if (type === 'post') {
-        data = author === '@helloimnik' ? optionItem[1].content[1] : optionItem[1].content[0]
+        data = author === '@helloimnik' ? optionItem[0].content[1] : optionItem[0].content[0]
     }
     else if (type === 'comment') {
         data = author === '@helloimnik' ? optionItem[1].content[1] : optionItem[1].content[0]
@@ -27,8 +33,7 @@ export default function SelectedListItem({ closeModal, author, type }) {
     return (
         <Box sx={{ width: '400px', bgcolor: 'background.paper', marginTop: '100px', border: 1, borderColor: '#777777', borderRadius: 3 }}>
             <ListItemButton
-                selected={selectedIndex === 0}
-                onClick={(event) => handleListItemClick(event, 0)}
+                onClick={() => {}}
                 sx={{ width: '400px', height: '48px', justifyContent: 'center' }}
 
             >
@@ -39,8 +44,7 @@ export default function SelectedListItem({ closeModal, author, type }) {
                     <ListItem sx={{ width: '400px', height: '48px', padding: 0 }}>
                         <Divider />
                         <ListItemButton
-                            selected={selectedIndex === 2}
-                            onClick={(event) => handleListItemClick(event, 2)}
+                            onClick={() => handleMoreFormPostClick(item)}
                             sx={{ width: '400px', height: '48px', justifyContent: 'center' }}
                         >
                             <span>{item}</span>
@@ -50,9 +54,7 @@ export default function SelectedListItem({ closeModal, author, type }) {
                 ))}
             </List>
             <ListItemButton
-                selected={selectedIndex === 3}
-                onClick={(event) => {
-                    handleListItemClick(event, 3)
+                onClick={() => {
                     closeModal()
                 }}
                 sx={{ width: '400px', height: '48px', justifyContent: 'center' }}
@@ -69,11 +71,11 @@ const optionItem = [
         content: [
             {
                 top: 'Báo cáo',
-                body: ['Đi đến bài viết', 'Sao chép liên kết'],
+                body: ['Đi đến bài viết'],
             },
             {
                 top: 'Xóa',
-                body: ['Chỉnh sửa', 'Đi đến bài viết', 'Sao chép liên kết'],
+                body: ['Chỉnh sửa', 'Đi đến bài viết'],
             }
         ]
     },

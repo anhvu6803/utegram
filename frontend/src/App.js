@@ -7,6 +7,7 @@ import SignUpPage from './pages/SignUpPage/SignUpPage';
 import ResetPassPage from './pages/ResetPassPage/ResetPassPage';
 import LoggedPage from './pages/LoggedPage/LoggedPage';
 import ExplorePage from './pages/ExplorePage/ExplorePage';
+import DetailPost from './pages/DetailPost/DetailPost';
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
       <Routes>
         <Route path="/home" element={<HomePage />} />
         <Route path="/explore" element={<ExplorePage />} />
+        <Route path='/post/:id' element={<DetailPost/>} />
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/resetpass" element={<ResetPassPage />} />
