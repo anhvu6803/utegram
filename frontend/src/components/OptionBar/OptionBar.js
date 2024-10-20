@@ -150,7 +150,7 @@ const Navbar = ({ pages }) => {
             </a>
 
             <a
-                href="/profile/:username"
+                href="/profile"
                 className={`icon ${active === 'profile' ? 'active' : ''}`}
                 onClick={() => handleIconClick('profile')}
             >
