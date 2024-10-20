@@ -1,0 +1,7 @@
+.video-container {             
+    width: 1100px;               
+    height: 'fit-content';            
+    display: flex;                  
+    margin-left: 400px;
+    background-color: #fff;    
+}

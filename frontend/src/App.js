@@ -8,7 +8,9 @@ import ResetPassPage from './pages/ResetPassPage/ResetPassPage';
 import LoggedPage from './pages/LoggedPage/LoggedPage';
 import ExplorePage from './pages/ExplorePage/ExplorePage';
 import DetailPost from './pages/DetailPost/DetailPost';
-
+import VideoPage from './pages/VideoPage/VideoPage';
+import AdminPage from './pages/Admin/UserManagement/UserManagement';
+import ProfilePage from './pages/ProfilePage/ProfilePage';
 const App = () => {
   return (
     <Router>
@@ -20,6 +22,9 @@ const App = () => {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/resetpass" element={<ResetPassPage />} />
         <Route path="/logged" element={<LoggedPage />} />
+        <Route path="/videos" element={<VideoPage />} />
+        <Route path="/profile/:username" element={<ProfilePage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </Router>
   );
