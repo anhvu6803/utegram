@@ -214,6 +214,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                         position: 'absolute', bottom: '45%', left: '5%',
                                         transform: 'translateX(-50%)',
                                         color: 'white',
+                                        backgroundColor: 'rgba(51, 51, 51, 0.5)',
                                         fontSize: 25,
                                         zIndex: 1000,
                                     }}
@@ -256,6 +257,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                         position: 'absolute', bottom: '45%', left: '95%',
                                         transform: 'translateX(-50%)',
                                         color: 'white',
+                                        backgroundColor: 'rgba(51, 51, 51, 0.5)',
                                         fontSize: 25,
                                         zIndex: 1000,
                                     }}
