@@ -10,12 +10,13 @@ import LoggedPage from './pages/LoggedPage/LoggedPage';
 import ExplorePage from './pages/ExplorePage/ExplorePage';
 import DetailPost from './pages/DetailPost/DetailPost';
 import VideoPage from './pages/VideoPage/VideoPage';
-import AdminPage from './pages/Admin/UserManagement/UserManagement';
+import UserManagement from './pages/Admin/UserManagement/UserManagement';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import EditAccount from './pages/SettingPages/EditAccount';
 import NotificationSetting from './pages/SettingPages/NotificationSeting';
 import BlockedAccount from './pages/SettingPages/BlockedAccount';
 import CommentSetting from './pages/SettingPages/CommentSetting';
+import PostManagement from './pages/Admin/PostManagement/PostManagement';
 
 const Accounts = () => {
   const { option } = useParams();
@@ -48,7 +49,8 @@ const App = () => {
         <Route path='/accounts/:option' element={<Accounts />} />
         <Route path="/videos" element={<VideoPage />} />
         <Route path="/profile/:username" element={<ProfilePage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/posts" element={<PostManagement />} />
       </Routes>
     </Router>
   );

@@ -6,8 +6,8 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import ArticleIcon from '@mui/icons-material/Article';
 
-const AdminOptionBar = () => {
-    const [active, setActive] = useState('users');  
+const AdminOptionBar = ({page}) => {
+    const [active, setActive] = useState(page);  
 
     const handleOptionClick = (option) => {
         setActive(option);

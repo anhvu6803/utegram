@@ -1,28 +1,28 @@
 import React, { useState } from 'react';
-import './UserManagement.css';
+import './PostManagement.css';
 import AdminNavBar from '../../../components/AdminNavBar/AdminNavBar';
-import UserManagementTable from './UserManagementTable'; 
+import PostManagementTable from './PostManagementTable'; 
 import { TextField, Box, InputAdornment, IconButton, Popover, Typography, Badge } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search'; 
 import NotificationsIcon from '@mui/icons-material/Notifications'; 
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'; 
 
-const UserManagement = () => {
+const PostManagement = () => {
     const [query, setQuery] = useState('');
     const [sortBy, setSortBy] = useState(''); 
     const [anchorEl, setAnchorEl] = useState(null);
     const [hasNotifications, setHasNotifications] = useState(true);
 
     // Sample user data
-    const users = [
+    const posts = [
     
-        { id: 1, name: 'Nguyễn Văn A', username: 'nguyenvana', email: 'a@example.com', creationDate: '2023-10-01', hasReport: true },
-        { id: 2, name: 'Trần Thị B', username: 'tranthib', email: 'b@example.com', creationDate: '2023-10-02', hasReport: false },
-        { id: 3, name: 'Lê Văn C', username: 'levanc', email: 'c@example.com', creationDate: '2023-10-03', hasReport: true },
-        { id: 4, name: 'Phạm Thị D', username: 'phamthid', email: 'd@example.com', creationDate: '2023-10-04', hasReport: false },
-        { id: 5, name: 'Nguyễn Thị E', username: 'nguyenthiE', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
-        { id: 6, name: 'Trần Nhật Nguyên', username: 'nhatnguye.hcmute', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
-        { id: 7, name: 'Nguyễn Quốc Anh Vũ', username: 'anhvu.wasabi', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
+        { id: 1, type: 'image', username: 'nguyenvana', email: 'a@example.com', creationDate: '2023-10-01', hasReport: true },
+        { id: 2, type: 'image', username: 'tranthib', email: 'b@example.com', creationDate: '2023-10-02', hasReport: false },
+        { id: 3, type: 'image', username: 'levanc', email: 'c@example.com', creationDate: '2023-10-03', hasReport: true },
+        { id: 4, type: 'video', username: 'phamthid', email: 'd@example.com', creationDate: '2023-10-04', hasReport: false },
+        { id: 5, type: 'image', username: 'nguyenthiE', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
+        { id: 6, type: 'image', username: 'nhatnguye.hcmute', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
+        { id: 7, type: 'video', username: 'anhvu.wasabi', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
  
     ];
 
@@ -58,11 +58,11 @@ const UserManagement = () => {
 
     return (
         <div>
-            <AdminNavBar page={'users'} />
+            <AdminNavBar page={'posts'}/>
             <div className="user-container">
                 <div className="user-header">Xin chào, Admin</div>
                 <div className="user-message">Chúc một ngày tốt lành</div>
-                <div className="management-title">Quản lý người dùng</div>
+                <div className="management-title">Quản lý bài viết</div>
                 <Box component="form" sx={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }} >
                     <TextField
                         variant="outlined"
@@ -146,7 +146,7 @@ const UserManagement = () => {
                     </IconButton>
                 </Box>
                 <div className='user-table'>
-                  <UserManagementTable users={users} />
+                  <PostManagementTable posts={posts} />
                 </div>
                
             </div>
@@ -154,4 +154,4 @@ const UserManagement = () => {
     );
 };
 
-export default UserManagement;
+export default PostManagement;
