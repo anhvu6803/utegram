@@ -8,7 +8,7 @@ const historySearchSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', 
-    required: function () { return this.type === 'user'; } // Required only if type is 'user'
+    required: function () { return this.type === 'user'; } 
   },
   tagId: {
     type: mongoose.Schema.Types.ObjectId,
