@@ -59,7 +59,7 @@ const HomePage = () => {
     const closeModal = () => setIsOpen(false);
 
     return (
-        <Box sx={{ background: '#fff' }}>
+        <Box sx={{ background: '#fff', position: 'absolute', top: 0 }}>
             <OptionBar pages={'home'} />
             <div className='appname'>
                 Bài viết gợi ý

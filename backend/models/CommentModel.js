@@ -18,7 +18,8 @@ const commentSchema = new mongoose.Schema({
   likes: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+      ref: 'User',
+      default: []
     }
   ],
   create_at: {
@@ -28,7 +29,8 @@ const commentSchema = new mongoose.Schema({
   replies: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Comment'
+      ref: 'Comment',
+      default: []
     }
   ]
 }, { timestamps: true });
