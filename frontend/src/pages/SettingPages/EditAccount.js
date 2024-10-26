@@ -22,6 +22,7 @@ const EditAccount = () => {
     return (
         <Box sx={{ background: '#fff' }}>
             <Navbar />
+            <NavbarSetting option={option} />
             <div className='home-container'>
                 <Box sx={{
                     width: '100%', maxHeight: '100%',
@@ -33,7 +34,7 @@ const EditAccount = () => {
                     '-ms-overflow-style': 'none',  // Ẩn thanh cuộn trên IE/Edge
                     'scrollbar-width': 'none',
                 }}>
-                    <NavbarSetting option={option} />
+
                     <Box sx={{
                         width: '900px', height: '100%',
                         display: 'flex', flexDirection: 'column',

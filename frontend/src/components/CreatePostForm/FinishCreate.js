@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 // Material UI
 import Box from '@mui/material/Box';
@@ -22,14 +22,14 @@ export default function FinishCreate({ isLoading }) {
                 <Box sx={{
                     width: '500px', height: '450px', display: 'flex',
                     alignItems: 'center', marginTop: '100px',
-                    padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB',
+                    padding: '0px',
                     flexDirection: 'column'
                 }}>
                     {isLoading ?
                         <LoadingButton
                             loading={isLoading}
                             loadingPosition="center"
-                            sx={{height: '100px'}}
+                            sx={{ height: '100px' }}
                             loadingIndicator={
                                 <CircularProgress
                                     size={100} // Set the size of the loading indicator
@@ -39,11 +39,18 @@ export default function FinishCreate({ isLoading }) {
                         >
                         </LoadingButton>
                         :
-                        <CheckCircleOutlineIcon sx={{ fontSize: 100, color: '#f09433' }} />
+                        <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            flexDirection: 'column'
+                        }}>
+                            <CheckCircleOutlineIcon sx={{ fontSize: 100, color: '#f09433' }} />
+                            <span style={{ fontSize: 22, fontWeight: 'normal', marginTop: '20px' }}>
+                                Đã chia sẻ bài viết của bạn
+                            </span>
+                        </Box>
                     }
-                    <span style={{ fontSize: 22, fontWeight: 'normal', marginTop: '20px' }}>
-                        Đã chia sẻ bài viết của bạn
-                    </span>
+
                 </Box>
 
             </Box>

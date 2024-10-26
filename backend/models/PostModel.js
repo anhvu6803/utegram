@@ -2,25 +2,25 @@ const mongoose = require('mongoose');
 const postSchema = new mongoose.Schema({
   caption: {
     type: String,
+    default: ''
+  },
+  type: {
+    type: String,
+    enum: ['image', 'video'],
     required: true
   },
-  media: [
+  url: [
     {
-      type: {
-        type: String,
-        enum: ['Image', 'Video'],
-        required: true
-      },
-      url: {
-        type: String,
-        required: true
-      }
+      type: String,
+      required: true,
+      default: []
     }
   ],
   likes: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+      ref: 'User',
+      default: []
     }
   ],
   author: {
@@ -31,15 +31,27 @@ const postSchema = new mongoose.Schema({
   comments: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Comment'
+      ref: 'Comment',
+      default: []
     }
   ],
   tags: [
     {
       type: String,
-      required: true
+      required: true,
+      default: []
     }
-  ]
+  ],
+  underthirteen: {
+    type: String,
+    enum: ["yes", "no"],
+    required: true,
+  },
+  upeighteen: {
+    type: String,
+    enum: ["yes", "no"],
+    required: true,
+  }
 }, { timestamps: true });
 
 
