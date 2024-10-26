@@ -19,8 +19,7 @@ const userSchema = new mongoose.Schema(
     isAdmin: { type: Boolean, default: false },
     banned: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
-    verificationCode: { type: String },
-    isVerified: { type: Boolean, default: false }
+    isVerified: { type: Boolean, default: false } 
   },
   { timestamps: true }
 );

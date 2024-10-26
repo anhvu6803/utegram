@@ -17,9 +17,6 @@ const ProfileVideo = () => {
                         <div className='desc-no-video'>
                             Khi bạn chia sẻ video, video sẽ xuất hiện trên trang cá nhân của bạn.
                         </div>
-                        <div className='no-video-link'>
-                            <Link> Chia sẻ video đầu tiên của bạn</Link>
-                        </div>
                     </div>
                 ) : (
                     <ImageList cols={3} sx={{ width: '100%', height: '100%', marginTop: '50px' }}>

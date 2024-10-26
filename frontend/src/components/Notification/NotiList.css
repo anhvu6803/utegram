@@ -1,36 +1,44 @@
-/* Make the entire list display in a horizontal (inline) format */
-.noti-list .noti-item {
+.noti-list {
+    width: 100%;
+    max-height: 400px; /* Limit height for better visibility */
+    overflow-y: auto; /* Scroll if there are too many notifications */
+    background-color: #fff; /* White background for clarity */
+    border-radius: 8px; /* Slightly rounded corners */
+}
+
+.noti-item {
     display: flex;
     align-items: center;
+    padding: 10px 15px; /* Increased padding for a spacious look */
+    /* Remove transition and hover effect */
+    /* transition: background-color 0.3s; */
+    /* background-color: rgba(0, 0, 0, 0.05); */ /* Removed hover effect */
+}
+
+.noti-avatar {
+    width: 36px; /* Increased avatar size */
+    height: 36px;
+    border-radius: 50%; /* Make the avatar circular */
+}
+
+.noti-text {
+    display: flex;
     flex-direction: row;
-    justify-content: space-between;
-    padding: 10px;
+    align-items: center; /* Align text vertically */
 }
 
 .noti-username {
     font-weight: bold; 
     margin-right: 5px;
-    color: #000;
+    color: #262626; /* Dark color for username */
 }
 
-.noti-action {
-    font-weight: normal;
-    color: #555;
-}
 
+/* Additional styles for better spacing */
 .MuiListItemButton-root {
-    display: flex;
-    align-items: center;
-    padding: 10px;
+    padding: 0; /* Remove default padding */
 }
 
 .MuiListItemText-root {
-    margin-left: 10px;
-    display: flex;
-    align-items: center;
-}
-
-.MuiListItemAvatar-root {
-    margin-right:
-    10px;
+    margin-left: 10px; /* Keep some space for text */
 }

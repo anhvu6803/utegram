@@ -17,7 +17,9 @@ import NotificationSetting from './pages/SettingPages/NotificationSeting';
 import BlockedAccount from './pages/SettingPages/BlockedAccount';
 import CommentSetting from './pages/SettingPages/CommentSetting';
 import PostManagement from './pages/Admin/PostManagement/PostManagement';
-
+import InputBornDay from './pages/SignUpPage/InputBornDay';
+import ConfirmCode from './pages/SignUpPage/ConfirmCode';
+import PrivateRoute from './components/PrivateRoute';
 const Accounts = () => {
   const { option } = useParams();
 
@@ -31,26 +33,31 @@ const Accounts = () => {
     case 'comments':
       return <CommentSetting />;
     default:
-      return <div>Invalid Option</div>; // Handle unknown options
+      return <div>Invalid Option</div>; 
   }
 };
 
 const App = () => {
+  
   return (
     <Router>
       <Routes>
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/explore" element={<ExplorePage />} />
-        <Route path='/post/:id' element={<DetailPost />} />
+        <Route element={<PrivateRoute />}>
+          <Route path="/home" element={<HomePage />} /> 
+          <Route path="/explore" element={<ExplorePage />} />
+          <Route path='/post/:id' element={<DetailPost />} />
+          <Route path='/accounts/:option' element={<Accounts />} />
+          <Route path="/videos" element={<VideoPage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
+          <Route path="/admin/users" element={<UserManagement />} />
+          <Route path="/admin/posts" element={<PostManagement />} />
+        </Route>
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/resetpass" element={<ResetPassPage />} />
         <Route path="/logged" element={<LoggedPage />} />
-        <Route path='/accounts/:option' element={<Accounts />} />
-        <Route path="/videos" element={<VideoPage />} />
-        <Route path="/profile/:username" element={<ProfilePage />} />
-        <Route path="/admin/users" element={<UserManagement />} />
-        <Route path="/admin/posts" element={<PostManagement />} />
+        <Route path="/input-born" element={<InputBornDay />} />
+        <Route path="/confirm-code" element={<ConfirmCode />} />      
       </Routes>
     </Router>
   );
