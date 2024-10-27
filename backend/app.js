@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
+const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/posts-routes');
 const HttpError = require('./models/http-error');
 
@@ -19,9 +19,8 @@ app.use((req, res, next) => {
 
   next();
 });
-
-app.use('/api/posts', postRoutes); // => /api/places...
-
+app.use('/api/auth', authRoutes);
+app.use('/api/posts', postRoutes); 
 app.use((req, res, next) => {
   const error = new HttpError('Could not find this route.', 404);
   throw error;
