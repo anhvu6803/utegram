@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     avatar: { type: String, default: '' },
     bio: { type: String, default: '' },
-    gender: { type: String, enum: ['Nam', 'Nữ', 'Khác'], default: '' },
+    gender: { type: String, enum: ['Nam', 'Nữ', 'Khác'] },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }],
     followings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }],
     posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post', default: [] }],
