@@ -1,4 +1,4 @@
-import React, { act, useState } from 'react';
+import React, { useState } from 'react';
 import './OptionBar.css';
 import avatar from '../../assets/user.png';
 import SearchForm from '../SearchBar/SearchBar';
@@ -33,14 +33,16 @@ const Navbar = ({ pages }) => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false); // State for notifications
 
+    console.log(isMenuVisible)
+
     const handleIconClick = (icon) => {
         setActive(icon);
         if (icon === 'notification') {
             setShowNotifications(true);
-            setIsSearchVisible(false); 
+            setIsSearchVisible(false);
         } else if (icon === 'search') {
             setIsSearchVisible(true);
-            setShowNotifications(false); 
+            setShowNotifications(false);
         } else {
             setIsSearchVisible(false);
             setShowNotifications(false);
@@ -63,6 +65,7 @@ const Navbar = ({ pages }) => {
             </Modal>
 
             <div className={`navbar ${isCollapsed ? 'collapsed' : ''}`}>
+                
                 <a
                     href="/home"
                     className='appname'
@@ -71,7 +74,7 @@ const Navbar = ({ pages }) => {
                         setIsCollapsed(false)
                         setIsSearchVisible(false)
                     }}
-                    style={{cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                 >
                     {isCollapsed ? <InstagramIcon sx={{ color: '#000', fontSize: 30, marginBottom: '4px' }} /> : <>UTEGRAM</>}
                 </a>
@@ -84,7 +87,7 @@ const Navbar = ({ pages }) => {
                         setIsCollapsed(false)
                         setIsSearchVisible(false)
                     }}
-                    style={{cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                 >
                     {active === 'home' ? <HomeIcon sx={{ color: '#000', fontSize: 34 }} /> : <HomeOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                     <span>Trang chủ</span>
@@ -97,7 +100,7 @@ const Navbar = ({ pages }) => {
                         setIsCollapsed(true)
                         setIsSearchVisible(!isSearchVisible)
                     }}
-                    style={{cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                 >
                     {active === 'search' ? <SearchIcon sx={{ color: '#000', fontSize: 34 }} /> : <SearchIcon sx={{ color: '#000', fontSize: 30 }} />}
                     <span>Tìm kiếm</span>
@@ -111,7 +114,7 @@ const Navbar = ({ pages }) => {
                         setIsCollapsed(false)
                         setIsSearchVisible(false)
                     }}
-                    style={{cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                 >
                     {active === 'explore' ? <ExploreIcon sx={{ color: '#000', fontSize: 34 }} /> : <ExploreOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                     <span>Khám phá</span>
@@ -125,7 +128,7 @@ const Navbar = ({ pages }) => {
                         setIsCollapsed(false)
                         setIsSearchVisible(false)
                     }}
-                    style={{cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                 >
                     {active === 'videos' ? <MovieIcon sx={{ color: '#000', fontSize: 34 }} /> : <MovieCreationOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                     <span>Video</span>
@@ -138,7 +141,7 @@ const Navbar = ({ pages }) => {
                         setIsCollapsed(true)
                         setIsSearchVisible(false)
                     }}
-                    style={{cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                 >
                     {active === 'message' ? <ChatBubbleOutlinedIcon sx={{ color: '#000', fontSize: 34 }} /> : <ChatBubbleOutlineOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                     <span>Nhắn tin</span>
@@ -151,7 +154,7 @@ const Navbar = ({ pages }) => {
                         setIsCollapsed(true)
                         setIsSearchVisible(false)
                     }}
-                    style={{cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                 >
                     {active === 'notification' ? <FavoriteOutlinedIcon sx={{ color: '#000', fontSize: 34 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                     <span>Thông báo</span>
@@ -168,7 +171,7 @@ const Navbar = ({ pages }) => {
                         handleIconClick('create')
                         setIsOpenUploadPost(true)
                     }}
-                    style={{cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                 >
                     {active === 'create' ? <AddBoxIcon sx={{ color: '#000', fontSize: 34 }} /> : <AddBoxOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
                     <span>Tạo</span>
@@ -178,7 +181,7 @@ const Navbar = ({ pages }) => {
                     href="/profile/wasabi123"
                     className={`icon ${active === 'profile' ? 'active' : ''}`}
                     onClick={() => handleIconClick('profile')}
-                    style={{cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                 >
                     <img src={avatar} alt="Profile Avatar" />
                     <span>Trang cá nhân</span>
@@ -190,7 +193,7 @@ const Navbar = ({ pages }) => {
                         onClick={() => {
                             setIsMenuVisible(!isMenuVisible)
                         }}
-                        style={{cursor: 'pointer'}}
+                        style={{ cursor: 'pointer' }}
 
                     >
                         {isMenuVisible === 'menu' ? <MenuOutlinedIcon sx={{ color: '#000', fontSize: 34 }} /> : <MenuOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
@@ -205,17 +208,18 @@ const Navbar = ({ pages }) => {
                     </div>
                 )}
 
+                {isMenuVisible &&
+                    <Box
+                        sx={{
+                            position: 'absolute', left: '90%', bottom: '15%',
+                            transform: 'translateX(-50%)', zIndex: 2000
+                        }}
+                    >
+                        <SeeMore />
+                    </Box>
+                }
             </div>
-            {isMenuVisible &&
-                <Box
-                    sx={{
-                        position: 'absolute', left: '15%', bottom: '15%',
-                        transform: 'translateX(-50%)', zIndex: 2000
-                    }}
-                >
-                    <SeeMore />
-                </Box>
-            }
+
         </div>
     );
 };

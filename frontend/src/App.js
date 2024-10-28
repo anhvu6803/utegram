@@ -1,6 +1,11 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, } from 'react-router-dom';
+import React, { useState, useCallback } from 'react';
+import {
+  BrowserRouter as Router,
+  Routes, Route, Navigate
+} from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+import { AuthContext } from './shared/context/auth-context';
 
 import HomePage from './pages/HomePage/HomePage'
 import LoginPage from './pages/LoginPage/LoginPage';
@@ -33,17 +38,69 @@ const Accounts = () => {
     case 'comments':
       return <CommentSetting />;
     default:
-      return <div>Invalid Option</div>; 
+      return <div>Invalid Option</div>;
   }
 };
 
 const App = () => {
-  
-  return (
-    <Router>
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(false);
+
+  const login = useCallback(uid => {
+    setIsLoggedIn(true);
+    setUserId(uid);
+  }, []);
+
+  const logout = useCallback(() => {
+    setIsLoggedIn(false);
+    setUserId(null);
+  }, []);
+
+  console.log(userId)
+
+  let routes;
+
+  if (isLoggedIn) {
+    routes = (
       <Routes>
-        <Route element={<PrivateRoute />}>
-          <Route path="/home" element={<HomePage />} /> 
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/explore" element={<ExplorePage />} />
+        <Route path='/post/:id' element={<DetailPost />} />
+        <Route path='/accounts/:option' element={<Accounts />} />
+        <Route path="/videos" element={<VideoPage />} />
+        <Route path="/profile/:username" element={<ProfilePage />} />
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/posts" element={<PostManagement />} />
+      </Routes>
+    );
+  }
+  else {
+    routes = (
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/resetpass" element={<ResetPassPage />} />
+        <Route path="/logged" element={<LoggedPage />} />
+        <Route path="/input-born" element={<InputBornDay />} />
+        <Route path="/confirm-code" element={<ConfirmCode />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
+  }
+  return (
+    <AuthContext.Provider
+      value={{
+        isLoggedIn: isLoggedIn,
+        userId: userId,
+        login: login,
+        logout: logout
+      }}
+    >
+      <Router>
+
+        {/* <main>{routes}</main> */}
+        <Routes>
+          <Route path="/home" element={<HomePage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path='/post/:id' element={<DetailPost />} />
           <Route path='/accounts/:option' element={<Accounts />} />
@@ -51,15 +108,11 @@ const App = () => {
           <Route path="/profile/:username" element={<ProfilePage />} />
           <Route path="/admin/users" element={<UserManagement />} />
           <Route path="/admin/posts" element={<PostManagement />} />
-        </Route>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/resetpass" element={<ResetPassPage />} />
-        <Route path="/logged" element={<LoggedPage />} />
-        <Route path="/input-born" element={<InputBornDay />} />
-        <Route path="/confirm-code" element={<ConfirmCode />} />      
-      </Routes>
-    </Router>
+        </Routes>
+
+      </Router>
+    </AuthContext.Provider>
+
   );
 }
 export default App;
