@@ -6,6 +6,6 @@ router.post('/check', checkDuplicateUser);
 router.post('/register', register);
 router.post('/verify', verifyCode);
 router.post('/login', login);
-router.get('/:pid', getUser);
+
 
 module.exports = router;

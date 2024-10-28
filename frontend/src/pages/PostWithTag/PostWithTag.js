@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';  // Import useParams hook
+import { useParams } from 'react-router-dom';  
 import './PostWithTag.css';
 import OptionBar from '../../components/OptionBar/OptionBar';
 import ImageList from '@mui/material/ImageList';
@@ -13,7 +13,7 @@ import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import PostForm from '../../components/PostForm/PostForm';
 
 const PostWithTag = () => {
-    const { tagName } = useParams(); // Get the dynamic tagName from the URL
+    const { tagName } = useParams(); 
     const [modalIsOpen, setIsOpen] = useState(false);
     const [indexPost, setIndexPost] = useState(0);
     let [indexPostNext, setIndexPostNext] = useState(indexPost);
