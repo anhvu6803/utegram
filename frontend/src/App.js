@@ -1,12 +1,12 @@
 import './App.css';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Routes, Route, Navigate
 } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from './shared/context/auth-context';
-
+import PostWithTag from './pages/PostWithTag/PostWithTag';
 import HomePage from './pages/HomePage/HomePage'
 import LoginPage from './pages/LoginPage/LoginPage';
 import SignUpPage from './pages/SignUpPage/SignUpPage';
@@ -25,6 +25,7 @@ import PostManagement from './pages/Admin/PostManagement/PostManagement';
 import InputBornDay from './pages/SignUpPage/InputBornDay';
 import ConfirmCode from './pages/SignUpPage/ConfirmCode';
 import PrivateRoute from './components/PrivateRoute';
+
 const Accounts = () => {
   const { option } = useParams();
 
@@ -43,17 +44,31 @@ const Accounts = () => {
 };
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userId, setUserId] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => localStorage.getItem('isLoggedIn') === 'true'
+  );
+  const [userId, setUserId] = useState(localStorage.getItem('userId') || null);
 
   const login = useCallback(uid => {
     setIsLoggedIn(true);
     setUserId(uid);
+    localStorage.setItem('isLoggedIn', 'true'); 
+    localStorage.setItem('userId', uid); 
   }, []);
 
   const logout = useCallback(() => {
     setIsLoggedIn(false);
     setUserId(null);
+    localStorage.removeItem('isLoggedIn'); 
+    localStorage.removeItem('userId'); 
+  }, []);
+
+  useEffect(() => {
+    const storedIsLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (storedIsLoggedIn) {
+      setIsLoggedIn(true);
+      setUserId(localStorage.getItem('userId'));
+    }
   }, []);
 
   console.log(userId)
@@ -69,12 +84,13 @@ const App = () => {
         <Route path='/accounts/:option' element={<Accounts />} />
         <Route path="/videos" element={<VideoPage />} />
         <Route path="/profile/:username" element={<ProfilePage />} />
+        <Route path="/tag/:tagName" element={<PostWithTag />} />
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/admin/posts" element={<PostManagement />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     );
-  }
-  else {
+  } else {
     routes = (
       <Routes>
         <Route path="/" element={<LoginPage />} />
@@ -87,6 +103,7 @@ const App = () => {
       </Routes>
     );
   }
+
   return (
     <AuthContext.Provider
       value={{
@@ -97,22 +114,10 @@ const App = () => {
       }}
     >
       <Router>
-
-        {/* <main>{routes}</main> */}
-        <Routes>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/explore" element={<ExplorePage />} />
-          <Route path='/post/:id' element={<DetailPost />} />
-          <Route path='/accounts/:option' element={<Accounts />} />
-          <Route path="/videos" element={<VideoPage />} />
-          <Route path="/profile/:username" element={<ProfilePage />} />
-          <Route path="/admin/users" element={<UserManagement />} />
-          <Route path="/admin/posts" element={<PostManagement />} />
-        </Routes>
-
+        <main>{routes}</main>
       </Router>
     </AuthContext.Provider>
-
   );
 }
+
 export default App;

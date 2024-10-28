@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import './OptionBar.css';
 import avatar from '../../assets/user.png';
 import SearchForm from '../SearchBar/SearchBar';
-import Notification from '../Notification/Notification'; // Import Notification component
+import Notification from '../Notification/Notification';
 import UploadContent from '../CreatePostForm/UploadContent';
 import SeeMore from '../SeeMore/SeeMore';
 
 // Material UI
 import { Box, Modal } from '@mui/material';
-import { jwtDecode } from 'jwt-decode'; 
+import {jwtDecode} from 'jwt-decode';
+
 
 import HomeIcon from '@mui/icons-material/Home';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
@@ -31,16 +32,14 @@ const Navbar = ({ pages }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
-    const [showNotifications, setShowNotifications] = useState(false);  
+    const [showNotifications, setShowNotifications] = useState(false);
 
-    console.log(isMenuVisible)
- 
-    const token = localStorage.getItem('token');  
+    const token = localStorage.getItem('token');
     let username = '';
 
     if (token) {
         const decodedToken = jwtDecode(token);
-        username = decodedToken.username;  
+        username = decodedToken.username;
     }
 
     const handleIconClick = (icon) => {
@@ -67,13 +66,11 @@ const Navbar = ({ pages }) => {
     return (
         <div>
             <Modal open={modalUploadPostIsOpen} onClose={closeUploadPostModal}>
-                <UploadContent
-                    closeModal={closeUploadPostModal}
-                />
+                <UploadContent closeModal={closeUploadPostModal} />
             </Modal>
 
             <div className={`navbar ${isCollapsed ? 'collapsed' : ''}`}>
-                
+
                 <a
                     href="/home"
                     className='appname'
@@ -216,18 +213,16 @@ const Navbar = ({ pages }) => {
                 )}
             </div>
 
-                {isMenuVisible &&
-                    <Box
-                        sx={{
-                            position: 'absolute', left: '90%', bottom: '15%',
-                            transform: 'translateX(-50%)', zIndex: 2000
-                        }}
-                    >
-                        <SeeMore />
-                    </Box>
-                }
-            </div>
-
+            {isMenuVisible && (
+                <Box
+                    sx={{
+                        position: 'absolute', left: '90%', bottom: '15%',
+                        transform: 'translateX(-50%)', zIndex: 2000
+                    }}
+                >
+                    <SeeMore />
+                </Box>
+            )}
         </div>
     );
 };
