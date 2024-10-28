@@ -242,8 +242,6 @@ export default function UploadContent({ closeModal }) {
         setShowSuggestions(false);  // Close the suggestions after selection
     };
 
-    const [colorText, setChangeColor] = useState(false)
-
     const handleKeyDown = (event) => {
         if (event.key === ' ') {
             setInputCount((prevCount) => prevCount + 1);
@@ -343,6 +341,7 @@ export default function UploadContent({ closeModal }) {
             <IconButton
                 onClick={() => {
                     { (!isLoading || files.length <= 0) && closeModal() }
+                    window.location.reload();
                 }}
                 sx={{
                     position: 'absolute', left: '90%', marginTop: '30px',
@@ -535,7 +534,6 @@ export default function UploadContent({ closeModal }) {
 
                                                                 input: {
                                                                     sx: {
-                                                                        color: colorText,
                                                                         '& .MuiOutlinedInput-notchedOutline': {
                                                                             border: 'none', // Hide border of TextField
                                                                         },

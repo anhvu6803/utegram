@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import MoreForm from '../MoreForm/MoreForm';
 import avatar from '../../assets/user.png';
 import { Link } from 'react-router-dom';
+import { useHttpClient } from '../../shared/hooks/http-hook';
 
 // Cloudinary
 import { Cloudinary } from '@cloudinary/url-gen';
@@ -46,16 +47,29 @@ function calculateDaysFrom(dateString) {
     return countDay < 1 ? dayDifference + ' ngày' : countDay + ' tuần'
 }
 
-const PostForm = ({ postId, closeModal, focusText }) => {
+const PostForm = ({ postId, closeModal, post, author }) => {
     const item = itemData.find((item) => item.id === postId);
 
-    const CommentCoutByPostId = commentData.filter((item) => item.postId === postId).length;
+    const userId = '6719efffaddd25d8028d0774';
+
+    const textFieldRef = useRef(null);
+
+    const CommentCoutByPostId = post.comments.length;
 
     const [likedPost, setLikedPost] = useState(false); // Boolean state for a single item
 
     const handleLikePostClick = () => {
         setLikedPost((prevLiked) => !prevLiked); // Toggle the boolean value
     };
+
+    const [commentPost, setCommentPost] = useState();
+
+    const handleCommentPost = () => {
+        setCommentPost(!commentPost);
+        if (textFieldRef.current) {
+            textFieldRef.current.focus(); // Step 3: Focus the TextField
+        }
+    }
 
     const [bookmarked, setBookmarked] = useState(false); // Boolean state for a single item
 
@@ -71,17 +85,17 @@ const PostForm = ({ postId, closeModal, focusText }) => {
 
     const [followed, setFollowed] = useState(false);
 
-    const [author, setAuthor] = useState('');
+    const [authorId, setAuthorId] = useState('');
 
     let [index, setIndexImage] = useState(0);
 
-    if (index >= item.url.length) {
+    if (index >= post.url.length) {
         setIndexImage(0);
     }
 
     const handleIndexImageIncrease = () => {
         index++;
-        if (index < item.url.length) {
+        if (index < post.url.length) {
             setIndexImage(index);
         }
 
@@ -100,21 +114,13 @@ const PostForm = ({ postId, closeModal, focusText }) => {
         setTextCommnent(event.target.value);
     };
 
-    const cld = new Cloudinary({
-        cloud: {
-            cloudName: 'dbmynlh3f'
-        }
-    });
-
-    const myVideo = cld.video('ruumym3pwvbqtr3q1dbj').toURL();
-
     const [typeMoreOption, setTypeMoreOption] = useState('post');
+
+    const captionSplit = post.caption.split(' ');
 
     //Commnent section
 
-    const itemComment = commentData.filter((item) => item.postId === postId);
-
-    const textFieldRef = useRef(null);
+    const itemComment = post.comments;
 
     const [isReplied, setReplied] = useState(false);
 
@@ -125,44 +131,40 @@ const PostForm = ({ postId, closeModal, focusText }) => {
         }
     };
 
-    const [isViewRelied, setViewRelied] = useState(itemComment.map(() => false));
+    const [isViewRelied, setViewRelied] = useState();
 
     const handleViewReliedClick = (index) => {
-        const updatedViewReliedItems = isViewRelied.map((view, i) =>
-            i === index ? !view : view // Toggle the clicked item only
-        );
-        setViewRelied(updatedViewReliedItems);
+
     };
 
-    const [relyLengthItems] = useState(itemComment.map((item) => item.replies.length));
+    const [relyLengthItems] = useState();
 
-    const [likedRelyItems, setLikedRelyItems] = useState(itemComment.map((item) => item.replies.map(() => false)));
+    const [likedRelyItems, setLikedRelyItems] = useState();
 
-    console.log(itemComment.map((item) => item.replies.map(() => false)))
 
     const handleLikeRelyClick = (indexComment, indexRely) => {
-        setLikedRelyItems(prevLikedRelyItems => {
-            // Tạo một bản sao của mảng hiện tại để không thay đổi trực tiếp state cũ
-            const updatedLikedRelyItems = prevLikedRelyItems.map((commentLikes, commentIndex) =>
-                commentIndex === indexComment
-                    ? commentLikes.map((replyLiked, replyIndex) =>
-                        replyIndex === indexRely ? !replyLiked : replyLiked
-                    )
-                    : commentLikes
-            );
+        // setLikedRelyItems(prevLikedRelyItems => {
+        //     // Tạo một bản sao của mảng hiện tại để không thay đổi trực tiếp state cũ
+        //     const updatedLikedRelyItems = prevLikedRelyItems.map((commentLikes, commentIndex) =>
+        //         commentIndex === indexComment
+        //             ? commentLikes.map((replyLiked, replyIndex) =>
+        //                 replyIndex === indexRely ? !replyLiked : replyLiked
+        //             )
+        //             : commentLikes
+        //     );
 
-            return updatedLikedRelyItems; // Cập nhật trạng thái mới
-        });
+        //     return updatedLikedRelyItems; // Cập nhật trạng thái mới
+        // });
 
     };
 
-    const [likedCommentItems, setLikedCommentItems] = useState(itemComment.map(() => false));
+    const [likedCommentItems, setLikedCommentItems] = useState();
 
     const handleLikeCommentClick = (index) => {
-        const updatedLikedItems = likedCommentItems.map((liked, i) =>
-            i === index ? !liked : liked // Toggle the clicked item only
-        );
-        setLikedCommentItems(updatedLikedItems);
+        // const updatedLikedItems = likedCommentItems.map((liked, i) =>
+        //     i === index ? !liked : liked // Toggle the clicked item only
+        // );
+        // setLikedCommentItems(updatedLikedItems);
     };
 
 
@@ -172,7 +174,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                 <Box display="flex" alignItems="center" justifyContent="center" sx={{ height: '100%' }}>
                     <MoreForm
                         closeModal={closeMoreModal}
-                        author={author}
+                        author={authorId}
                         type={typeMoreOption}
                         {...(typeMoreOption === 'post' && { postId })}
                     />
@@ -191,10 +193,10 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                             sx={{ color: 'white', fontSize: 25 }}
                         />
                     </IconButton>
-                    {item.type === 'video' ?
+                    {post.type === 'video' ?
                         <Box border={1} borderColor="black" sx={{ width: '400px', height: '636px', padding: '0px' }} >
                             <video controls autoPlay style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
-                                <source src={myVideo} type='video/mp4' />
+                                <source src={post.url[0]} type='video/mp4' />
                             </video>
                         </Box>
                         :
@@ -223,13 +225,13 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                 </IconButton>
                             }
                             <img
-                                srcSet={`${item.url[index]}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                src={`${item.url[index]}?w=248&fit=crop&auto=format`}
+                                srcSet={`${post.url[index]}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                src={`${post.url[index]}?w=248&fit=crop&auto=format`}
                                 loading="lazy"
 
-                                style={{ width: '600px', height: '636px', objectFit: 'cover', zIndex: 1 }}
+                                style={{ width: '600px', height: '634.5px', objectFit: 'cover', zIndex: 1 }}
                             />
-                            {item.url.length > 1 &&
+                            {post.url.length > 1 &&
                                 <Box
                                     sx={{
                                         position: 'absolute', bottom: '1%', left: '50%',
@@ -237,7 +239,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                     }}
                                 >
                                     <List>
-                                        {Array.from({ length: item.url.length }, (_, i) => (
+                                        {Array.from({ length: post.url.length }, (_, i) => (
                                             <ListItem key={i} sx={{ display: 'inline', width: '15px', height: '15px', padding: '2px' }}>
                                                 {index === i ?
                                                     <CircleIcon sx={{ color: 'white', fontSize: 8, zIndex: 1000, }} /> :
@@ -248,7 +250,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                     </List>
                                 </Box>
                             }
-                            {item.url.length > 1 && index < item.url.length - 1 &&
+                            {post.url.length > 1 && index < post.url.length - 1 &&
                                 <IconButton
                                     onClick={() => {
                                         handleIndexImageIncrease()
@@ -270,36 +272,37 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                     }
                     <Box border={1} borderColor="black" sx={{ backgroundColor: 'white' }}>
                         <ListItem sx={{ width: '100%', height: '60px', padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB' }} >
-                            <Avatar src={avatar} sx={{ color: '#000', width: '40px', height: '40px', marginLeft: '10px' }} />
+                            <Avatar src={author.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px', marginLeft: '10px' }} />
                             <Box display="flex" alignItems="center">
                                 <ListItemText
-                                    primary='wasabi1234'
+                                    primary={author.username}
                                     primaryTypographyProps={{ style: { fontSize: 14, textAlign: 'center', fontWeight: 'bold' } }}
                                     sx={{ width: 'fit-content' }}
                                 />
-                                <ListItemText
-                                    onClick={() => setFollowed(!followed)}
-                                    primary={followed ? 'Đã theo dõi' : 'Theo dõi'}
-                                    primaryTypographyProps={{ style: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', } }}
-                                    sx={{
-                                        marginLeft: '10px',
-                                        color: followed ? '#000' : '#0095F6', // Initial text color
-                                        cursor: 'pointer',
-                                        transition: 'color 0.2s', // Transition for color change
-                                        '&:hover': {
-                                            color: followed ? '#E9E9E9' : '#007bbd', // Light gray for hover on "Đã theo dõi", darker blue for "Theo dõi"
-                                        },
-                                        '&:active': {
-                                            color: followed ? '#D3D3D3' : '#005a9e', // Darker gray for active on "Đã theo dõi", darker blue for active on "Theo dõi"
-                                        },
-                                    }}
-                                />
+                                {author.id !== userId &&
+                                    <ListItemText
+                                        onClick={() => setFollowed(!followed)}
+                                        primary={followed ? 'Đã theo dõi' : 'Theo dõi'}
+                                        primaryTypographyProps={{ style: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', } }}
+                                        sx={{
+                                            marginLeft: '10px',
+                                            color: followed ? '#000' : '#0095F6', // Initial text color
+                                            cursor: 'pointer',
+                                            transition: 'color 0.2s', // Transition for color change
+                                            '&:hover': {
+                                                color: followed ? '#E9E9E9' : '#007bbd', // Light gray for hover on "Đã theo dõi", darker blue for "Theo dõi"
+                                            },
+                                            '&:active': {
+                                                color: followed ? '#D3D3D3' : '#005a9e', // Darker gray for active on "Đã theo dõi", darker blue for active on "Theo dõi"
+                                            },
+                                        }}
+                                    />}
                             </Box>
                             <IconButton
                                 sx={{ marginLeft: 'auto' }}
                                 onClick={() => {
                                     setIsOpen(true)
-                                    setAuthor(item.author)
+                                    setAuthorId(author.id)
                                     setTypeMoreOption('post')
                                 }}
 
@@ -322,44 +325,60 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                 'scrollbar-width': 'none',
                             }}
                         >
-                            <Box sx={{
-                                width: '400px',
-                                height: 'auto',
-                                display: 'flex',
-                                marginTop: '10px',
-                            }}>
-                                <IconButton
-                                    sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
-                                    href='/profile'
-                                >
-                                    <Avatar src={item.url} sx={{ color: '#000', width: '40px', height: '40px' }} />
-                                </IconButton>
-                                <Box sx={{ bgcolor: 'background.paper', display: 'flex' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            {post.caption !== '' &&
+                                <Box sx={{
+                                    width: '400px',
+                                    height: 'auto',
+                                    display: 'flex',
+                                    marginTop: '10px',
+                                }}>
+                                    <IconButton
+                                        sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
+                                        href='/profile'
+                                    >
+                                        <Avatar src={author.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                    </IconButton>
 
-                                        <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px' }}>
-                                            <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                {item.username}
-                                            </Link>
-                                        </span>
+                                    <Box sx={{ bgcolor: 'background.paper', display: 'flex' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
 
-                                        <span style={{
-                                            marginLeft: '10px',
-                                            width: '300px',
-                                            height: 'auto',
-                                            maxHeight: '420px',
-                                            fontSize: 14,
-                                            overflow: 'auto',  // Allows scrolling if content exceeds maxHeight
-                                            wordWrap: 'break-word',  // Break long words and wrap to the next line
-                                            whiteSpace: 'normal',
-                                        }}>
-                                            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-                                        </span>
-                                    </div>
+                                            <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px' }}>
+                                                <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                    {author.username}
+                                                </Link>
+                                            </span>
+
+                                            <span style={{
+                                                marginLeft: '10px',
+                                                width: '300px',
+                                                height: 'auto',
+                                                maxHeight: '420px',
+                                                fontSize: 14,
+                                                overflow: 'auto',  // Allows scrolling if content exceeds maxHeight
+                                                wordWrap: 'break-word',  // Break long words and wrap to the next line
+                                                whiteSpace: 'normal',
+                                            }}>
+                                                {Array.from({ length: captionSplit.length }, (_, i) => (
+                                                    <span>
+                                                        {captionSplit[i].startsWith('#') ?
+                                                            <Link style={{ textDecoration: 'none', color: '#00376B' }} >
+                                                                {captionSplit[i] + ' '}
+                                                            </Link>
+                                                            :
+                                                            <span>{captionSplit[i] + ' '}</span>
+                                                        }
+                                                    </span>
+                                                ))}
+                                            </span>
+
+                                        </div>
+                                    </Box>
+
                                 </Box>
-                            </Box>
+                            }
+
                             <div>
-                                {CommentCoutByPostId > 0 ?
+                                {CommentCoutByPostId > 0 || post.caption ?
                                     <List sx={{ width: '100%' }}>
                                         {Array.from({ length: CommentCoutByPostId }, (_, i) => (
                                             <ListItem sx={{ width: '100%', padding: '0px', marginTop: '20px' }} >
@@ -435,7 +454,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                                                     sx={{ marginLeft: '10px', height: '15px', width: '15px' }}
                                                                     onClick={() => {
                                                                         setIsOpen(true)
-                                                                        setAuthor(itemComment[i].author)
+                                                                        setAuthorId(itemComment[i].author)
                                                                         setTypeMoreOption('comment')
                                                                     }}
 
@@ -539,7 +558,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                                                                                         sx={{ marginLeft: '10px', height: '15px', width: '15px' }}
                                                                                                         onClick={() => {
                                                                                                             setIsOpen(true)
-                                                                                                            setAuthor(itemComment[i].author)
+                                                                                                            setAuthorId(itemComment[i].author)
                                                                                                             setTypeMoreOption('comment')
                                                                                                         }}
 
@@ -585,7 +604,7 @@ const PostForm = ({ postId, closeModal, focusText }) => {
                                     {likedPost ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 25 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />}
                                 </IconButton>
                                 <IconButton
-                                    onClick={() => { }}
+                                    onClick={() => { handleCommentPost() }}
                                 >
                                     <ChatBubbleOutlineOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />
                                 </IconButton>

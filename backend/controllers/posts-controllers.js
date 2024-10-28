@@ -30,9 +30,29 @@ const getPostById = async (req, res, next) => {
   res.json({ post: post.toObject({ getters: true }) });
 };
 
-
 const getPostsByUserId = async (req, res, next) => {
+  const userId = req.params.uid;
 
+  // let places;
+  let userWithPosts;
+  try {
+    userWithPosts = await User.findById(userId).populate('posts');
+  } catch (err) {
+    const error = new HttpError(
+      'Fetching places failed, please try again later.',
+      500
+    );
+    return next(error);
+  }
+
+  // if (!places || places.length === 0) {
+  if (!userWithPosts || userWithPosts.posts.length === 0) {
+    return next(
+      new HttpError('Could not find posts for the provided user id.', 404)
+    );
+  }
+
+  res.json({ posts: userWithPosts.posts.map(post => post.toObject({ getters: true })) });
 };
 
 const createPost = async (req, res, next) => {

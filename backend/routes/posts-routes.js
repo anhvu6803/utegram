@@ -9,9 +9,11 @@ router.get('/:pid', postControllers.getPostById);
 
 router.get('/user/:uid', postControllers.getPostsByUserId);
 
-router.post(
-  '/',
-    postControllers.createPost
+router.post('/',
+  [
+    check('caption').isLength({ max: 2000 })
+  ],
+  postControllers.createPost
 );
 
 router.patch(

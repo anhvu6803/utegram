@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './LoginPage.css'; 
+import './LoginPage.css';
 import logo from '../../assets/logo.jpg';
+import { AuthContext } from '../../shared/context/auth-context';
 
 const LoginPage = () => {
+  const auth = useContext(AuthContext);
+  const [loadedUser, setLoadedUser] = useState();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -13,7 +16,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
-    setIsLoading(true); 
+    setIsLoading(true);
 
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email)) {
@@ -32,7 +35,7 @@ const LoginPage = () => {
       });
 
       const data = await response.json();
-
+      auth.login(data.user.id)
       if (!response.ok) {
         setErrorMessage(data.msg || 'Đăng nhập thất bại');
         setIsLoading(false);
@@ -42,16 +45,17 @@ const LoginPage = () => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('tokenCreationTime', tokenCreationTime);
 
-      navigate('/home'); 
+      navigate('/home');
     } catch (error) {
       setErrorMessage('Đã có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
 
+
   return (
-    <div className="login-page">  
+    <div className="login-page">
       <div className="top-left-logo">
         <img src={logo} alt="Logo" />
       </div>
