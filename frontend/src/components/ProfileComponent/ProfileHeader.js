@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -8,14 +8,15 @@ import imgsetting from '../../assets/img-setting.jpg';
 import imgoption from '../../assets/img-option.jpg';
 import OptionForm from '../OptionFormInProfile/OptionForm';
 import ReportForm from '../OptionFormInProfile/ReportFromInProfile';
+import axios from 'axios';
 
 const ProfileHeader = ({ 
   isUserProfile, 
-  author, 
-  posts, 
-  followers, 
-  following, 
-  bio, 
+  author = 'User', 
+  posts = 0, 
+  followers = 0, 
+  following = 0, 
+  bio = '', 
   profileImage 
 }) => {
   const { username } = useParams(); 
@@ -24,10 +25,21 @@ const ProfileHeader = ({
   const [isFollowing, setIsFollowing] = useState(false); 
   const navigate = useNavigate();
 
-  const handleEditClick = () => {
-    navigate('/setting');
-  };
+  useEffect(() => {
+    const checkFollowingStatus = async () => {
+      try {
+        const response = await axios.get(`/api/follow-status/${username}`); 
+        setIsFollowing(response.data.isFollowing);
+      } catch (error) {
+        console.error('Error fetching follow status:', error);
+      }
+    };
 
+    checkFollowingStatus();
+  }, [username]);
+
+  const handleEditClick = () => navigate('/setting');
+  
   const handleOptionClick = () => {
     setModalIsOpen(true);
     setIsReportMode(false); 
@@ -38,27 +50,22 @@ const ProfileHeader = ({
     setIsReportMode(false); 
   };
 
-  const openReportForm = () => {
-    setIsReportMode(true);
+  const openReportForm = () => setIsReportMode(true);
+  
+  const toggleToOptionForm = () => setIsReportMode(false);
+
+  const handleFollowClick = async () => {
+    try {
+      // await axios.post(`/api/follow/${username}`);  
+      setIsFollowing(!isFollowing); 
+    } catch (error) {
+      console.error('Error toggling follow status:', error);
+    }
   };
 
-  const toggleToOptionForm = () => {
-    setIsReportMode(false);
-  };
+  const handleNavigateToProfile = () => navigate(`/profile/${username}`);
 
-  const handleFollowClick = () => {
-    setIsFollowing(!isFollowing); // Toggle follow state
-  };
-
-  // Navigate to the user's profile page
-  const handleNavigateToProfile = () => {
-    navigate(`/profile/${username}`);
-  };
-
-  // New function to navigate to the message route
-  const handleMessageClick = () => {
-    navigate('/message');
-  };
+  const handleMessageClick = () => navigate('/message');
 
   return (
     <div className="profile-header">
@@ -67,14 +74,14 @@ const ProfileHeader = ({
           src={profileImage || profilePic} 
           alt="Profile" 
           className="profile-picture" 
-          onClick={handleNavigateToProfile} // Navigate on clicking profile picture
-          style={{ cursor: 'pointer' }} // Add cursor pointer
+          onClick={handleNavigateToProfile}
+          style={{ cursor: 'pointer' }}
           onError={(e) => e.target.src = profilePic} 
         />
         <div className="profile-stats">
           <div className="profile-name">
             <h2 onClick={handleNavigateToProfile} style={{ cursor: 'pointer' }}>
-              {username}
+              {author || username}
             </h2>
             {isUserProfile ? (
               <button 
@@ -93,6 +100,7 @@ const ProfileHeader = ({
                     backgroundColor: isFollowing ? '#EFEFEF' : '#0095f6',
                     color: isFollowing ? '#262626' : '#fff',
                   }}
+                  aria-label={isFollowing ? "Unfollow" : "Follow"}
                 >
                   {isFollowing ? 'Đã theo dõi' : 'Theo dõi'}
                 </button>
@@ -105,6 +113,7 @@ const ProfileHeader = ({
                     color: '#262626',
                     marginLeft: '10px'
                   }}
+                  aria-label="Send Message"
                 >
                   Nhắn tin
                 </button>
@@ -120,9 +129,9 @@ const ProfileHeader = ({
             )}
           </div>
           <div className="profile-meta">
-            <span><strong>{posts}</strong> posts</span>
-            <span><strong>{followers}</strong> followers</span>
-            <span><strong>{following}</strong> following</span>
+            <span><strong>{posts}</strong> bài viết</span>
+            <span><strong>{followers}</strong> người theo dõi</span>
+            <span><strong>{following}</strong> đang theo dõi</span>
           </div>
           <div className="profile-bio">
             <strong>{bio}</strong>

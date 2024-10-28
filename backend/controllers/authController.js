@@ -91,4 +91,24 @@ exports.login = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-
+exports.checkDuplicateUser = async (req, res) => {
+    const { email, username } = req.body;
+    const errors = {};
+  
+    try {
+      let existingUser = await User.findOne({ email });
+      if (existingUser) errors.email = 'Email đã tồn tại';
+  
+      existingUser = await User.findOne({ username });
+      if (existingUser) errors.username = 'Tên người dùng đã tồn tại';
+  
+      if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ errors });
+      }
+  
+      res.status(200).json({ msg: 'No duplicates found' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+  
