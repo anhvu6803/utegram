@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/posts-routes');
+const profileRoutes = require('./routes/profileRoutes');
 const HttpError = require('./models/http-error');
 
 const mongoose = require('mongoose');
@@ -19,6 +20,9 @@ app.use((req, res, next) => {
 
   next();
 });
+
+
+app.use('/api/profile', profileRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes); 
 app.use((req, res, next) => {

@@ -13,16 +13,58 @@ const SignupPage = () => {
     username: '',
     bornDay: '', 
   });
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setUserData({ ...userData, [name]: value });
+    setErrors({ ...errors, [name]: '' }); 
   };
 
-  const handleNextStep = (event) => {
+  const validatePassword = () => {
+    const { password } = userData;
+    
+    if (password.length < 8) {
+      return "Mật khẩu phải chứa ít nhất 8 ký tự.";
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "Mật khẩu phải chứa ít nhất một chữ cái in hoa.";
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      return "Mật khẩu phải chứa ít nhất một ký tự đặc biệt.";
+    }
+    
+    return "";
+  };
+  
+
+  const handleNextStep = async (event) => {
     event.preventDefault();
-    setShowBornDay(true); 
+    
+    const passwordError = validatePassword();
+    if (passwordError) {
+      setErrors({ ...errors, password: passwordError });
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userData.email, username: userData.username })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setErrors({ ...data.errors });
+      } else {
+        setShowBornDay(true); 
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+    }
   };
 
   const handleRegisterComplete = async ({ bornDay }) => {
@@ -56,7 +98,10 @@ const SignupPage = () => {
       </div>
       <div className="signup-container">
         {showBornDay ? (  
-          <InputBornDay onRegisterComplete={handleRegisterComplete} /> 
+          <InputBornDay 
+            onRegisterComplete={handleRegisterComplete} 
+            onBack={() => setShowBornDay(false)} 
+          /> 
         ) : (
           <div className="signup-box">
             <h1 className="logo">UTEGRAM</h1>
@@ -71,6 +116,7 @@ const SignupPage = () => {
                   value={userData.email}
                   onChange={handleChange}
                 />
+                {errors.email && <p className="error-text">{errors.email}</p>}
               </div>
               <div className="input-group">
                 <input
@@ -81,6 +127,7 @@ const SignupPage = () => {
                   value={userData.password}
                   onChange={handleChange}
                 />
+                {errors.password && <p className="error-text">{errors.password}</p>}
               </div>
               <div className="input-group">
                 <input
@@ -101,6 +148,7 @@ const SignupPage = () => {
                   value={userData.username}
                   onChange={handleChange}
                 />
+                {errors.username && <p className="error-text">{errors.username}</p>}
               </div>
               <button type="submit" className="signup-btn">
                 Tiếp tục

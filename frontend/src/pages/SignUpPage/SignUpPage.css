@@ -2,6 +2,7 @@ body {
   background-color: #fafafa; 
   font-family: 'Arial', sans-serif;
 }
+
 .signup-page {
   background-image: url('../../assets/background.png');  
   background-size: cover;  
@@ -9,6 +10,7 @@ body {
   background-repeat: no-repeat; 
   height: 100vh;  
 }
+
 .input-born-page {
   background-image: url('../../assets/background.png');  
   background-size: cover;  
@@ -16,6 +18,7 @@ body {
   background-repeat: no-repeat; 
   height: 100vh;  
 }
+
 .top-left-logo {
   position: absolute;  
   top: 20px; 
@@ -97,7 +100,6 @@ body {
   transition: background-color 0.3s, transform 0.2s;  
 }
 
-
 .signup-btn:hover {
   background-color: #007bbf; 
   transform: translateY(-2px);  
@@ -106,7 +108,8 @@ body {
 .signup-btn:disabled {
   background-color: #b2dffc;
 }
-.login-option-box{
+
+.login-option-box {
   margin-top: 18px;
 }
 
@@ -116,7 +119,6 @@ body {
   font-weight: bold;
   font-size: 14px;
 }
-
 
 .img-cake {
   width: 100px;
@@ -145,26 +147,27 @@ body {
 
 .dob-select-box {
   position: relative;
-  width: 30%;
+
+  width: 33%;
 }
 
 .dob-select {
-  width: 100%;
+  width: 100%;  
   padding: 10px;
   font-size: 16px;
   border-radius: 5px;
   border: 1px solid #ccc;
   background-color: #f9f9f9;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  text-align: center;
-  cursor: pointer;
+  appearance: none;  
+  -webkit-appearance: none;  
+  -moz-appearance: none;  
+  text-align: center;  
+  cursor: pointer;  
 }
 
 .dob-select:hover, .dob-select:focus {
-  border-color: #888;
-  background-color: #fff;
+  border-color: #888;  
+  background-color: #fff;  
 }
 
 .continue-btn {
@@ -187,6 +190,7 @@ body {
   margin-top: 20px;
   font-size: 16px;
   color: #007BFF;
+  background-color: #FFFFFF
 
 }
 
@@ -195,7 +199,6 @@ body {
   font-weight: bold;
   text-decoration: none;
 }
-
 
 .login-option-box {
   margin-top: 10px;
@@ -206,9 +209,17 @@ body {
   color: #007BFF;
   text-decoration: none;
 }
+
 .resend-link {
   color: #007bff;
   font-size: 16px;
   font-weight: bold;
   text-decoration: none;
+}
+.error-text {
+  color: #ff4d4d;  
+  font-size: 13px;
+  margin-top: 5px;
+  margin-left: 5px;
+  text-align: left;
 }

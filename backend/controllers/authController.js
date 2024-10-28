@@ -94,28 +94,24 @@ exports.login = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-exports.getUser = async (req, res, next) => {
-    const userId = req.params.pid;
-
-    let user;
+exports.checkDuplicateUser = async (req, res) => {
+    const { email, username } = req.body;
+    const errors = {};
+  
     try {
-        user = await User.findById(userId);
+      let existingUser = await User.findOne({ email });
+      if (existingUser) errors.email = 'Email đã tồn tại';
+  
+      existingUser = await User.findOne({ username });
+      if (existingUser) errors.username = 'Tên người dùng đã tồn tại';
+  
+      if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ errors });
+      }
+  
+      res.status(200).json({ msg: 'No duplicates found' });
     } catch (err) {
-        const error = new HttpError(
-            'Something went wrong, could not find a user.',
-            500
-        );
-        return next(error);
+      res.status(500).json({ error: err.message });
     }
-
-    if (!user) {
-        const error = new HttpError(
-            'Could not find a user for the provided id.',
-            404
-        );
-        return next(error);
-    }
-
-    res.json({ user: user.toObject({ getters: true }) });
-};
-
+  };
+  

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom'; 
 import imgemail from '../../assets/email.jpg';
@@ -6,7 +7,7 @@ import './SignUpPage.css';
 const ConfirmCode = () => {
   const location = useLocation();
   const navigate = useNavigate(); 
-  const { email } = location.state || { email: '' }; 
+  const { email, bornDay } = location.state || { email: '', bornDay: null }; 
   const [confirmationCode, setConfirmationCode] = useState('');
 
   const handleSubmit = async (e) => {
@@ -61,7 +62,7 @@ const ConfirmCode = () => {
             </button>
           </form>
           <div className="back-text">
-            <Link to='/signup' className="back-link">
+            <Link to='/input-born' state={{ email, bornDay }} className="back-link">
               Quay lại
             </Link>
           </div>
