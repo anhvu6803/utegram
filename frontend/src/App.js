@@ -4,6 +4,7 @@ import {
   BrowserRouter as Router,
   Routes, Route, Navigate
 } from 'react-router-dom';
+import io from 'socket.io-client'
 import { useParams } from 'react-router-dom';
 import { AuthContext } from './shared/context/auth-context';
 import PostWithTag from './pages/PostWithTag/PostWithTag';
@@ -26,6 +27,8 @@ import InputBornDay from './pages/SignUpPage/InputBornDay';
 import ConfirmCode from './pages/SignUpPage/ConfirmCode';
 import PrivateRoute from './components/PrivateRoute';
 
+const socket = io.connect('http://localhost:5000');
+
 const Accounts = () => {
   const { option } = useParams();
 
@@ -45,29 +48,30 @@ const Accounts = () => {
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(
-    () => localStorage.getItem('isLoggedIn') === 'true'
+    () => sessionStorage.getItem('isLoggedIn') === 'true'
   );
-  const [userId, setUserId] = useState(localStorage.getItem('userId') || null);
+  const [userId, setUserId] = useState(sessionStorage.getItem('userId') || null);
 
   const login = useCallback(uid => {
     setIsLoggedIn(true);
     setUserId(uid);
-    localStorage.setItem('isLoggedIn', 'true'); 
-    localStorage.setItem('userId', uid); 
+    sessionStorage.setItem('isLoggedIn', 'true'); 
+    sessionStorage.setItem('userId', uid); 
   }, []);
 
   const logout = useCallback(() => {
     setIsLoggedIn(false);
     setUserId(null);
-    localStorage.removeItem('isLoggedIn'); 
-    localStorage.removeItem('userId'); 
+    sessionStorage.removeItem('isLoggedIn'); 
+    sessionStorage.removeItem('userId'); 
   }, []);
 
+
   useEffect(() => {
-    const storedIsLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const storedIsLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
     if (storedIsLoggedIn) {
       setIsLoggedIn(true);
-      setUserId(localStorage.getItem('userId'));
+      setUserId(sessionStorage.getItem('userId'));
     }
   }, []);
 

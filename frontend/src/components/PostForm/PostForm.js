@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext, useEffect } from 'react';
 import MoreForm from '../MoreForm/MoreForm';
 import avatar from '../../assets/user.png';
 import { Link } from 'react-router-dom';
 import { useHttpClient } from '../../shared/hooks/http-hook';
+import { AuthContext } from '../../shared/context/auth-context';
+import io from 'socket.io-client';
 
 // Cloudinary
 import { Cloudinary } from '@cloudinary/url-gen';
@@ -30,37 +32,76 @@ import CircleIcon from '@mui/icons-material/Circle';
 import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 
-function calculateDaysFrom(dateString) {
+const socket = io.connect('http://localhost:5000');
 
-    const [day, month, year] = dateString.split('/').map(Number);
+function calculateDaysFrom(mongoDate) {
 
-    const givenDate = new Date(year, month - 1, day);
+    const givenDate = new Date(mongoDate);
 
     const currentDate = new Date();
 
-    const timeDifference = currentDate - givenDate.getTime();
+    const timeDifference = currentDate - givenDate;
 
     const dayDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
 
-    const countDay = Math.floor(dayDifference / 7);
+    const weekDifference = Math.floor(dayDifference / 7);
 
-    return countDay < 1 ? dayDifference + ' ngày' : countDay + ' tuần'
+    return weekDifference === 0 ? 'Hôm nay' : (weekDifference < 1 ? dayDifference + ' ngày' : weekDifference + ' tuần');
 }
 
 const PostForm = ({ postId, closeModal, post, author }) => {
+    const auth = useContext(AuthContext);
+
+    const { isLoading, error, sendRequest, clearError } = useHttpClient();
+
     const item = itemData.find((item) => item.id === postId);
 
-    const userId = '6719efffaddd25d8028d0774';
+    const userId = auth.userId;
 
     const textFieldRef = useRef(null);
 
     const CommentCoutByPostId = post.comments.length;
 
-    const [likedPost, setLikedPost] = useState(false); // Boolean state for a single item
 
-    const handleLikePostClick = () => {
-        setLikedPost((prevLiked) => !prevLiked); // Toggle the boolean value
+    const [likedPost, setLikedPost] = useState(post.likes.includes(userId)); // Boolean state for a single item
+    const [likeCount, setLikeCount] = useState(post.likes.length);
+
+    const handleLikePostClick = async (e) => {
+        e.preventDefault();
+        const newLikedStatus = !likedPost;
+        setLikedPost(newLikedStatus); // Toggle the boolean value
+        setLikeCount((prevCount) => newLikedStatus ? prevCount + 1 : prevCount - 1);
+
+        try {
+            await sendRequest(
+                `http://localhost:5000/api/posts/${post._id}/like`,
+                'POST',
+                JSON.stringify({ userId: auth.userId }),
+                { 'Content-Type': 'application/json' }
+            );
+            // Phát sự kiện qua Socket.IO
+            socket.emit('likePost', post._id);
+        } catch (err) {
+            // Phục hồi trạng thái cũ nếu có lỗi
+            setLikedPost(!newLikedStatus);
+            setLikeCount((prevCount) => newLikedStatus ? prevCount - 1 : prevCount + 1);
+        }
     };
+
+    useEffect(() => {
+        socket.on('updateLikes', (data) => {
+            if (data.postId === post._id && data.likesCount) {
+                setLikeCount(data.likesCount);
+                console.log(data) // Cập nhật lượt thích
+            }
+            
+        });
+
+        // Dọn dẹp socket khi component unmount
+        return () => {
+            socket.off('updateLikes');
+        };
+    }, [post._id]);
 
     const [commentPost, setCommentPost] = useState();
 
@@ -342,7 +383,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                     <Box sx={{ bgcolor: 'background.paper', display: 'flex' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
 
-                                            <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px' }}>
+                                            <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px', marginBottom: '5px' }}>
                                                 <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
                                                     {author.username}
                                                 </Link>
@@ -409,7 +450,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                     <Box sx={{ bgcolor: 'background.paper', display: 'flex' }}>
                                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
 
-                                                            <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px' }}>
+                                                            <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px', marginBottom: '5px' }}>
                                                                 <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
                                                                     {itemComment[i].username}
                                                                 </Link>
@@ -599,7 +640,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                 }}
                             >
                                 <IconButton
-                                    onClick={() => handleLikePostClick()}
+                                    onClick={handleLikePostClick}
                                 >
                                     {likedPost ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 25 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />}
                                 </IconButton>
@@ -615,7 +656,30 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                     {bookmarked ? <BookmarkOutlinedIcon sx={{ color: '#000', fontSize: 25 }} /> : <BookmarkBorderOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />}
                                 </IconButton>
                             </ListItem>
-                            <span style={{ fontSize: 14, fontWeight: 'bold', marginTop: '20px', marginLeft: '10px' }}>21.900 Lượt thích</span>
+                            <span
+                                style={{
+                                    fontSize: 14, fontWeight: 'normal',
+                                    marginTop: '20px', marginLeft: '10px'
+                                }}>
+                                {likeCount > 0 ?
+                                    likeCount + ' lượt thích'
+                                    :
+                                    <div>
+                                        Hãy là người đầu tiên
+                                        <span
+                                            style={{
+                                                fontSize: 14, fontWeight: 'bold',
+                                                marginTop: '20px', marginLeft: '5px',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={handleLikePostClick}
+                                        >
+                                            thích bài viết
+                                        </span>
+                                    </div>
+
+                                }
+                            </span>
                             <span
                                 style={{
                                     fontSize: 12,
@@ -624,7 +688,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                     marginLeft: '10px',
                                     marginTop: '5px'
                                 }}>
-                                21 tháng 9 2024
+                                {calculateDaysFrom(post.updatedAt)}
                             </span>
                         </Box>
                         <Box sx={{ width: '400px', height: '55px', padding: '0px', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -675,8 +739,8 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                         </Box>
                     </Box>
                 </Box>
-            </Box>
-        </div>
+            </Box >
+        </div >
     );
 }
 export default PostForm;

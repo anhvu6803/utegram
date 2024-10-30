@@ -5,6 +5,8 @@ const HttpError = require('../models/http-error');
 const Post = require('../models/PostModel');
 const User = require('../models/UserModel')
 
+const { io } = require('../socket/socket')
+
 const getPostById = async (req, res, next) => {
   const postId = req.params.pid;
 
@@ -36,7 +38,10 @@ const getPostsByUserId = async (req, res, next) => {
   // let places;
   let userWithPosts;
   try {
-    userWithPosts = await User.findById(userId).populate('posts');
+    userWithPosts = await User.findById(userId).populate({
+      path: 'posts',
+      options: { sort: { createdAt: -1 }, limit: 6 } // Sort by date descending and limit to 6
+    });
   } catch (err) {
     const error = new HttpError(
       'Fetching places failed, please try again later.',
@@ -119,8 +124,46 @@ const deletePost = async (req, res, next) => {
 
 };
 
+const likePost = async (req, res, next) => {
+  const postId = req.params.id;
+  const { userId } = req.body;
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    // Toggle like/unlike
+    let message;
+    if (post.likes.includes(userId)) {
+      post.likes.pull(userId); // Unlike
+      message = 'Post unliked';
+    } else {
+      post.likes.push(userId); // Like
+      message = 'Post liked';
+    }
+
+    await post.save();
+
+    // Đảm bảo phát lại cả `postId` và `likesCount`
+    io.emit('updateLikes', { postId, likesCount: post.likes.length });
+
+    res.status(200).json({
+      success: true,
+      message,
+      likesCount: post.likes.length
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 exports.getPostById = getPostById;
 exports.getPostsByUserId = getPostsByUserId;
 exports.createPost = createPost;
 exports.updatePost = updatePost;
 exports.deletePost = deletePost;
+exports.likePost = likePost;

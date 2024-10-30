@@ -15,7 +15,7 @@ router.post('/',
   ],
   postControllers.createPost
 );
-
+router.post('/:id/like', postControllers.likePost)
 router.patch(
   '/:pid',
   [

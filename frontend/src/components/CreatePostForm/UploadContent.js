@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import FinishCreate from './FinishCreate';
 import avatar from '../../assets/user.png';
 import axios from 'axios';
-import { Link } from 'react-router-dom'
+import { AuthContext } from '../../shared/context/auth-context';
 
 // Material UI
 import Box from '@mui/material/Box';
@@ -92,6 +92,7 @@ const tagSuggestions = [
 
 
 export default function UploadContent({ closeModal }) {
+    const auth = useContext(AuthContext);
     // Replace with your own cloud name
     const [cloudName] = useState("dbmynlh3f");
 
@@ -299,7 +300,7 @@ export default function UploadContent({ closeModal }) {
                         caption: inputValue,
                         type: fileType,
                         url: urls,
-                        author: '6719efffaddd25d8028d0774',
+                        author: auth.userId,
                         tags: result.hashtags,
                         underthirteen: underThirteen,
                         upeighteen: upEighteen

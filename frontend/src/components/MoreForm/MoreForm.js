@@ -1,5 +1,6 @@
-import * as React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../shared/context/auth-context';
 
 // Material UI
 import Box from '@mui/material/Box';
@@ -10,12 +11,14 @@ import Divider from '@mui/material/Divider';
 import { type } from '@testing-library/user-event/dist/type';
 
 export default function SelectedListItem({ closeModal, author, type, postId }) {
+    const auth = useContext(AuthContext);
 
     const navigate = useNavigate();
 
     const handleMoreFormPostClick = (item) => {
         if (item === 'Đi đến bài viết') {
             navigate(`/post/${postId}`);
+            window.location.reload();
         }
     };
 
@@ -24,10 +27,10 @@ export default function SelectedListItem({ closeModal, author, type, postId }) {
     console.log(type +' '+ postId)
 
     if (type === 'post') {
-        data = author === '@helloimnik' ? optionItem[0].content[1] : optionItem[0].content[0]
+        data = author === auth.userId ? optionItem[0].content[1] : optionItem[0].content[0]
     }
     else if (type === 'comment') {
-        data = author === '@helloimnik' ? optionItem[1].content[1] : optionItem[1].content[0]
+        data = author === auth.userId ? optionItem[1].content[1] : optionItem[1].content[0]
     }
 
     return (

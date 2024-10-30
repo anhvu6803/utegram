@@ -1,5 +1,6 @@
-import * as React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../shared/context/auth-context';
 
 // Material UI
 import Box from '@mui/material/Box';
@@ -11,7 +12,7 @@ import HexagonOutlinedIcon from '@mui/icons-material/HexagonOutlined';
 import BookmarkBorderOutlinedIcon from '@mui/icons-material/BookmarkBorderOutlined';
 
 export default function SeeMore() {
-
+    const auth = useContext(AuthContext);
     const navigate = useNavigate();
 
     return (
@@ -20,29 +21,30 @@ export default function SeeMore() {
                 onClick={() => {
                     navigate('/accounts/edit')
                 }}
-                sx={{ 
-                    width: '300px', height: '48px', justifyContent: 'center', 
+                sx={{
+                    width: '300px', height: '48px', justifyContent: 'center',
                     alignContent: 'center',
-                    display: 'flex', 
+                    display: 'flex',
                     flexDirection: 'row',
                 }}
 
             >
-                <HexagonOutlinedIcon sx={{fontSize: 25, color: '#000', marginRight: '10px'}}/>
+                <HexagonOutlinedIcon sx={{ fontSize: 25, color: '#000', marginRight: '10px' }} />
                 <span style={{ color: '#000' }}>Cài đặt</span>
             </ListItemButton>
             <ListItemButton
-                onClick={() => {}}
+                onClick={() => { }}
                 sx={{ width: '300px', height: '48px', justifyContent: 'center' }}
 
             >
-                <BookmarkBorderOutlinedIcon sx={{fontSize: 25, color: '#000', marginRight: '10px'}}/>
+                <BookmarkBorderOutlinedIcon sx={{ fontSize: 25, color: '#000', marginRight: '10px' }} />
                 <span style={{ color: '#000' }}>Đã lưu</span>
             </ListItemButton>
-            <Divider/>
+            <Divider />
             <ListItemButton
                 onClick={() => {
                     navigate('/')
+                    auth.logout()
                 }}
                 sx={{ width: '300px', height: '48px', justifyContent: 'center' }}
 

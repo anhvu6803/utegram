@@ -1,12 +1,11 @@
-const express = require('express');
+const {server, app} = require('./socket/socket')
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/posts-routes');
 const profileRoutes = require('./routes/profileRoutes');
-const HttpError = require('./models/http-error');
 
 const mongoose = require('mongoose');
-const app = express();
+
 
 app.use(bodyParser.json());
 
@@ -24,7 +23,7 @@ app.use((req, res, next) => {
 
 app.use('/api/profile', profileRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/posts', postRoutes); 
+app.use('/api/posts', postRoutes);
 app.use((req, res, next) => {
   const error = new HttpError('Could not find this route.', 404);
   throw error;
@@ -41,7 +40,7 @@ app.use((error, req, res, next) => {
 mongoose
   .connect('mongodb+srv://wasabi:wasabioiyeulam@wasabivu.vmztv.mongodb.net/utegram?retryWrites=true&w=majority&appName=WasabiVu')
   .then(() => {
-    app.listen(5000);
+    server.listen(5000);
   })
   .catch((error) => {
     console.log(error);
