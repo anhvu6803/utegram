@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import OptionBar from '../../components/OptionBar/OptionBar';
 import PostForm from '../../components/PostForm/PostForm';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-import { generateVideoThumbnails } from '@rajesh896/video-thumbnails-generator';
 
 //// Material UI 
 import { Box } from '@mui/material';
@@ -72,14 +71,23 @@ const DetailPost = () => {
                             </span>
                         </div>
 
-                        <ImageList cols={3} sx={{ width: '1000px', height: '670px', marginTop: '10px', background: '#fff', marginLeft: '125px' }}>
+                        <ImageList cols={3}
+                            sx={{
+                                width: '1000px', height: '670px', marginTop: '10px',
+                                background: '#fff', marginLeft: '125px',
+                                '&::-webkit-scrollbar': {
+                                    display: 'none',  // Ẩn thanh cuộn trên Chrome/Safari
+                                },
+                                '-ms-overflow-style': 'none',  // Ẩn thanh cuộn trên IE/Edge
+                                'scrollbar-width': 'none',
+                            }}>
                             {loadedPosts.map((item, index) => (
                                 <ListItemButton
                                     key={item.id}
                                     sx={{
                                         width: '330px', height: '330px', padding: '0px', background:
                                             'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
-                                            'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)'
+                                            'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
                                     }}
                                     onClick={() => {
                                         navigate(`/post/${item.id}`);
@@ -88,8 +96,8 @@ const DetailPost = () => {
 
                                 >
                                     {item.type === 'video' ?
-                                        <video 
-                                            src={`${item.url[0]+'#t=5'}?w=248&fit=crop&auto=format`}
+                                        <video
+                                            src={`${item.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
                                             style={{ width: '330px', height: '330px', objectFit: 'cover' }}
                                         /> :
                                         <img

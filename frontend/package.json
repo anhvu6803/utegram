@@ -17,11 +17,13 @@
     "axios": "^1.7.7",
     "cloudinary-video-player": "^2.1.0",
     "install": "^0.13.0",
+    "jwt-decode": "^4.0.0",
     "npm": "^10.9.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
     "react-scripts": "^5.0.1",
+    "socket.io-client": "^4.8.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

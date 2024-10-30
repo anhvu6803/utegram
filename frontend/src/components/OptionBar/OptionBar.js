@@ -8,7 +8,7 @@ import SeeMore from '../SeeMore/SeeMore';
 
 // Material UI
 import { Box, Modal } from '@mui/material';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 
 import HomeIcon from '@mui/icons-material/Home';
@@ -211,18 +211,17 @@ const Navbar = ({ pages }) => {
                         <SearchForm />
                     </div>
                 )}
+                {isMenuVisible && (
+                    <Box
+                        sx={{
+                            position: 'absolute', left: '85%', bottom: '15%',
+                            transform: 'translateX(-50%)', zIndex: 2000
+                        }}
+                    >
+                        <SeeMore />
+                    </Box>
+                )}
             </div>
-
-            {isMenuVisible && (
-                <Box
-                    sx={{
-                        position: 'absolute', left: '90%', bottom: '15%',
-                        transform: 'translateX(-50%)', zIndex: 2000
-                    }}
-                >
-                    <SeeMore />
-                </Box>
-            )}
         </div>
     );
 };

@@ -114,4 +114,27 @@ exports.checkDuplicateUser = async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   };
-  
+  exports.getUser = async (req, res, next) => {
+    const userId = req.params.pid;
+
+    let user;
+    try {
+        user = await User.findById(userId);
+    } catch (err) {
+        const error = new HttpError(
+            'Something went wrong, could not find a user.',
+            500
+        );
+        return next(error);
+    }
+
+    if (!user) {
+        const error = new HttpError(
+            'Could not find a user for the provided id.',
+            404
+        );
+        return next(error);
+    }
+
+    res.json({ user: user.toObject({ getters: true }) });
+};
