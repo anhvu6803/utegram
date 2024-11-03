@@ -2,8 +2,9 @@ const {server, app} = require('./socket/socket')
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/posts-routes');
+const userRoutes = require('./routes/userRoutes');
+const messageRoutes = require('./routes/chatRoutes');
 const profileRoutes = require('./routes/profileRoutes');
-
 const mongoose = require('mongoose');
 
 
@@ -24,6 +25,8 @@ app.use((req, res, next) => {
 app.use('/api/profile', profileRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/messages', messageRoutes);
 app.use((req, res, next) => {
   const error = new HttpError('Could not find this route.', 404);
   throw error;

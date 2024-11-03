@@ -69,7 +69,7 @@ const ProfilePage = () => {
 
   return (
     <div className="profile-page">
-        <OptionBar pages={profileData.isUserProfile ? "profile" : undefined} /> 
+      <OptionBar pages={profileData.isUserProfile ? "profile" : undefined} /> 
       <ProfileHeader
         isUserProfile={profileData.isUserProfile}
         author={profileData.author}

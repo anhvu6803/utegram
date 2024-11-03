@@ -156,3 +156,8 @@
     font-size: 1em; /* Reduced font size */
     color: #888;
 }
+.contact-username {
+    font-size: 0.9em; /* Slightly smaller font size */
+    color: gray; /* Lighter color for the username */
+    margin-top: 2px; /* Spacing above the username */
+}

@@ -18,9 +18,14 @@ const io = new Server(server, {
 
 io.on('connection', (socket) => {
   socket.on('likePost', (postId) => {
-    // Phát sự kiện cập nhật lượt thích đến tất cả người dùng
     io.emit('updateLikes', { postId });
   });
-})
+  socket.on('sendMessage', (message) => {
+    socket.broadcast.emit('newMessage', message);
+  });
 
+  socket.on('joinRoom', ({ userId, otherUserId }) => {
+    socket.join(`${userId}-${otherUserId}`);
+  });
+})
 module.exports = { app, server, io };
