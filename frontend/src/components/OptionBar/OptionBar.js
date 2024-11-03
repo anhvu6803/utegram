@@ -140,6 +140,7 @@ const Navbar = ({ pages }) => {
                 </a>
 
                 <a
+                     href={`/messages`}
                     className={`icon ${active === 'message' ? 'active' : ''}`}
                     onClick={() => {
                         handleIconClick('message');

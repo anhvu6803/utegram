@@ -26,7 +26,7 @@ import PostManagement from './pages/Admin/PostManagement/PostManagement';
 import InputBornDay from './pages/SignUpPage/InputBornDay';
 import ConfirmCode from './pages/SignUpPage/ConfirmCode';
 import PrivateRoute from './components/PrivateRoute';
-
+import MessagePage from './pages/MessagePage/MessagePage';
 const socket = io.connect('http://localhost:5000');
 
 const Accounts = () => {
@@ -91,6 +91,7 @@ const App = () => {
         <Route path="/tag/:tagName" element={<PostWithTag />} />
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/admin/posts" element={<PostManagement />} />
+        <Route path="/messages" element={<MessagePage />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     );
