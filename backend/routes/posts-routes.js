@@ -8,6 +8,8 @@ const router = express.Router();
 router.get('/:pid', postControllers.getPostById);
 
 router.get('/user/:uid', postControllers.getPostsByUserId);
+router.get('/like/:pid', postControllers.getUsersByPostId);
+router.get('/comment/:pid', postControllers.getCommentsByPostId);
 
 router.post('/',
   [
