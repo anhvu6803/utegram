@@ -1,13 +1,11 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import MoreForm from '../MoreForm/MoreForm';
 import avatar from '../../assets/user.png';
+import ListUserLiked from './ListUserLiked';
 import { Link } from 'react-router-dom';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { AuthContext } from '../../shared/context/auth-context';
 import io from 'socket.io-client';
-
-// Cloudinary
-import { Cloudinary } from '@cloudinary/url-gen';
 
 //// Material UI 
 import ListItem from '@mui/material/ListItem';
@@ -46,25 +44,27 @@ function calculateDaysFrom(mongoDate) {
 
     const weekDifference = Math.floor(dayDifference / 7);
 
-    return weekDifference === 0 ? 'Hôm nay' : (weekDifference < 1 ? dayDifference + ' ngày' : weekDifference + ' tuần');
+    return dayDifference === 0 ? 'Hôm nay' : (weekDifference < 1 ? dayDifference + ' ngày' : weekDifference + ' tuần');
 }
 
-const PostForm = ({ postId, closeModal, post, author }) => {
+const PostForm = ({ postId, closeModal, post, author, listComments, listReplies }) => {
     const auth = useContext(AuthContext);
 
     const { isLoading, error, sendRequest, clearError } = useHttpClient();
-
-    const item = itemData.find((item) => item.id === postId);
 
     const userId = auth.userId;
 
     const textFieldRef = useRef(null);
 
-    const CommentCoutByPostId = post.comments.length;
-
-
     const [likedPost, setLikedPost] = useState(post.likes.includes(userId)); // Boolean state for a single item
     const [likeCount, setLikeCount] = useState(post.likes.length);
+    const [isViewUserLiked, setViewUserLiked] = useState(false);
+    const [listUserLiked, setListUserLiked] = useState([]);
+    const [modalListUserLiked, setOpenListUserLiked] = useState(false);
+
+    const closeListUserLiked = () => {
+        setOpenListUserLiked(false)
+    }
 
     const handleLikePostClick = async (e) => {
         e.preventDefault();
@@ -87,30 +87,6 @@ const PostForm = ({ postId, closeModal, post, author }) => {
             setLikeCount((prevCount) => newLikedStatus ? prevCount - 1 : prevCount + 1);
         }
     };
-
-    useEffect(() => {
-        socket.on('updateLikes', (data) => {
-            if (data.postId === post._id && data.likesCount) {
-                setLikeCount(data.likesCount);
-                console.log(data) // Cập nhật lượt thích
-            }
-            
-        });
-
-        // Dọn dẹp socket khi component unmount
-        return () => {
-            socket.off('updateLikes');
-        };
-    }, [post._id]);
-
-    const [commentPost, setCommentPost] = useState();
-
-    const handleCommentPost = () => {
-        setCommentPost(!commentPost);
-        if (textFieldRef.current) {
-            textFieldRef.current.focus(); // Step 3: Focus the TextField
-        }
-    }
 
     const [bookmarked, setBookmarked] = useState(false); // Boolean state for a single item
 
@@ -149,65 +125,245 @@ const PostForm = ({ postId, closeModal, post, author }) => {
         }
     }
 
-    const [textComment, setTextCommnent] = useState('');
-
-    const handleTextChange = (event) => {
-        setTextCommnent(event.target.value);
-    };
-
     const [typeMoreOption, setTypeMoreOption] = useState('post');
 
     const captionSplit = post.caption.split(' ');
 
     //Commnent section
 
-    const itemComment = post.comments;
+    //comment
+    const [commentPost, setCommentPost] = useState(false);
+    const [textComment, setTextCommnent] = useState('');
+    const [_listComments, setListComment] = useState(listComments.map((item) => item));
+    const [handleCommentOnce, setHandleCommentOnce] = useState(1);
+    const [likedCommentItems, setLikedCommentItems] = useState(listComments?.map((item) => item.likes.includes(userId)));
+    const [likedCommentItemsCount, setLikedCommentItemsCount] = useState(listComments?.map((item) => item.likes.length));
 
+    //replies
     const [isReplied, setReplied] = useState(false);
+    const [parentCommentId, setParentCommentId] = useState('');
+    const [handleReplyOnce, setHandleReplyOnce] = useState(1);
+    const [newReply, setNewReply] = useState();
+    const [isViewRelied, setViewRelied] = useState(listComments.map(() => false));
+    const [listReliesComment, setListReliesComment] = useState(listReplies)
+    const [likedReplyItems, setLikedReplyItems] = useState(listReplies?.map((item) => item.map((item) => item.likes.includes(userId))))
+    const [likedReplyItemsCount, setLikedReplyItemsCount] = useState(listReplies?.map((item) => item.map((item) => item.likes.length)));
 
-    const handleReplyClick = () => {
+    console.log(listReliesComment)
+    const handleTextChange = (event) => {
+        setTextCommnent(event.target.value);
+    };
+
+    const handleCommentPost = () => {
+        setCommentPost(!commentPost);
+        if (textFieldRef.current) {
+            textFieldRef.current.focus(); // Step 3: Focus the TextField
+        }
+    }
+
+    const handleReplyClick = (index) => {
+        setParentCommentId(_listComments[index]._id);
+
         setReplied(!isReplied);
+
         if (textFieldRef.current) {
             textFieldRef.current.focus(); // Step 3: Focus the TextField
         }
     };
 
-    const [isViewRelied, setViewRelied] = useState();
+    const commentSubmitHandler = async event => {
+        event.preventDefault();
+        if (commentPost) {
+            try {
+                const responseData = await sendRequest(
+                    'http://localhost:5000/api/comment/',
+                    'POST',
+                    JSON.stringify({
+                        text: textComment,
+                        author: userId,
+                        post: post._id
+                    }),
+                    { 'Content-Type': 'application/json' }
+                );
+                socket.emit('submitComment', responseData);
+                setTextCommnent('');
+                setCommentPost(false)
+            } catch (err) { }
+        }
+        else if (isReplied) {
+            try {
+                const responseData = await sendRequest(
+                    `http://localhost:5000/api/comment/${parentCommentId}/reply`,
+                    'POST',
+                    JSON.stringify({
+                        text: textComment,
+                        author: userId,
+                        post: post._id
+                    }),
+                    { 'Content-Type': 'application/json' }
+                );
+                socket.emit('submitReply', responseData);
+                setTextCommnent('');
+                setReplied(false);
+            } catch (err) { }
+        }
+    };
 
     const handleViewReliedClick = (index) => {
-
+        const updatedViewRelied = isViewRelied.map((viewed, i) =>
+            i === index ? !viewed : viewed // Toggle the clicked item only
+        );
+        setViewRelied(updatedViewRelied);
     };
 
-    const [relyLengthItems] = useState();
+    const handleLikeRelyClick = async (indexComment, indexReply, event) => {
+        event.preventDefault();
+        const updateLikedReplItems = likedReplyItems.map((item, index) => {
+            if (index === indexComment) {
+                const likedItems = item.map((item, index) => index === indexReply ? !item : item);
+                return likedItems;
+            }
+            else {
+                return item;
+            }
+        })
+        setLikedReplyItems(updateLikedReplItems);
 
-    const [likedRelyItems, setLikedRelyItems] = useState();
+        try {
+            await sendRequest(
+                `http://localhost:5000/api/comment/${listReliesComment[indexComment][indexReply]._id}/like`,
+                'POST',
+                JSON.stringify({ userId: auth.userId }),
+                { 'Content-Type': 'application/json' }
+            );
+            socket.emit('likeComment', _listComments[index]._id);
 
+        } catch (err) {
 
-    const handleLikeRelyClick = (indexComment, indexRely) => {
-        // setLikedRelyItems(prevLikedRelyItems => {
-        //     // Tạo một bản sao của mảng hiện tại để không thay đổi trực tiếp state cũ
-        //     const updatedLikedRelyItems = prevLikedRelyItems.map((commentLikes, commentIndex) =>
-        //         commentIndex === indexComment
-        //             ? commentLikes.map((replyLiked, replyIndex) =>
-        //                 replyIndex === indexRely ? !replyLiked : replyLiked
-        //             )
-        //             : commentLikes
-        //     );
-
-        //     return updatedLikedRelyItems; // Cập nhật trạng thái mới
-        // });
-
+        }
     };
 
-    const [likedCommentItems, setLikedCommentItems] = useState();
+    const [likeCountComment, setLikeCountComment] = useState(null);
 
-    const handleLikeCommentClick = (index) => {
-        // const updatedLikedItems = likedCommentItems.map((liked, i) =>
-        //     i === index ? !liked : liked // Toggle the clicked item only
-        // );
-        // setLikedCommentItems(updatedLikedItems);
+    const handleLikeCommentClick = async (index, e) => {
+        e.preventDefault();
+        const newLikedStatus = !likedCommentItems[index];
+        const updatedLikedItems = likedCommentItems.map((liked, i) =>
+            i === index ? !liked : liked // Toggle the clicked item only
+        );
+        setLikedCommentItems(updatedLikedItems);
+        const updatedLikedItemsCount = likedCommentItemsCount.map((likedCount, i) =>
+            i === index ? (newLikedStatus ? likedCount + 1 : likedCount - 1) : likedCount // Toggle the clicked item only
+        );
+        setLikedCommentItemsCount(updatedLikedItemsCount)
+
+        try {
+            await sendRequest(
+                `http://localhost:5000/api/comment/${_listComments[index]._id}/like`,
+                'POST',
+                JSON.stringify({ userId: auth.userId }),
+                { 'Content-Type': 'application/json' }
+            );
+            socket.emit('likeComment', _listComments[index]._id);
+
+        } catch (err) {
+
+        }
     };
 
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const responseUser = await sendRequest(`http://localhost:5000/api/posts/like/${post._id}`);
+
+                setListUserLiked(responseUser.users);
+            } catch (err) { }
+        };
+        fetchUsers();
+
+
+
+        socket.on('updateLikes', (data) => {
+            if (data.postId === post._id && data.likesCount >= 0) {
+                setLikeCount(data.likesCount);
+                if (data.message === 'Post liked') {
+                    setListUserLiked((list) => [...list, data.user])
+                }
+                else if (data.message === 'Post unliked') {
+                    setListUserLiked((list) => list.filter((item) => item._id !== data.user._id))
+                }
+            }
+        });
+
+        socket.on('updateLikesComment', (data) => {
+            if (data.likesCount >= 0) {
+                setLikeCountComment(data)
+            }
+        });
+
+        // Dọn dẹp socket khi component unmount
+        return () => {
+            socket.off('updateLikes');
+            socket.off('updateLikesComment');
+        };
+    }, [post._id, sendRequest]);
+
+    useEffect(() => {
+        socket.on('updateComment', (data => {
+            if (handleCommentOnce === 1) {
+                setListComment((list) => [...list, data.comment.comment]);
+                setLikedCommentItems((list) => [...list, data.comment.comment.likes.includes(userId)])
+                setLikedCommentItemsCount((list) => [...list, data.comment.comment.likes.length])
+                setListReliesComment((list) => [...list, data.comment.comment.replies])
+                setViewRelied((list) => [...list, false])
+                setLikedReplyItems((list) => [...list, []])
+                setHandleCommentOnce(1)
+            }
+        }))
+
+        socket.on('updateReply', (data => {
+            if (handleReplyOnce === 1) {
+                const findIndexReply = _listComments.findIndex((item) => item._id === data.reply?.commentId)
+
+                console.log(findIndexReply)
+                const updateListRepies = !data.reply ? listReliesComment :
+                    listReliesComment.map((replies, i) => {
+                        if (i === findIndexReply) {
+                            const newReplies = [...replies, newReply?.comment];
+                            return newReplies;
+                            // Return a new array with `newReply` added
+                        }
+                        return replies; // Return the original replies array for non-matching indexes
+                    });
+                console.log(listReliesComment)
+
+                const updateListLikedRepies = !data.reply ? likedReplyItems :
+                    likedReplyItems.map((liked, i) => {
+                        if (i === findIndexReply) {
+                            return [...liked, false]; // Return a new array with `newReply` added
+                        }
+                        return liked; // Return the original replies array for non-matching indexes
+                    });
+                setLikedReplyItems(updateListLikedRepies)
+                setListReliesComment(updateListRepies)
+                setHandleReplyOnce(1);
+            }
+        }))
+
+        return () => {
+            socket.off('updateComment');
+            socket.off('updateReply');
+        };
+
+    }, [_listComments, likedCommentItems, likedCommentItemsCount]);
+
+    const findIndex = _listComments.findIndex((item) => item._id === likeCountComment?.commentId)
+    const updatedLikedItemsCount = !likeCountComment ? likedCommentItemsCount :
+        likedCommentItemsCount.map((likedCount, i) =>
+            i === findIndex ? likeCountComment?.likesCount : likedCount // Toggle the clicked item only
+        );
+
+    console.log(listReplies)
 
     return (
         <div>
@@ -419,9 +575,9 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                             }
 
                             <div>
-                                {CommentCoutByPostId > 0 || post.caption ?
+                                {_listComments.length > 0 || post.caption ?
                                     <List sx={{ width: '100%' }}>
-                                        {Array.from({ length: CommentCoutByPostId }, (_, i) => (
+                                        {Array.from({ length: _listComments.length }, (_, i) => (
                                             <ListItem sx={{ width: '100%', padding: '0px', marginTop: '20px' }} >
                                                 <Box sx={{
                                                     width: '400px',
@@ -433,7 +589,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                         sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
                                                         href='/profile'
                                                     >
-                                                        <Avatar src={itemComment[i].url} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                                        <Avatar src={_listComments[i].author.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
                                                     </IconButton>
 
                                                     <IconButton
@@ -442,7 +598,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                             position: 'absolute', left: '96%',
                                                             transform: 'translateX(-50%)',
                                                         }}
-                                                        onClick={() => handleLikeCommentClick(i)}
+                                                        onClick={(event) => { handleLikeCommentClick(i, event) }}
                                                     >
                                                         {likedCommentItems[i] ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 15 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 15 }} />}
                                                     </IconButton>
@@ -452,7 +608,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
 
                                                             <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px', marginBottom: '5px' }}>
                                                                 <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                                    {itemComment[i].username}
+                                                                    {_listComments[i].author.username}
                                                                 </Link>
                                                             </span>
 
@@ -466,21 +622,21 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                                 wordWrap: 'break-word',  // Break long words and wrap to the next line
                                                                 whiteSpace: 'normal',
                                                             }}>
-                                                                {itemComment[i].content}
+                                                                {_listComments[i].text}
                                                             </span>
 
                                                             <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', marginTop: '10px' }}>
                                                                 <span style={{ fontSize: 12, color: '#737373' }}>
-                                                                    {calculateDaysFrom(itemComment[i].date)}
+                                                                    {calculateDaysFrom(_listComments[i].createdAt)}
                                                                 </span>
-                                                                {itemComment[i].likes > 0 &&
+                                                                {updatedLikedItemsCount[i] > 0 &&
                                                                     <span style={{ fontSize: 12, color: '#737373', marginLeft: '10px' }}>
-                                                                        {itemComment[i].likes + ' lượt thích'}
+                                                                        {updatedLikedItemsCount[i] + ' lượt thích'}
                                                                     </span>
                                                                 }
                                                                 <span
                                                                     onClick={() => {
-                                                                        handleReplyClick()
+                                                                        handleReplyClick(i)
                                                                     }}
                                                                     style={{
                                                                         fontSize: 12, color: '#737373',
@@ -495,7 +651,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                                     sx={{ marginLeft: '10px', height: '15px', width: '15px' }}
                                                                     onClick={() => {
                                                                         setIsOpen(true)
-                                                                        setAuthorId(itemComment[i].author)
+                                                                        setAuthorId(_listComments[i].author.id)
                                                                         setTypeMoreOption('comment')
                                                                     }}
 
@@ -504,14 +660,14 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                                 </IconButton>
                                                             </div>
 
-                                                            {relyLengthItems[i] > 0 &&
+                                                            {listComments[i]?.length > 0 &&
                                                                 <div>
                                                                     <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', marginTop: '20px', alignItems: 'center' }}>
                                                                         <Box sx={{ width: '25px', height: '0.5px', backgroundColor: '#737373' }} />
                                                                         <ListItemText
                                                                             onClick={() => handleViewReliedClick(i)}
-                                                                            primary={isViewRelied[i] ? 'Ẩn câu trả lời' : `Xem câu trả lời (${relyLengthItems[i]})`}
-                                                                            primaryTypographyProps={{ style: { fontSize: 12, fontWeight: 'bold', textAlign: 'center' } }}
+                                                                            primary={isViewRelied[i] ? 'Ẩn câu trả lời' : `Xem câu trả lời (${listReliesComment[i]?.length})`}
+                                                                            primaryTypographyProps={{ style: { fontSize: 12, fontWeight: 'bold' } }}
                                                                             sx={{
                                                                                 marginLeft: '10px',
                                                                                 color: '#737373',
@@ -524,9 +680,9 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                                         />
                                                                     </div>
 
-                                                                    <Collapse in={isViewRelied[i]} timeout="auto" unmountOnExit>
+                                                                    {/* <Collapse in={isViewRelied[i]} timeout="auto" unmountOnExit>
                                                                         <List>
-                                                                            {itemComment[i].replies.map((item, index) => (
+                                                                            {listReliesComment[i].map((item, index) => (
                                                                                 <ListItem sx={{ width: '100%', padding: '0px', marginTop: '20px' }} >
                                                                                     <Box sx={{
                                                                                         width: '350px',
@@ -537,7 +693,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                                                             sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
                                                                                             href='/profile'
                                                                                         >
-                                                                                            <Avatar src={item.url} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                                                                            <Avatar src={item.author.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
                                                                                         </IconButton>
 
                                                                                         <IconButton
@@ -546,9 +702,9 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                                                                 position: 'absolute', left: '96%',
                                                                                                 transform: 'translateX(-50%)',
                                                                                             }}
-                                                                                            onClick={() => { handleLikeRelyClick(i, index) }}
+                                                                                            onClick={(event) => { handleLikeRelyClick(i, index, event) }}
                                                                                         >
-                                                                                            {likedRelyItems[i][index] ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 15 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 15 }} />}
+                                                                                            {likedReplyItems[i][index] ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 15 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 15 }} />}
                                                                                         </IconButton>
 
                                                                                         <Box sx={{ bgcolor: 'background.paper', display: 'flex' }}>
@@ -556,7 +712,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
 
                                                                                                 <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px' }}>
                                                                                                     <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                                                                        {item.username}
+                                                                                                        {item.author.username}
                                                                                                     </Link>
                                                                                                 </span>
 
@@ -570,16 +726,16 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                                                                     wordWrap: 'break-word',  // Break long words and wrap to the next line
                                                                                                     whiteSpace: 'normal',
                                                                                                 }}>
-                                                                                                    {item.content}
+                                                                                                    {item.text}
                                                                                                 </span>
 
                                                                                                 <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', marginTop: '10px' }}>
                                                                                                     <span style={{ fontSize: 12, color: '#737373' }}>
-                                                                                                        {calculateDaysFrom(item.date)}
+                                                                                                        {calculateDaysFrom(item.createdAt)}
                                                                                                     </span>
-                                                                                                    {item.likes > 0 &&
+                                                                                                    {item.likes.length > 0 &&
                                                                                                         <span style={{ fontSize: 12, color: '#737373', marginLeft: '10px' }}>
-                                                                                                            {item.likes + ' lượt thích'}
+                                                                                                            {item.likes.length + ' lượt thích'}
                                                                                                         </span>
                                                                                                     }
                                                                                                     <span
@@ -599,7 +755,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                                                                         sx={{ marginLeft: '10px', height: '15px', width: '15px' }}
                                                                                                         onClick={() => {
                                                                                                             setIsOpen(true)
-                                                                                                            setAuthorId(itemComment[i].author)
+                                                                                                            setAuthorId(item.author.id)
                                                                                                             setTypeMoreOption('comment')
                                                                                                         }}
 
@@ -613,7 +769,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                                                                 </ListItem>
                                                                             ))}
                                                                         </List>
-                                                                    </Collapse>
+                                                                    </Collapse> */}
                                                                 </div>
                                                             }
                                                         </div>
@@ -662,7 +818,31 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                     marginTop: '20px', marginLeft: '10px'
                                 }}>
                                 {likeCount > 0 ?
-                                    likeCount + ' lượt thích'
+                                    <div>
+                                        <span
+                                            style={{
+                                                fontSize: 14, fontWeight: 'bold',
+                                                marginTop: '20px',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={() => { setOpenListUserLiked(true) }}
+                                        >
+                                            {likeCount + ' lượt thích'}
+                                        </span>
+
+                                        <Modal open={modalListUserLiked} onClose={closeListUserLiked} >
+                                            <Box display="flex" alignItems="center" justifyContent="center" sx={{ height: '100%' }}>
+
+                                                <ListUserLiked
+                                                    listUser={listUserLiked}
+                                                    closeModal={closeListUserLiked}
+                                                />
+                                            </Box>
+                                        </Modal>
+
+
+                                    </div>
+
                                     :
                                     <div>
                                         Hãy là người đầu tiên
@@ -688,7 +868,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                     marginLeft: '10px',
                                     marginTop: '5px'
                                 }}>
-                                {calculateDaysFrom(post.updatedAt)}
+                                {calculateDaysFrom(post.createdAt)}
                             </span>
                         </Box>
                         <Box sx={{ width: '400px', height: '55px', padding: '0px', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -709,6 +889,10 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                     value={textComment}
                                     onChange={handleTextChange}
                                     inputRef={textFieldRef}
+                                    onClick={() => {
+                                        setCommentPost(true)
+                                        setReplied(false)
+                                    }}
                                     slotProps={{
                                         input: {
                                             sx: {
@@ -722,7 +906,29 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                     }}
                                 />
                             </Box>
-                            <ListItemText
+                            <form
+                                onSubmit={commentSubmitHandler}
+                            >
+                                <button
+                                    type='submit'
+                                    disabled={!textComment.trim()}
+                                    style={{
+                                        fontSize: 15, fontWeight: 'normal',
+                                        marginLeft: 'auto',
+                                        color: textComment.trim() ? '#0095F6' : '#AACFDD',
+                                        cursor: textComment.trim() ? 'pointer' : 'default',
+                                        background: 'none',
+                                        border: 'none',
+                                        transition: 'color 0.2s',
+                                        '&:hover': {
+                                            color: '#AACFDD',
+                                        },
+                                    }}
+                                >
+                                    Đăng
+                                </button>
+                            </form>
+                            {/* <ListItemText
                                 onClick={() => { }}
                                 primary={'Đăng'}
                                 primaryTypographyProps={{ style: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', marginLeft: '10px' } }}
@@ -735,7 +941,7 @@ const PostForm = ({ postId, closeModal, post, author }) => {
                                         color: '#AACFDD',
                                     },
                                 }}
-                            />
+                            /> */}
                         </Box>
                     </Box>
                 </Box>
@@ -744,315 +950,3 @@ const PostForm = ({ postId, closeModal, post, author }) => {
     );
 }
 export default PostForm;
-
-const itemData = [
-    {
-        id: '1',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1551782450-a2132b4ba21d', 'https://images.unsplash.com/photo-1522770179533-24471fcdba45', 'https://images.unsplash.com/photo-1533827432537-70133748f5c8'],
-        title: 'Burger',
-        author: '@rollelflex_graphy726',
-        type: 'image',
-    },
-    {
-        id: '2',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1522770179533-24471fcdba45', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
-        title: 'Camera',
-        author: '@helloimnik',
-        type: 'image',
-    },
-    {
-        id: '3',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c'],
-        title: 'Coffee',
-        author: '@nolanissac',
-        type: 'video',
-    },
-    {
-        id: '4',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1533827432537-70133748f5c8'],
-        title: 'Hats',
-        author: '@hjrc33',
-        type: 'video',
-    },
-    {
-        id: '5',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1558642452-9d2a7deb7f62'],
-        title: 'Honey',
-        author: '@arwinneil',
-        type: 'video',
-    },
-    {
-        id: '6',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1516802273409-68526ee1bdd6'],
-        title: 'Basketball',
-        author: '@tjdragotta',
-        type: 'image',
-    },
-    {
-        id: '7',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1518756131217-31eb79b20e8f'],
-        title: 'Fern',
-        author: '@katie_wasserman',
-        type: 'video',
-    },
-    {
-        id: '8',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1597645587822-e99fa5d45d25'],
-        title: 'Mushrooms',
-        author: '@silverdalex',
-        type: 'video',
-    },
-    {
-        id: '9',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1567306301408-9b74779a11af', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
-        title: 'Tomato basil',
-        author: '@shelleypauls',
-        type: 'image',
-    },
-    {
-        id: '10',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1471357674240-e1a485acb3e1'],
-        title: 'Sea star',
-        author: '@peterlaster',
-        type: 'image',
-    },
-    {
-        id: '11',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1589118949245-7d38baf380d6', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
-        title: 'Bike',
-        author: '@southside_customs',
-        type: 'image',
-    },
-    {
-        id: 'w1',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1551782450-a2132b4ba21d', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
-        title: 'Burger',
-        author: '@rollelflex_graphy726',
-        type: 'image',
-    },
-    {
-        id: 'w2',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1551782450-a2132b4ba21d', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
-        title: 'Burger',
-        author: '@rollelflex_graphy726',
-        type: 'image',
-    },
-    {
-        id: 'w3',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1551782450-a2132b4ba21d', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
-        title: 'Burger',
-        author: '@rollelflex_graphy726',
-        type: 'image',
-    },
-    {
-        id: 'w4',
-        username: 'wasabi123',
-        date: '12/3/2024',
-        url: ['https://images.unsplash.com/photo-1551782450-a2132b4ba21d', 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d'],
-        title: 'Burger',
-        author: '@rollelflex_graphy726',
-        type: 'image',
-    },
-];
-
-const commentData = [
-    {
-        postId: '10',
-        username: 'wasabi123',
-        content: 'niceaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-        likes: 10,
-        author: '@rollelflex_graphy726',
-        replies: [
-            {
-                username: 'wasabi123',
-                content: 'niceaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                date: '12/3/2024',
-                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-                likes: 1,
-                author: '@rollelflex_1',
-            },
-            {
-                username: 'wasabi123',
-                content: 'nice',
-                date: '12/3/2024',
-                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-                likes: 1,
-                author: '@rollelflex_2',
-            },
-        ]
-    },
-    {
-        postId: '10',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-        likes: 10,
-        author: '@rollelflex_graphy726',
-        replies: [
-            {
-                username: 'wasabi123',
-                content: 'nice',
-                date: '12/3/2024',
-                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-                likes: 1,
-                author: '@rollelflex_2',
-            },
-        ]
-    },
-    {
-        postId: '2',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1522770179533-24471fcdba45',
-        likes: 15,
-        author: '@helloimnik',
-        replies: []
-    },
-    {
-        postId: '3',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c',
-        likes: 0,
-        author: '@nolanissac',
-        replies: []
-    },
-    {
-        postId: '4',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1533827432537-70133748f5c8',
-        likes: 0,
-        author: '@hjrc33',
-        replies: []
-    },
-    {
-        postId: '5',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62',
-        likes: 0,
-        author: '@arwinneil',
-        replies: []
-    },
-    {
-        postId: '6',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1516802273409-68526ee1bdd6',
-        likes: 2,
-        author: '@tjdragotta',
-        replies: []
-    },
-    {
-        postId: '7',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1518756131217-31eb79b20e8f',
-        likes: 5,
-        author: '@katie_wasserman',
-        replies: []
-    },
-    {
-        postId: '8',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1597645587822-e99fa5d45d25',
-        likes: 1,
-        author: '@silverdalex',
-        replies: []
-    },
-    {
-        postId: '9',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1567306301408-9b74779a11af',
-        likes: 0,
-        author: '@shelleypauls',
-        replies: []
-    },
-    {
-        postId: '10',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1',
-        likes: 0,
-        author: '@peterlaster',
-        replies: [
-            {
-                username: 'wasabi123',
-                content: 'nice',
-                date: '12/3/2024',
-                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-                likes: 1,
-                author: '@rollelflex_2',
-            },
-            {
-                username: 'wasabi123',
-                content: 'nice',
-                date: '12/3/2024',
-                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-                likes: 1,
-                author: '@rollelflex_2',
-            },
-            {
-                username: 'wasabi123',
-                content: 'nice',
-                date: '12/3/2024',
-                url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-                likes: 1,
-                author: '@rollelflex_2',
-            },
-        ]
-    },
-    {
-        postId: '11',
-        username: 'wasabi123',
-        content: 'nice',
-        date: '12/3/2024',
-        url: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6',
-        likes: 0,
-        author: '@southside_customs',
-        replies: []
-    },
-];

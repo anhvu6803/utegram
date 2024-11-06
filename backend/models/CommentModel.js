@@ -22,10 +22,6 @@ const commentSchema = new mongoose.Schema({
       default: []
     }
   ],
-  create_at: {
-    type: Date,
-    default: Date.now
-  },
   replies: [
     {
       type: mongoose.Schema.Types.ObjectId,

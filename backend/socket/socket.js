@@ -21,6 +21,21 @@ io.on('connection', (socket) => {
     // Phát sự kiện cập nhật lượt thích đến tất cả người dùng
     io.emit('updateLikes', { postId });
   });
+
+  socket.on('likeComment', (commentId) => {
+    // Phát sự kiện cập nhật lượt thích đến tất cả người dùng
+    io.emit('updateLikesComment', { commentId });
+  });
+
+  socket.on('submitComment', (comment) => {
+    // Phát sự kiện cập nhật lượt thích đến tất cả người dùng
+    io.emit('updateComment', { comment });
+  });
+
+  socket.on('submitReply', (reply) => {
+    // Phát sự kiện cập nhật lượt thích đến tất cả người dùng
+    io.emit('updateReply', { reply });
+  });
 })
 
 module.exports = { app, server, io };

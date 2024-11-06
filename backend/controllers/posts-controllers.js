@@ -60,6 +60,62 @@ const getPostsByUserId = async (req, res, next) => {
   res.json({ posts: userWithPosts.posts.map(post => post.toObject({ getters: true })) });
 };
 
+const getUsersByPostId = async (req, res, next) => {
+  const postId = req.params.pid; // Assuming `postId` is the correct route parameter.
+
+  let postWithLikes;
+  try {
+    postWithLikes = await Post.findById(postId).populate({ path: 'likes' });
+  } catch (err) {
+    const error = new HttpError(
+      'Fetching likes failed, please try again later.',
+      500
+    );
+    return next(error);
+  }
+
+  // Check if the post exists and has likes
+  if (!postWithLikes || postWithLikes.likes.length === 0) {
+    return next(
+      new HttpError('Could not find likes for the provided post id.', 404)
+    );
+  }
+
+  res.json({ users: postWithLikes.likes.map(user => user.toObject({ getters: true })) });
+};
+
+const getCommentsByPostId = async (req, res, next) => {
+  const postId = req.params.pid; // Assuming `postId` is the correct route parameter.
+
+  let postWithComments;
+  try {
+    postWithComments = await Post.findById(postId).populate({
+      path: 'comments',
+      populate: {
+        path: 'author', // Populate the author field in each reply
+        model: 'User',  // Model name for the user (assuming your User model is named 'User')
+        select: 'username avatar' // Specify fields to include, like name and email
+      }
+    });
+  } catch (err) {
+    const error = new HttpError(
+      'Fetching comments failed, please try again later.',
+      500
+    );
+    return next(error);
+  }
+
+  // Check if the post exists and has likes
+  if (!postWithComments || postWithComments.comments.length === 0) {
+    return next(
+      new HttpError('Could not find comments for the provided post id.', 404)
+    );
+  }
+
+  res.json({ comments: postWithComments.comments.map(comment => comment.toObject({ getters: true })) });
+};
+
+
 const createPost = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -147,8 +203,13 @@ const likePost = async (req, res, next) => {
 
     await post.save();
 
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
     // Đảm bảo phát lại cả `postId` và `likesCount`
-    io.emit('updateLikes', { postId, likesCount: post.likes.length });
+    io.emit('updateLikes', { postId, likesCount: post.likes.length, user: user, message: message });
 
     res.status(200).json({
       success: true,
@@ -163,6 +224,8 @@ const likePost = async (req, res, next) => {
 
 exports.getPostById = getPostById;
 exports.getPostsByUserId = getPostsByUserId;
+exports.getUsersByPostId = getUsersByPostId;
+exports.getCommentsByPostId = getCommentsByPostId;
 exports.createPost = createPost;
 exports.updatePost = updatePost;
 exports.deletePost = deletePost;

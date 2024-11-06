@@ -10,6 +10,8 @@ import Divider from '@mui/material/Divider';
 import ImageList from '@mui/material/ImageList';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import { ListItemButton } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
+import CircularProgress from '@mui/material/CircularProgress';
 
 // Material icon
 import SlideshowIcon from '@mui/icons-material/Slideshow';
@@ -20,7 +22,9 @@ const DetailPost = () => {
     const [loadedPost, setLoadedPost] = useState();
     const [loadedUser, setLoadedUser] = useState();
     const [loadedPosts, setLoadedPosts] = useState();
-    const { isLoading, error, sendRequest, clearError } = useHttpClient();
+    const {isLoading,  sendRequest } = useHttpClient();
+    const [listComments, setListComment] = useState([]);
+    const [listReliesComment, setListReliesComment] = useState([])
 
     const navigate = useNavigate();
     useEffect(() => {
@@ -38,100 +42,141 @@ const DetailPost = () => {
 
                 setLoadedPosts(responsePosts.posts);
 
+                const responseComments = await sendRequest(`http://localhost:5000/api/posts/comment/${id}`);
+
+                setListComment(responseComments.comments);
+
+                const responsesReplies = await Promise.all(
+                    responseComments.comments.map(async (item) => {
+                        if (item.replies.length > 0) {
+                            const responseReplies = await sendRequest(`http://localhost:5000/api/comment/reply/${item._id}`);
+
+                            return responseReplies.replies;
+                        }
+                        else {
+                            return [];
+                        }
+                    })
+                );
+                console.log(responsesReplies)
+
+                setListReliesComment(responsesReplies)
+
             } catch (err) { }
         };
         fetchPost();
     }, [sendRequest]);
 
+
+
     return (
-        <Box sx={{ background: '#fff' }}>
+        <Box>
             <OptionBar />
-            <Box sx={{
-                width: '1200px', height: '1200px', marginLeft: '250px',
-                display: 'flex', flexDirection: 'column',
-            }}>
-                <Box sx={{ marginTop: '50px' }} />
-                {loadedPost && loadedUser && <PostForm
-                    postId={id}
-                    post={loadedPost}
-                    author={loadedUser}
-                />}
-                {loadedPosts &&
-                    <div>
-                        <Box sx={{ width: '1000px', height: '0.5px', backgroundColor: '#737373', marginTop: '50px', marginLeft: '125px' }} />
-                        <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '125px', marginTop: '50px' }}>
-                            <span style={{ fontSize: 14, color: '#737373' }}>
-                                Thêm các bài viết từ
-                            </span>
 
-                            <span style={{ fontSize: 14, marginLeft: '5px', fontWeight: 'bold', color: 'black' }}>
-                                <Link to={`/profile/${loadedUser.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                    {loadedUser.username}
-                                </Link>
-                            </span>
-                        </div>
+            {isLoading ?
+                <LoadingButton
+                    loading={isLoading}
+                    loadingPosition="center"
+                    sx={{ height: '100px' }}
+                    loadingIndicator={
+                        <CircularProgress
+                            size={100} // Set the size of the loading indicator
+                            sx={{ color: '#f09433' }} // Optional: change color to match your design
+                        />
+                    }
+                >
+                </LoadingButton>
+                :
+                <Box sx={{
+                    width: '1200px', height: '1200px', marginLeft: '250px',
+                    display: 'flex', flexDirection: 'column',
+                }}>
+                    <Box sx={{ marginTop: '50px' }} />
+                    {(
+                        loadedPost && loadedUser && <PostForm
+                            postId={id}
+                            post={loadedPost}
+                            author={loadedUser}
+                            listComments={listComments}
+                            listReplies={listReliesComment}
+                        />
+                    )}
+                    {loadedPosts &&
+                        <div>
+                            <Box sx={{ width: '1000px', height: '0.5px', backgroundColor: '#737373', marginTop: '50px', marginLeft: '125px' }} />
+                            <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '125px', marginTop: '50px' }}>
+                                <span style={{ fontSize: 14, color: '#737373' }}>
+                                    Thêm các bài viết từ
+                                </span>
 
-                        <ImageList cols={3}
-                            sx={{
-                                width: '1000px', height: '670px', marginTop: '10px',
-                                background: '#fff', marginLeft: '125px',
-                                '&::-webkit-scrollbar': {
-                                    display: 'none',  // Ẩn thanh cuộn trên Chrome/Safari
-                                },
-                                '-ms-overflow-style': 'none',  // Ẩn thanh cuộn trên IE/Edge
-                                'scrollbar-width': 'none',
-                            }}>
-                            {loadedPosts.map((item, index) => (
-                                <ListItemButton
-                                    key={item.id}
-                                    sx={{
-                                        width: '330px', height: '330px', padding: '0px', background:
-                                            'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
-                                            'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
-                                    }}
-                                    onClick={() => {
-                                        navigate(`/post/${item.id}`);
-                                        window.location.reload();
-                                    }}
+                                <span style={{ fontSize: 14, marginLeft: '5px', fontWeight: 'bold', color: 'black' }}>
+                                    <Link to={`/profile/${loadedUser.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                        {loadedUser.username}
+                                    </Link>
+                                </span>
+                            </div>
 
-                                >
-                                    {item.type === 'video' ?
-                                        <video
-                                            src={`${item.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
-                                            style={{ width: '330px', height: '330px', objectFit: 'cover' }}
-                                        /> :
-                                        <img
-                                            srcSet={`${item.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                            src={`${item.url[0]}?w=248&fit=crop&auto=format`}
-                                            loading="lazy"
-                                            style={{ width: '330px', height: '330px', objectFit: 'cover' }}
-                                        />
-
-                                    }
-                                    <ImageListItemBar key={item.type}
+                            <ImageList cols={3}
+                                sx={{
+                                    width: '1000px', height: '670px', marginTop: '10px',
+                                    marginLeft: '125px',
+                                    '&::-webkit-scrollbar': {
+                                        display: 'none',  // Ẩn thanh cuộn trên Chrome/Safari
+                                    },
+                                    '-ms-overflow-style': 'none',  // Ẩn thanh cuộn trên IE/Edge
+                                    'scrollbar-width': 'none',
+                                }}>
+                                {loadedPosts.map((item, index) => (
+                                    <ListItemButton
+                                        key={item.id}
                                         sx={{
-                                            background:
+                                            width: '330px', height: '330px', padding: '0px', background:
                                                 'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
                                                 'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
                                         }}
-                                        position="top"
-                                        actionIcon={
-                                            item.type === 'video' ? (
-                                                <SlideshowIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px', }} />
-                                            ) : (item.type === 'image' && item.url.length > 1 ? (
-                                                <PhotoLibraryIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
-                                            ) : [])
+                                        onClick={() => {
+                                            navigate(`/post/${item.id}`);
+                                            window.location.reload();
+                                        }}
+
+                                    >
+                                        {item.type === 'video' ?
+                                            <video
+                                                src={`${item.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
+                                                style={{ width: '330px', height: '330px', objectFit: 'cover' }}
+                                            /> :
+                                            <img
+                                                srcSet={`${item.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                                src={`${item.url[0]}?w=248&fit=crop&auto=format`}
+                                                loading="lazy"
+                                                style={{ width: '330px', height: '330px', objectFit: 'cover' }}
+                                            />
+
                                         }
-                                        actionPosition="right"
-                                    />
-                                </ListItemButton>
-                            ))}
-                        </ImageList>
-                    </div>
-                }
+                                        <ImageListItemBar key={item.type}
+                                            sx={{
+                                                background:
+                                                    'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
+                                                    'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                                            }}
+                                            position="top"
+                                            actionIcon={
+                                                item.type === 'video' ? (
+                                                    <SlideshowIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px', }} />
+                                                ) : (item.type === 'image' && item.url.length > 1 ? (
+                                                    <PhotoLibraryIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
+                                                ) : [])
+                                            }
+                                            actionPosition="right"
+                                        />
+                                    </ListItemButton>
+                                ))}
+                            </ImageList>
+                        </div>
+                    }
 
-            </Box>
-
+                </Box>
+            }
 
         </Box>
     );
