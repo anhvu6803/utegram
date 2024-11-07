@@ -340,47 +340,52 @@ const unbookmarkPost = async (req, res, next) => {
 
   res.status(200).json({ message: 'Post removed from bookmarks successfully.' });
 };
-const getPostsByTag = async (req, res, next) => {
-  const tag = req.params.tag; 
 
-  let posts;
+
+const getPostByTag = async (req, res) => {
   try {
-    posts = await Post.find({ tags: tag }).populate('author', 'username avatar');
-  } catch (err) {
-    const error = new HttpError('Fetching posts by tag failed, please try again later.', 500);
-    return next(error);
-  }
+    let { tag } = req.params;
 
-  if (!posts || posts.length === 0) {
-    return next(new HttpError('No posts found with the given tag.', 404));
-  }
+    if (!tag) {
+      return res.status(400).json({ message: "Tag is required" });
+    }
+    tag = decodeURIComponent(tag);
 
-  res.json({
-    posts: posts.map(post => post.toObject({ getters: true }))
-  });
+    const posts = await Post.find({
+      tags: { $in: [tag] }
+    });
+
+    if (posts.length === 0) {
+      return res.status(404).json({ message: "No posts found with this tag" });
+    }
+
+    return res.status(200).json(posts);
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
-const getRandomVideoPostsExcludeUser = async (req, res, next) => {
-  const { userId } = req.params; 
-
-  let posts;
+const getRandomVideoPostsExcludeUser = async (req, res) => {
   try {
-    posts = await Post.aggregate([
-      { $match: { type: 'video', author: { $ne: mongoose.Types.ObjectId(userId) } } }, 
-      { $sample: { size: 5 } }
-    ]).populate('author', 'username avatar');
-
+    const userId = req.params.userId;
+    const { page = 1, limit = 10 } = req.query; 
+    const skip = (page - 1) * limit;
+    const posts = await Post.find({
+      type: 'video', 
+      author: { $ne: userId }, 
+    })
+      .skip(skip) 
+      .limit(parseInt(limit)) 
+      .populate('author', 'username') 
+      .populate('likes', 'username') 
+      .populate('comments') 
+      .sort({ createdAt: -1 }); 
+    return res.json(posts);
   } catch (err) {
-    const error = new HttpError('Fetching random video posts failed, please try again later.', 500);
-    return next(error);
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
   }
-
-  if (!posts || posts.length === 0) {
-    return next(new HttpError('No video posts found.', 404));
-  }
-
-  res.json({
-    posts: posts.map(post => post.toObject({ getters: true })) 
-  });
 };
 exports.getPostById = getPostById;
 exports.getPostsByUserId = getPostsByUserId;
@@ -395,5 +400,5 @@ exports.getVideoPostsByUserId = getVideoPostsByUserId;
 exports.getBookmarkedPostsByUserId = getBookmarkedPostsByUserId;
 exports.bookmarkPost = bookmarkPost;
 exports.unbookmarkPost = unbookmarkPost;
-exports.getPostsByTag = getPostsByTag;
+exports.getPostByTag = getPostByTag;
 exports.getRandomVideoPostsExcludeUser = getRandomVideoPostsExcludeUser;
