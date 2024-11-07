@@ -220,8 +220,168 @@ const likePost = async (req, res, next) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+const getImagePostsByUserId = async (req, res, next) => {
+  const userId = req.params.uid;  
 
+  let posts;
+  try {
+    posts = await Post.find({ author: userId, type: 'image' }).populate('author', 'username avatar');
+  } catch (err) {
+    const error = new HttpError('Fetching image posts failed, please try again later.', 500);
+    return next(error);
+  }
 
+  if (!posts || posts.length === 0) {
+    return next(new HttpError('No image posts found for the given user id.', 404));
+  }
+  res.json({
+    posts: posts.map(post => post.toObject({ getters: true }))
+  });
+};
+const getVideoPostsByUserId = async (req, res, next) => {
+  const userId = req.params.uid;  
+
+  let posts;
+  try {
+    posts = await Post.find({ author: userId, type: 'video' }).populate('author', 'username avatar');
+  } catch (err) {
+    const error = new HttpError('Fetching video posts failed, please try again later.', 500);
+    return next(error);
+  }
+
+  if (!posts || posts.length === 0) {
+    return next(new HttpError('No video posts found for the given user id.', 404));
+  }
+  res.json({
+    posts: posts.map(post => post.toObject({ getters: true }))
+  });
+};
+const getBookmarkedPostsByUserId = async (req, res, next) => {
+  const userId = req.params.uid; 
+
+  let userWithBookmarks;
+  try {
+    userWithBookmarks = await User.findById(userId).populate({
+      path: 'bookmarks',
+      populate: {
+        path: 'author',
+        select: 'username avatar', 
+      }
+    });
+  } catch (err) {
+    const error = new HttpError('Fetching bookmarked posts failed, please try again later.', 500);
+    return next(error);
+  }
+
+  if (!userWithBookmarks || userWithBookmarks.bookmarks.length === 0) {
+    return next(new HttpError('No bookmarked posts found for the given user id.', 404));
+  }
+
+  res.json({
+    posts: userWithBookmarks.bookmarks.map(post => post.toObject({ getters: true }))
+  });
+};
+const bookmarkPost = async (req, res, next) => {
+  const { userId, postId } = req.body; 
+
+  let user, post;
+  try {
+    user = await User.findById(userId);
+    post = await Post.findById(postId);
+  } catch (err) {
+    const error = new HttpError('Failed to find user or post, please try again.', 500);
+    return next(error);
+  }
+
+  if (!user || !post) {
+    return next(new HttpError('User or post not found.', 404));
+  }
+
+  if (user.bookmarks.includes(postId)) {
+    return next(new HttpError('This post is already bookmarked.', 400));
+  }
+
+  try {
+    user.bookmarks.push(postId);
+    await user.save();
+  } catch (err) {
+    const error = new HttpError('Failed to bookmark the post, please try again.', 500);
+    return next(error);
+  }
+
+  res.status(201).json({ message: 'Post bookmarked successfully.' });
+};
+const unbookmarkPost = async (req, res, next) => {
+  const { userId, postId } = req.body; 
+
+  let user;
+  try {
+    user = await User.findById(userId);
+  } catch (err) {
+    const error = new HttpError('Failed to find user, please try again.', 500);
+    return next(error);
+  }
+
+  if (!user) {
+    return next(new HttpError('User not found.', 404));
+  }
+
+  if (!user.bookmarks.includes(postId)) {
+    return next(new HttpError('This post is not bookmarked.', 400));
+  }
+
+  try {
+    user.bookmarks.pull(postId);
+    await user.save();
+  } catch (err) {
+    const error = new HttpError('Failed to unbookmark the post, please try again.', 500);
+    return next(error);
+  }
+
+  res.status(200).json({ message: 'Post removed from bookmarks successfully.' });
+};
+const getPostsByTag = async (req, res, next) => {
+  const tag = req.params.tag; 
+
+  let posts;
+  try {
+    posts = await Post.find({ tags: tag }).populate('author', 'username avatar');
+  } catch (err) {
+    const error = new HttpError('Fetching posts by tag failed, please try again later.', 500);
+    return next(error);
+  }
+
+  if (!posts || posts.length === 0) {
+    return next(new HttpError('No posts found with the given tag.', 404));
+  }
+
+  res.json({
+    posts: posts.map(post => post.toObject({ getters: true }))
+  });
+};
+const getRandomVideoPostsExcludeUser = async (req, res, next) => {
+  const { userId } = req.params; 
+
+  let posts;
+  try {
+    posts = await Post.aggregate([
+      { $match: { type: 'video', author: { $ne: mongoose.Types.ObjectId(userId) } } }, 
+      { $sample: { size: 5 } }
+    ]).populate('author', 'username avatar');
+
+  } catch (err) {
+    const error = new HttpError('Fetching random video posts failed, please try again later.', 500);
+    return next(error);
+  }
+
+  if (!posts || posts.length === 0) {
+    return next(new HttpError('No video posts found.', 404));
+  }
+
+  res.json({
+    posts: posts.map(post => post.toObject({ getters: true })) 
+  });
+};
 exports.getPostById = getPostById;
 exports.getPostsByUserId = getPostsByUserId;
 exports.getUsersByPostId = getUsersByPostId;
@@ -230,3 +390,10 @@ exports.createPost = createPost;
 exports.updatePost = updatePost;
 exports.deletePost = deletePost;
 exports.likePost = likePost;
+exports.getImagePostsByUserId = getImagePostsByUserId;
+exports.getVideoPostsByUserId = getVideoPostsByUserId;
+exports.getBookmarkedPostsByUserId = getBookmarkedPostsByUserId;
+exports.bookmarkPost = bookmarkPost;
+exports.unbookmarkPost = unbookmarkPost;
+exports.getPostsByTag = getPostsByTag;
+exports.getRandomVideoPostsExcludeUser = getRandomVideoPostsExcludeUser;

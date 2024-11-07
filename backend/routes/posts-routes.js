@@ -30,5 +30,11 @@ router.patch(
 );
 
 router.delete('/:pid', postControllers.deletePost);
-
+router.get('/image/:uid', postControllers.getImagePostsByUserId);
+router.get('/video/:uid', postControllers.getVideoPostsByUserId);
+router.get('/bookmark/:uid', postControllers.getBookmarkedPostsByUserId);
+router.post('/bookmark', postControllers.bookmarkPost);
+router.delete('/bookmark/:pid', postControllers.unbookmarkPost);
+router.get('/tag/:tag', postControllers.getPostsByTag);
+router.get('/random/video/:userId', postControllers.getRandomVideoPostsExcludeUser);
 module.exports = router;
