@@ -6,7 +6,6 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 
 //// Material UI 
 import { Box } from '@mui/material';
-import Divider from '@mui/material/Divider';
 import ImageList from '@mui/material/ImageList';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import { ListItemButton } from '@mui/material';
@@ -22,13 +21,16 @@ const DetailPost = () => {
     const [loadedPost, setLoadedPost] = useState();
     const [loadedUser, setLoadedUser] = useState();
     const [loadedPosts, setLoadedPosts] = useState();
-    const {isLoading,  sendRequest } = useHttpClient();
+    const { timeLoading, sendRequest } = useHttpClient();
     const [listComments, setListComment] = useState([]);
     const [listReliesComment, setListReliesComment] = useState([])
+    const [isLoading, setIsLoading] = useState(true);
 
     const navigate = useNavigate();
     useEffect(() => {
         const fetchPost = async () => {
+            setIsLoading(true)
+
             try {
                 const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}`);
 
@@ -58,16 +60,24 @@ const DetailPost = () => {
                         }
                     })
                 );
-                console.log(responsesReplies)
 
                 setListReliesComment(responsesReplies)
 
-            } catch (err) { }
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, timeLoading * 1000 + 1000);
+
+            } catch (err) {
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, timeLoading * 1000 + 1000);
+            }
         };
         fetchPost();
     }, [sendRequest]);
 
-
+    console.log(`Time taken to load: ${timeLoading * 1000 + 1000} seconds`);
+    console.log(listReliesComment)
 
     return (
         <Box>
@@ -77,10 +87,10 @@ const DetailPost = () => {
                 <LoadingButton
                     loading={isLoading}
                     loadingPosition="center"
-                    sx={{ height: '100px' }}
+                    sx={{ height: '500px', marginLeft: '800px', marginTop: '100px' }}
                     loadingIndicator={
                         <CircularProgress
-                            size={100} // Set the size of the loading indicator
+                            size={500} // Set the size of the loading indicator
                             sx={{ color: '#f09433' }} // Optional: change color to match your design
                         />
                     }

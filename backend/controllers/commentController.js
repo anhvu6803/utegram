@@ -50,7 +50,6 @@ const createComment = async (req, res, next) => {
 
   const { text, author, post } = req.body;
 
-  // const title = req.body.title;
   const createdComment = new Comment({
     text,
     author,
@@ -84,8 +83,6 @@ const createComment = async (req, res, next) => {
     return next(error);
 
   }
-
-  console.log(createdComment);
 
   try {
     const sess = await mongoose.startSession();
@@ -132,7 +129,6 @@ const createRely = async (req, res, next) => {
   const commentId = req.params.cid;
   const { text, author, post } = req.body;
 
-  // const title = req.body.title;
   const createdComment = new Comment({
     text,
     author,
@@ -170,20 +166,14 @@ const createRely = async (req, res, next) => {
   let comment;
   try {
     comment = await Comment.findById(commentId);
-    console.log(comment);
   } catch (err) {
     const error = new HttpError('Creating comment failed, please try again', 500);
     return next(error);
   }
-
   if (!comment) {
     const error = new HttpError('Could not find comment for provided id', 404);
     return next(error);
-
   }
-
-  console.log(createdComment);
-
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
@@ -213,9 +203,7 @@ const createRely = async (req, res, next) => {
     );
     return next(error);
   }
-
   io.emit('submitReply', { userNameOfAuthor, commentId });
-
   res.status(201).json({ comment: userNameOfAuthor, commentId });
 };
 
@@ -233,12 +221,9 @@ const likeComment = async (req, res, next) => {
 
   try {
     const comment = await Comment.findById(commentId);
-
     if (!comment) {
       return res.status(404).json({ success: false, message: 'Comment not found' });
     }
-
-    // Toggle like/unlike
     let message;
     if (comment.likes.includes(userId)) {
       comment.likes.pull(userId); // Unlike
@@ -247,15 +232,12 @@ const likeComment = async (req, res, next) => {
       comment.likes.push(userId); // Like
       message = 'Comment liked';
     }
-
     await comment.save();
-
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Đảm bảo phát lại cả `postId` và `likesCount`
     io.emit('updateLikesComment', { commentId, likesCount: comment.likes.length, user: user, message: message });
 
     res.status(200).json({
