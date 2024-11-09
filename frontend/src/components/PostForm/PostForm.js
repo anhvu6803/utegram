@@ -1,6 +1,5 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import MoreForm from '../MoreForm/MoreForm';
-import avatar from '../../assets/user.png';
 import ListUserLiked from './ListUserLiked';
 import { Link } from 'react-router-dom';
 import { useHttpClient } from '../../shared/hooks/http-hook';
@@ -32,6 +31,8 @@ import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt
 
 const socket = io.connect('http://localhost:5000');
 
+const defaultAvatar = 'https://res.cloudinary.com/dbmynlh3f/image/upload/v1731033994/wrahdyudgoqtyxse2pie.png';
+
 function calculateDaysFrom(mongoDate) {
 
     const givenDate = new Date(mongoDate);
@@ -45,6 +46,17 @@ function calculateDaysFrom(mongoDate) {
     const weekDifference = Math.floor(dayDifference / 7);
 
     return dayDifference === 0 ? 'Hôm nay' : (weekDifference < 1 ? dayDifference + ' ngày' : weekDifference + ' tuần');
+}
+
+function findPositionReply(listReliesComment, likeComment) {
+    for (let i = 0; i < listReliesComment.length; i++) {
+        for (let j = 0; j < listReliesComment[i].length; j++) {
+            if (listReliesComment[i][j]._id === likeComment?.commentId) {
+                return [i, j]
+            }
+        }
+    }
+    return null;
 }
 
 const PostForm = ({ postId, closeModal, post, author, listComments, listReplies }) => {
@@ -149,10 +161,10 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
     const [likedReplyItems, setLikedReplyItems] = useState(listReplies?.map((item) => item.map((item) => item.likes.includes(userId))))
     const [likedReplyItemsCount, setLikedReplyItemsCount] = useState(listReplies?.map((item) => item.map((item) => item.likes.length)));
 
-    console.log(listReliesComment)
     const handleTextChange = (event) => {
         setTextCommnent(event.target.value);
     };
+
 
     const handleCommentPost = () => {
         setCommentPost(!commentPost);
@@ -216,8 +228,13 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
         setViewRelied(updatedViewRelied);
     };
 
+    const [isLikeReply, setLikeReply] = useState(false)
+
     const handleLikeRelyClick = async (indexComment, indexReply, event) => {
         event.preventDefault();
+        setLikeReply(true);
+        setLikeComment(false);
+        const newLikedStatus = !likedReplyItems[indexComment][indexReply];
         const updateLikedReplItems = likedReplyItems.map((item, index) => {
             if (index === indexComment) {
                 const likedItems = item.map((item, index) => index === indexReply ? !item : item);
@@ -229,6 +246,19 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
         })
         setLikedReplyItems(updateLikedReplItems);
 
+        const updatedLikedItemsCount = likedReplyItemsCount.map((item, index) => {
+            if (index === indexComment) {
+                const likedItems = item.map((item, index) => index === indexReply ? newLikedStatus ? item + 1 : item - 1 : item);
+                return likedItems;
+            }
+            else {
+                return item;
+            }
+        });
+        setLikedReplyItemsCount(updatedLikedItemsCount)
+
+        console.log(likedReplyItemsCount)
+
         try {
             await sendRequest(
                 `http://localhost:5000/api/comment/${listReliesComment[indexComment][indexReply]._id}/like`,
@@ -236,7 +266,7 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                 JSON.stringify({ userId: auth.userId }),
                 { 'Content-Type': 'application/json' }
             );
-            socket.emit('likeComment', _listComments[index]._id);
+            socket.emit('likeComment', listReliesComment[indexComment][indexReply]._id);
 
         } catch (err) {
 
@@ -244,9 +274,12 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
     };
 
     const [likeCountComment, setLikeCountComment] = useState(null);
+    const [isLikeComment, setLikeComment] = useState(false)
 
     const handleLikeCommentClick = async (index, e) => {
         e.preventDefault();
+        setLikeComment(true)
+        setLikeReply(false);
         const newLikedStatus = !likedCommentItems[index];
         const updatedLikedItems = likedCommentItems.map((liked, i) =>
             i === index ? !liked : liked // Toggle the clicked item only
@@ -317,35 +350,36 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                 setListReliesComment((list) => [...list, data.comment.comment.replies])
                 setViewRelied((list) => [...list, false])
                 setLikedReplyItems((list) => [...list, []])
+                setLikedReplyItemsCount((list) => [...list, []])
                 setHandleCommentOnce(1)
             }
         }))
 
         socket.on('updateReply', (data => {
             if (handleReplyOnce === 1) {
+                setNewReply(data.reply);
+
                 const findIndexReply = _listComments.findIndex((item) => item._id === data.reply?.commentId)
-
-                console.log(findIndexReply)
-                const updateListRepies = !data.reply ? listReliesComment :
-                    listReliesComment.map((replies, i) => {
-                        if (i === findIndexReply) {
-                            const newReplies = [...replies, newReply?.comment];
-                            return newReplies;
-                            // Return a new array with `newReply` added
-                        }
-                        return replies; // Return the original replies array for non-matching indexes
-                    });
-                console.log(listReliesComment)
-
-                const updateListLikedRepies = !data.reply ? likedReplyItems :
-                    likedReplyItems.map((liked, i) => {
-                        if (i === findIndexReply) {
-                            return [...liked, false]; // Return a new array with `newReply` added
-                        }
-                        return liked; // Return the original replies array for non-matching indexes
-                    });
-                setLikedReplyItems(updateListLikedRepies)
-                setListReliesComment(updateListRepies)
+                setLikedReplyItems((list) =>
+                    list.map((item, index) =>
+                        index === findIndexReply
+                            ? [...item, false]
+                            : item
+                    ))
+                setListReliesComment((list) =>
+                    list.map((item, index) =>
+                        index === findIndexReply
+                            ? [...item, data.reply?.comment]
+                            : item
+                    )
+                );
+                setLikedReplyItemsCount((list) =>
+                    list.map((item, index) =>
+                        index === findIndexReply
+                            ? [...item, data.reply?.comment.likes.length]
+                            : item
+                    )
+                );
                 setHandleReplyOnce(1);
             }
         }))
@@ -358,12 +392,27 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
     }, [_listComments, likedCommentItems, likedCommentItemsCount]);
 
     const findIndex = _listComments.findIndex((item) => item._id === likeCountComment?.commentId)
-    const updatedLikedItemsCount = !likeCountComment ? likedCommentItemsCount :
+    const updatedLikedItemsCount = likeCountComment && isLikeComment ?
         likedCommentItemsCount.map((likedCount, i) =>
             i === findIndex ? likeCountComment?.likesCount : likedCount // Toggle the clicked item only
-        );
+        )
+        :
+        likedCommentItemsCount
 
-    console.log(listReplies)
+    const findReplyIndex = findPositionReply(listReliesComment, likeCountComment)
+
+    const updateLikedReplItemsCount = likeCountComment && isLikeReply && findReplyIndex !== null ?
+        likedReplyItemsCount.map((item, index) => {
+            if (index === findReplyIndex[0]) {
+                const likedItems = item.map((item, index) => index === findReplyIndex[1] ? likeCountComment?.likesCount : item);
+                return likedItems;
+            }
+            else {
+                return item;
+            }
+        })
+        :
+        likedReplyItemsCount
 
     return (
         <div>
@@ -469,7 +518,7 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                     }
                     <Box border={1} borderColor="black" sx={{ backgroundColor: 'white' }}>
                         <ListItem sx={{ width: '100%', height: '60px', padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB' }} >
-                            <Avatar src={author.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px', marginLeft: '10px' }} />
+                            <Avatar src={author.avatar || defaultAvatar} sx={{ color: '#000', width: '40px', height: '40px', marginLeft: '10px' }} />
                             <Box display="flex" alignItems="center">
                                 <ListItemText
                                     primary={author.username}
@@ -533,7 +582,7 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                                         sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
                                         href='/profile'
                                     >
-                                        <Avatar src={author.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                        <Avatar src={author.avatar || defaultAvatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
                                     </IconButton>
 
                                     <Box sx={{ bgcolor: 'background.paper', display: 'flex' }}>
@@ -589,7 +638,7 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                                                         sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
                                                         href='/profile'
                                                     >
-                                                        <Avatar src={_listComments[i].author.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                                        <Avatar src={_listComments[i].author.avatar || defaultAvatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
                                                     </IconButton>
 
                                                     <IconButton
@@ -660,7 +709,7 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                                                                 </IconButton>
                                                             </div>
 
-                                                            {listComments[i]?.length > 0 &&
+                                                            {listReliesComment[i]?.length > 0 &&
                                                                 <div>
                                                                     <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', marginTop: '20px', alignItems: 'center' }}>
                                                                         <Box sx={{ width: '25px', height: '0.5px', backgroundColor: '#737373' }} />
@@ -680,9 +729,9 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                                                                         />
                                                                     </div>
 
-                                                                    {/* <Collapse in={isViewRelied[i]} timeout="auto" unmountOnExit>
+                                                                    <Collapse in={isViewRelied[i]} timeout="auto" unmountOnExit>
                                                                         <List>
-                                                                            {listReliesComment[i].map((item, index) => (
+                                                                            {listReliesComment[i]?.map((item, index) => (
                                                                                 <ListItem sx={{ width: '100%', padding: '0px', marginTop: '20px' }} >
                                                                                     <Box sx={{
                                                                                         width: '350px',
@@ -693,7 +742,7 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                                                                                             sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
                                                                                             href='/profile'
                                                                                         >
-                                                                                            <Avatar src={item.author.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                                                                            <Avatar src={item?.author?.avatar || defaultAvatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
                                                                                         </IconButton>
 
                                                                                         <IconButton
@@ -712,7 +761,7 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
 
                                                                                                 <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px' }}>
                                                                                                     <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                                                                        {item.author.username}
+                                                                                                        {item?.author?.username}
                                                                                                     </Link>
                                                                                                 </span>
 
@@ -726,21 +775,23 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                                                                                                     wordWrap: 'break-word',  // Break long words and wrap to the next line
                                                                                                     whiteSpace: 'normal',
                                                                                                 }}>
-                                                                                                    {item.text}
+                                                                                                    {item?.text}
                                                                                                 </span>
 
                                                                                                 <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', marginTop: '10px' }}>
                                                                                                     <span style={{ fontSize: 12, color: '#737373' }}>
-                                                                                                        {calculateDaysFrom(item.createdAt)}
+                                                                                                        {calculateDaysFrom(item?.createdAt)}
                                                                                                     </span>
-                                                                                                    {item.likes.length > 0 &&
-                                                                                                        <span style={{ fontSize: 12, color: '#737373', marginLeft: '10px' }}>
-                                                                                                            {item.likes.length + ' lượt thích'}
+                                                                                                    {updateLikedReplItemsCount[i][index] > 0 && updateLikedReplItemsCount[i][index] !== null &&
+                                                                                                        <span
+                                                                                                            style={{ fontSize: 12, color: '#737373', marginLeft: '10px' }}
+                                                                                                        >
+                                                                                                            {updateLikedReplItemsCount[i][index] + ' lượt thích'}
                                                                                                         </span>
                                                                                                     }
                                                                                                     <span
                                                                                                         onClick={() => {
-                                                                                                            handleReplyClick()
+                                                                                                            handleReplyClick(i)
                                                                                                         }}
                                                                                                         style={{
                                                                                                             fontSize: 12, color: '#737373',
@@ -755,7 +806,7 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                                                                                                         sx={{ marginLeft: '10px', height: '15px', width: '15px' }}
                                                                                                         onClick={() => {
                                                                                                             setIsOpen(true)
-                                                                                                            setAuthorId(item.author.id)
+                                                                                                            setAuthorId(item?.author._id)
                                                                                                             setTypeMoreOption('comment')
                                                                                                         }}
 
@@ -769,7 +820,7 @@ const PostForm = ({ postId, closeModal, post, author, listComments, listReplies 
                                                                                 </ListItem>
                                                                             ))}
                                                                         </List>
-                                                                    </Collapse> */}
+                                                                    </Collapse>
                                                                 </div>
                                                             }
                                                         </div>

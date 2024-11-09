@@ -3,14 +3,18 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 export const useHttpClient = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
+  const [timeLoading, setTimeLoading] = useState(0)
 
   const activeHttpRequests = useRef([]);
 
   const sendRequest = useCallback(
     async (url, method = 'GET', body = null, headers = {}) => {
       setIsLoading(true);
+
       const httpAbortCtrl = new AbortController();
       activeHttpRequests.current.push(httpAbortCtrl);
+
+      const startTime = Date.now();
 
       try {
         const response = await fetch(url, {
@@ -31,6 +35,11 @@ export const useHttpClient = () => {
         }
 
         setIsLoading(false);
+
+        const endTime = Date.now(); // End time
+        const timeTaken = (endTime - startTime) / 1000; 
+        setTimeLoading(timeTaken)// Time in seconds
+
         return responseData;
       } catch (err) {
         setError(err.message);
@@ -52,5 +61,5 @@ export const useHttpClient = () => {
     };
   }, []);
 
-  return { isLoading, error, sendRequest, clearError };
+  return { isLoading, timeLoading, error, sendRequest, clearError };
 };
