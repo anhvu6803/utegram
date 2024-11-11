@@ -104,7 +104,6 @@ const DetailPost = () => {
                     <Box sx={{ marginTop: '50px' }} />
                     {(
                         loadedPost && loadedUser && <PostForm
-                            postId={id}
                             post={loadedPost}
                             author={loadedUser}
                             listComments={listComments}

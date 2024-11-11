@@ -10,4 +10,6 @@ router.post('/', userController.createUser);
 
 router.get('/except/:userId', userController.getAllUsersExcept);
 
+router.get('/morepost/:uid', userController.getUserHasMorePosts);
+
 module.exports = router;
