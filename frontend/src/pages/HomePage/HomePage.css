@@ -1,10 +1,4 @@
-.home-container {             
-    width: 1000px;               
-    height: 100%;            
-    display: flex;                  
-    margin-left: 400px;
-    background-color: #fff;    
-}
+
 .appname {
     display: flex;
     color: #000000;

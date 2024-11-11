@@ -40,7 +40,9 @@ const Navbar = ({ pages }) => {
     if (token) {
         const decodedToken = jwtDecode(token);
         username = decodedToken.username;
+        console.log(decodedToken)
     }
+
 
     const handleIconClick = (icon) => {
         setActive(icon);
@@ -140,7 +142,7 @@ const Navbar = ({ pages }) => {
                 </a>
 
                 <a
-                     href={`/messages`}
+                    href={`/messages`}
                     className={`icon ${active === 'message' ? 'active' : ''}`}
                     onClick={() => {
                         handleIconClick('message');

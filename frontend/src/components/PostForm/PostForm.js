@@ -59,9 +59,10 @@ function findPositionReply(listReliesComment, likeComment) {
     return null;
 }
 
-const PostForm = ({ postId, closeModal, post, author, listComments, listReplies }) => {
+const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
     const auth = useContext(AuthContext);
 
+    const postId = post._id
     const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
     const userId = auth.userId;
