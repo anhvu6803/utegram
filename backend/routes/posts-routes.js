@@ -17,6 +17,8 @@ router.post('/',
   ],
   postControllers.createPost
 );
+router.post('/check/image', postControllers.checkImagePost)
+router.post('/check/video', postControllers.checkVideoPost)
 router.post('/:id/like', postControllers.likePost)
 router.patch(
   '/:pid',
@@ -37,4 +39,5 @@ router.post('/bookmark', postControllers.bookmarkPost);
 router.post('/unbookmark', postControllers.unbookmarkPost);
 router.get('/tag/:tag', postControllers.getPostByTag);
 router.get('/random/video/:userId', postControllers.getRandomVideoPostsExcludeUser);
+router.get('/random/:userId', postControllers.getRandomPostsExcludeUser);
 module.exports = router;

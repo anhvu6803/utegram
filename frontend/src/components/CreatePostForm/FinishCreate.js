@@ -4,11 +4,12 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import LoadingButton from '@mui/lab/LoadingButton';
 import CircularProgress from '@mui/material/CircularProgress';
+import WarningIcon from '@mui/icons-material/Warning';
 
 // Material UI icon
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
-export default function FinishCreate({ isLoading }) {
+export default function FinishCreate({ isLoading, uploadPolicy }) {
 
     return (
 
@@ -39,16 +40,31 @@ export default function FinishCreate({ isLoading }) {
                         >
                         </LoadingButton>
                         :
-                        <Box sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            flexDirection: 'column'
-                        }}>
-                            <CheckCircleOutlineIcon sx={{ fontSize: 100, color: '#f09433' }} />
-                            <span style={{ fontSize: 22, fontWeight: 'normal', marginTop: '20px' }}>
-                                Đã chia sẻ bài viết của bạn
-                            </span>
-                        </Box>
+                        <div>
+                            {uploadPolicy === 'KO' ?
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    flexDirection: 'column'
+                                }}>
+                                    <WarningIcon sx={{ fontSize: 100, color: '#E65353' }} />
+                                    <span style={{ fontSize: 22, fontWeight: 'normal', marginTop: '20px' }}>
+                                        Bạn đã vi phạm quy tắc cộng đồng
+                                    </span>
+                                </Box>
+                                :
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    flexDirection: 'column'
+                                }}>
+                                    <CheckCircleOutlineIcon sx={{ fontSize: 100, color: '#f09433' }} />
+                                    <span style={{ fontSize: 22, fontWeight: 'normal', marginTop: '20px' }}>
+                                        Đã chia sẻ bài viết của bạn
+                                    </span>
+                                </Box>
+                            }
+                        </div>
                     }
 
                 </Box>

@@ -277,7 +277,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
     const [likeCountComment, setLikeCountComment] = useState(null);
     const [isLikeComment, setLikeComment] = useState(false)
 
-    const handleLikeCommentClick = async (index, e) => {
+    const handleLikeCommentClick = async (index, e, likeCountComment) => {
         e.preventDefault();
         setLikeComment(true)
         setLikeReply(false);
@@ -286,10 +286,10 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
             i === index ? !liked : liked // Toggle the clicked item only
         );
         setLikedCommentItems(updatedLikedItems);
-        const updatedLikedItemsCount = likedCommentItemsCount.map((likedCount, i) =>
-            i === index ? (newLikedStatus ? likedCount + 1 : likedCount - 1) : likedCount // Toggle the clicked item only
-        );
-        setLikedCommentItemsCount(updatedLikedItemsCount)
+        // const updatedLikedItemsCount = likedCommentItemsCount.map((likedCount, i) =>
+        //     i === index ? (newLikedStatus ? likedCount + 1 : likedCount - 1) : likedCount // Toggle the clicked item only
+        // );
+        // setLikedCommentItemsCount(updatedLikedItemsCount)
 
         try {
             await sendRequest(
@@ -332,6 +332,31 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         socket.on('updateLikesComment', (data) => {
             if (data.likesCount >= 0) {
                 setLikeCountComment(data)
+
+                if (data.type === 'comment') {
+                    const findIndexReply = _listComments.findIndex((item) => item._id === data?.commentId)
+
+                    setLikedCommentItemsCount((list) => list.map((item, index) =>
+                        index === findIndexReply
+                            ? data.likesCount
+                            : item
+                    ))
+                }
+                else if (data.type === 'reply') {
+                    const findReplyIndex = findPositionReply(listReliesComment, data)
+
+                    setLikedReplyItemsCount((list) => list.map((item, index) =>
+                        index === findReplyIndex[0] ?
+                            item.map((item, index) =>
+                                index === findReplyIndex[1] ?
+                                    data.likesCount
+                                    :
+                                    item
+                            )
+                            :
+                            item
+                    ))
+                }
             }
         });
 
@@ -392,29 +417,9 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
 
     }, [_listComments, likedCommentItems, likedCommentItemsCount]);
 
-    const findIndex = _listComments.findIndex((item) => item._id === likeCountComment?.commentId)
-    const updatedLikedItemsCount = likeCountComment && isLikeComment ?
-        likedCommentItemsCount.map((likedCount, i) =>
-            i === findIndex ? likeCountComment?.likesCount : likedCount // Toggle the clicked item only
-        )
-        :
-        likedCommentItemsCount
 
-    const findReplyIndex = findPositionReply(listReliesComment, likeCountComment)
-
-    const updateLikedReplItemsCount = likeCountComment && isLikeReply && findReplyIndex !== null ?
-        likedReplyItemsCount.map((item, index) => {
-            if (index === findReplyIndex[0]) {
-                const likedItems = item.map((item, index) => index === findReplyIndex[1] ? likeCountComment?.likesCount : item);
-                return likedItems;
-            }
-            else {
-                return item;
-            }
-        })
-        :
-        likedReplyItemsCount
-
+    console.log(likeCountComment)
+    console.log(likedCommentItemsCount)
     return (
         <div>
             <Modal open={modalIsOpen} onClose={closeMoreModal} >
@@ -648,7 +653,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                                             position: 'absolute', left: '96%',
                                                             transform: 'translateX(-50%)',
                                                         }}
-                                                        onClick={(event) => { handleLikeCommentClick(i, event) }}
+                                                        onClick={(event) => { handleLikeCommentClick(i, event, likeCountComment) }}
                                                     >
                                                         {likedCommentItems[i] ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 15 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 15 }} />}
                                                     </IconButton>
@@ -679,9 +684,9 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                                                 <span style={{ fontSize: 12, color: '#737373' }}>
                                                                     {calculateDaysFrom(_listComments[i].createdAt)}
                                                                 </span>
-                                                                {updatedLikedItemsCount[i] > 0 &&
+                                                                {likedCommentItemsCount[i] > 0 &&
                                                                     <span style={{ fontSize: 12, color: '#737373', marginLeft: '10px' }}>
-                                                                        {updatedLikedItemsCount[i] + ' lượt thích'}
+                                                                        {likedCommentItemsCount[i] + ' lượt thích'}
                                                                     </span>
                                                                 }
                                                                 <span
@@ -783,11 +788,11 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                                                                                     <span style={{ fontSize: 12, color: '#737373' }}>
                                                                                                         {calculateDaysFrom(item?.createdAt)}
                                                                                                     </span>
-                                                                                                    {updateLikedReplItemsCount[i][index] > 0 && updateLikedReplItemsCount[i][index] !== null &&
+                                                                                                    {likedReplyItemsCount[i][index] > 0 && likedReplyItemsCount[i][index] !== null &&
                                                                                                         <span
                                                                                                             style={{ fontSize: 12, color: '#737373', marginLeft: '10px' }}
                                                                                                         >
-                                                                                                            {updateLikedReplItemsCount[i][index] + ' lượt thích'}
+                                                                                                            {likedReplyItemsCount[i][index] + ' lượt thích'}
                                                                                                         </span>
                                                                                                     }
                                                                                                     <span

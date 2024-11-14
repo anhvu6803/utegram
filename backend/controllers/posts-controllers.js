@@ -1,11 +1,22 @@
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
+const axios = require('axios');
+const FormData = require('form-data');
+const cloudinary = require('cloudinary').v2;
 
 const HttpError = require('../models/http-error');
 const Post = require('../models/PostModel');
 const User = require('../models/UserModel')
 
 const { io } = require('../socket/socket')
+
+cloudinary.config({
+  cloud_name: 'dbmynlh3f',
+  api_key: '779215831745688',
+  api_secret: 'xEetS7q-OzgmxfRngKoljJcd3Lc',
+  secure: true,
+});
+
 
 const getPostById = async (req, res, next) => {
   const postId = req.params.pid;
@@ -115,6 +126,61 @@ const getCommentsByPostId = async (req, res, next) => {
   res.json({ comments: postWithComments.comments.map(comment => comment.toObject({ getters: true })) });
 };
 
+const checkImagePost = async (req, res, next) => {
+  const picpurifyUrl = 'https://www.picpurify.com/analyse/1.1';
+
+  const form = new FormData();
+
+  const { image, publicId } = req.body
+
+  form.append('url_image', image);  // Replace with the image URL you want to analyze
+  form.append('API_KEY', 'R5UKlPg9CDbT3P7Oy8tFtxgP3rKuyBE7');  // Replace with your actual API key
+  form.append('task', 'porn_moderation,drug_moderation,gore_moderation');
+
+
+  try {
+    const response = await axios.post(picpurifyUrl, form, {
+      headers: form.getHeaders()  // Ensure the headers for form-data are set correctly
+    });
+
+    if (response.data.final_decision === 'KO') {
+
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    res.status(201).json({ final_decision: response.data.final_decision });
+  }
+  catch (error) {
+    res.status(500).json({ message: 'Failed to check post', error: error.message }); // Handle any errors
+  };
+}
+
+const checkVideoPost = async (req, res, next) => {
+  const picpurifyUrl = 'https://www.picpurify.com/analyse_video/1.0';
+  const { video, publicId } = req.body;
+
+  // Tạo form data cho yêu cầu
+  const form = new FormData();
+  form.append('url_video', video);
+  form.append('API_KEY', 'R5UKlPg9CDbT3P7Oy8tFtxgP3rKuyBE7');
+  form.append('frame_interval', 1);
+  form.append('task', 'porn_moderation,drug_moderation,gore_moderation');
+
+  try {
+    // Gửi yêu cầu tới Picpurify và đính kèm headers từ form data
+    const response = await axios.post(picpurifyUrl, form, {
+      headers: form.getHeaders()
+    });
+
+    if (response.data.final_decision === 'KO') {
+      await cloudinary.uploader.destroy(publicId, { resource_type: "video" });
+    }
+    // Trả về kết quả với các tiêu chí bị từ chối (nếu có)
+    res.status(201).json({ final_decision: response.data.final_decision });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to check post', error: error.message });
+  }
+}
 
 const createPost = async (req, res, next) => {
   const errors = validationResult(req);
@@ -221,7 +287,7 @@ const likePost = async (req, res, next) => {
   }
 };
 const getImagePostsByUserId = async (req, res, next) => {
-  const userId = req.params.uid;  
+  const userId = req.params.uid;
 
   let posts;
   try {
@@ -239,7 +305,7 @@ const getImagePostsByUserId = async (req, res, next) => {
   });
 };
 const getVideoPostsByUserId = async (req, res, next) => {
-  const userId = req.params.uid;  
+  const userId = req.params.uid;
 
   let posts;
   try {
@@ -257,7 +323,7 @@ const getVideoPostsByUserId = async (req, res, next) => {
   });
 };
 const getBookmarkedPostsByUserId = async (req, res, next) => {
-  const userId = req.params.uid; 
+  const userId = req.params.uid;
 
   let userWithBookmarks;
   try {
@@ -265,7 +331,7 @@ const getBookmarkedPostsByUserId = async (req, res, next) => {
       path: 'bookmarks',
       populate: {
         path: 'author',
-        select: 'username avatar', 
+        select: 'username avatar',
       }
     });
   } catch (err) {
@@ -282,7 +348,7 @@ const getBookmarkedPostsByUserId = async (req, res, next) => {
   });
 };
 const bookmarkPost = async (req, res, next) => {
-  const { userId, postId } = req.body; 
+  const { userId, postId } = req.body;
 
   let user, post;
   try {
@@ -312,7 +378,7 @@ const bookmarkPost = async (req, res, next) => {
   res.status(201).json({ message: 'Post bookmarked successfully.' });
 };
 const unbookmarkPost = async (req, res, next) => {
-  const { userId, postId } = req.body; 
+  const { userId, postId } = req.body;
 
   let user;
   try {
@@ -369,18 +435,36 @@ const getPostByTag = async (req, res) => {
 const getRandomVideoPostsExcludeUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const { page = 1, limit = 10 } = req.query; 
+    const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
     const posts = await Post.find({
-      type: 'video', 
-      author: { $ne: userId }, 
+      type: 'video',
+      author: { $ne: userId },
     })
-      .skip(skip) 
-      .limit(parseInt(limit)) 
-      .populate('author', 'username') 
-      .populate('likes', 'username') 
-      .populate('comments') 
-      .sort({ createdAt: -1 }); 
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate('author', 'username')
+      .populate('likes', 'username')
+      .populate('comments')
+      .sort({ createdAt: -1 });
+    return res.json(posts);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+const getRandomPostsExcludeUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { page = 1, limit = 9 } = req.query;
+    const skip = (page - 1) * limit;
+    const posts = await Post.aggregate([
+      { $match: { author: { $ne: userId } } },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: parseInt(limit) }
+    ]);
+
     return res.json(posts);
   } catch (err) {
     console.error(err);
@@ -391,6 +475,8 @@ exports.getPostById = getPostById;
 exports.getPostsByUserId = getPostsByUserId;
 exports.getUsersByPostId = getUsersByPostId;
 exports.getCommentsByPostId = getCommentsByPostId;
+exports.checkImagePost = checkImagePost;
+exports.checkVideoPost = checkVideoPost;
 exports.createPost = createPost;
 exports.updatePost = updatePost;
 exports.deletePost = deletePost;
@@ -402,3 +488,4 @@ exports.bookmarkPost = bookmarkPost;
 exports.unbookmarkPost = unbookmarkPost;
 exports.getPostByTag = getPostByTag;
 exports.getRandomVideoPostsExcludeUser = getRandomVideoPostsExcludeUser;
+exports.getRandomPostsExcludeUser = getRandomPostsExcludeUser;

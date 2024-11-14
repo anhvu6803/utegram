@@ -104,7 +104,7 @@ const Navbar = ({ pages }) => {
                     className={`icon ${active === 'search' ? 'active' : ''}`}
                     onClick={() => {
                         handleIconClick('search');
-                        setIsCollapsed(true);
+                        setIsCollapsed(!isCollapsed);
                         setIsSearchVisible(!isSearchVisible);
                     }}
                     style={{ cursor: 'pointer' }}
