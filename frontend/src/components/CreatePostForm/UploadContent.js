@@ -33,6 +33,7 @@ import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import CircleIcon from '@mui/icons-material/Circle';
 import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
 
+
 function splitDescriptionAndHashtags(input) {
     const parts = input.split(' ');
 
@@ -262,8 +263,11 @@ export default function UploadContent({ closeModal }) {
         setUnderThirteen(event.target.value);
     };
 
+    const [uploadPolicy, setUploadPolicy] = useState();
+
     const handleUpload = async () => {
         const urls = []
+        let final_decision;
         setLoading(true);
 
         for (let i = 0; i < files.length; i++) {
@@ -278,18 +282,49 @@ export default function UploadContent({ closeModal }) {
                     formData
                 );
                 const url = res.data.secure_url
+                const publicId = res.data.public_id;
+                let response;
+                if (fileType === 'image') {
+                    response = await fetch('http://localhost:5000/api/posts/check/image', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            image: url,
+                            publicId: publicId
+                        })
+                    });
+                }
+                else {
+                    response = await fetch('http://localhost:5000/api/posts/check/video', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            video: url,
+                            publicId: publicId
+                        })
+                    });
+                }
+                const responseData = await response.json();
+                final_decision = responseData.final_decision;
+                
+                if (responseData.final_decision === 'KO') {
+                    setUploadPolicy(responseData.final_decision);
+                    setLoading(false)
+                    return null;
+                }
                 urls.push(url); // Thêm URL vào mảng uploadedUrls
             } catch (err) {
                 console.error(err);
             }
         }
 
-        console.log(urls)
-
-        if (urls.length > 0) {
+        if (urls.length > 0 && final_decision === 'OK') {
             try {
                 const result = splitDescriptionAndHashtags(inputValue);
-
 
                 const response = await fetch('http://localhost:5000/api/posts/', {
                     method: 'POST',
@@ -323,6 +358,7 @@ export default function UploadContent({ closeModal }) {
         setChangeFinishCreate(true)
         try {
             await handleUpload();
+
         }
         catch (error) {
             console.error('Error posting data', error);
@@ -368,7 +404,10 @@ export default function UploadContent({ closeModal }) {
                             height: '500px', border: 1, borderRadius: 3, borderColor: 'white'
                         }}
                     >
-                        <FinishCreate isLoading={isLoading} />
+                        <FinishCreate
+                            isLoading={isLoading}
+                            uploadPolicy={uploadPolicy}
+                        />
                     </Box>
                     :
                     <div>

@@ -16,6 +16,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
     "cloudinary-video-player": "^2.1.0",
+    "form-data": "^4.0.1",
     "install": "^0.13.0",
     "jwt-decode": "^4.0.0",
     "npm": "^10.9.0",

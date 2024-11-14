@@ -48,10 +48,11 @@ const createComment = async (req, res, next) => {
     );
   }
 
-  const { text, author, post } = req.body;
+  const { text, type = 'comment', author, post } = req.body;
 
   const createdComment = new Comment({
     text,
+    type,
     author,
     post
   });
@@ -127,10 +128,11 @@ const createRely = async (req, res, next) => {
   }
 
   const commentId = req.params.cid;
-  const { text, author, post } = req.body;
+  const { text, type = 'reply', author, post } = req.body;
 
   const createdComment = new Comment({
     text,
+    type,
     author,
     post
   });
@@ -238,7 +240,7 @@ const likeComment = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    io.emit('updateLikesComment', { commentId, likesCount: comment.likes.length, user: user, message: message });
+    io.emit('updateLikesComment', { commentId, likesCount: comment.likes.length, user: user, message: message, type: comment.type });
 
     res.status(200).json({
       success: true,
