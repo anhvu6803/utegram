@@ -71,7 +71,6 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
 
     const [likedPost, setLikedPost] = useState(post.likes.includes(userId)); // Boolean state for a single item
     const [likeCount, setLikeCount] = useState(post.likes.length);
-    const [isViewUserLiked, setViewUserLiked] = useState(false);
     const [listUserLiked, setListUserLiked] = useState([]);
     const [modalListUserLiked, setOpenListUserLiked] = useState(false);
 
@@ -139,6 +138,8 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
     }
 
     const [typeMoreOption, setTypeMoreOption] = useState('post');
+    const [itemId, setItemId] = useState(postId);
+    const [itemAuthor, setItemAuthor] = useState(author);
 
     const captionSplit = post.caption.split(' ');
 
@@ -258,8 +259,6 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         });
         setLikedReplyItemsCount(updatedLikedItemsCount)
 
-        console.log(likedReplyItemsCount)
-
         try {
             await sendRequest(
                 `http://localhost:5000/api/comment/${listReliesComment[indexComment][indexReply]._id}/like`,
@@ -286,10 +285,6 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
             i === index ? !liked : liked // Toggle the clicked item only
         );
         setLikedCommentItems(updatedLikedItems);
-        // const updatedLikedItemsCount = likedCommentItemsCount.map((likedCount, i) =>
-        //     i === index ? (newLikedStatus ? likedCount + 1 : likedCount - 1) : likedCount // Toggle the clicked item only
-        // );
-        // setLikedCommentItemsCount(updatedLikedItemsCount)
 
         try {
             await sendRequest(
@@ -314,7 +309,6 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
             } catch (err) { }
         };
         fetchUsers();
-
 
 
         socket.on('updateLikes', (data) => {
@@ -418,17 +412,22 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
     }, [_listComments, likedCommentItems, likedCommentItemsCount]);
 
 
-    console.log(likeCountComment)
-    console.log(likedCommentItemsCount)
     return (
         <div>
             <Modal open={modalIsOpen} onClose={closeMoreModal} >
-                <Box display="flex" alignItems="center" justifyContent="center" sx={{ height: '100%' }}>
+                <Box sx={{
+                    height: '100%',
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    overflow: 'auto'
+                }}
+                >
                     <MoreForm
                         closeModal={closeMoreModal}
                         author={authorId}
                         type={typeMoreOption}
-                        {...(typeMoreOption === 'post' && { postId })}
+                        itemId={itemId}
+                        user={itemAuthor}
+                        commentId={typeMoreOption === 'reply' ? parentCommentId : ''}
                     />
                 </Box>
             </Modal>
@@ -556,6 +555,8 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                     setIsOpen(true)
                                     setAuthorId(author.id)
                                     setTypeMoreOption('post')
+                                    setItemId(postId)
+                                    setItemAuthor(author)
                                 }}
 
                             >
@@ -708,6 +709,8 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                                                         setIsOpen(true)
                                                                         setAuthorId(_listComments[i].author.id)
                                                                         setTypeMoreOption('comment')
+                                                                        setItemId(_listComments[i]._id)
+                                                                        setItemAuthor(_listComments[i])
                                                                     }}
 
                                                                 >
@@ -813,7 +816,10 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                                                                                         onClick={() => {
                                                                                                             setIsOpen(true)
                                                                                                             setAuthorId(item?.author._id)
-                                                                                                            setTypeMoreOption('comment')
+                                                                                                            setTypeMoreOption('reply')
+                                                                                                            setItemId(item._id)
+                                                                                                            setItemAuthor(item)
+                                                                                                            setParentCommentId(_listComments[i]._id)
                                                                                                         }}
 
                                                                                                     >

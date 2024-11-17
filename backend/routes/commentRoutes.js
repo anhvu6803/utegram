@@ -8,5 +8,8 @@ const router = express.Router();
 router.post('/', commentControllers.createComment);
 router.get('/reply/:cid', commentControllers.getRepliesByCommentId);
 router.post('/:cid/reply', commentControllers.createRely);
-router.post('/:cid/like', commentControllers.likeComment);
+router.patch('/:cid/like', commentControllers.likeComment);
+router.delete('/comment/:cid', commentControllers.deleteComment);
+router.delete('/reply/:cid', commentControllers.deleteReply);
+
 module.exports = router;

@@ -20,6 +20,8 @@ export default function ListUserLiked({ listUser, closeModal }) {
 
     const [followed, setFollowed] = useState(false);
 
+    console.log(listUser)
+
     return (
         <Box
             sx={{
@@ -82,7 +84,7 @@ export default function ListUserLiked({ listUser, closeModal }) {
                                     primaryTypographyProps={{ style: { fontSize: 14, textAlign: 'center', fontWeight: 'bold' } }}
                                     sx={{ width: 'fit-content' }}
                                 />
-                                {item.id !== auth.userId &&
+                                {item._id !== auth.userId &&
                                     <Box
                                         onClick={() => setFollowed(!followed)}
                                         sx={{

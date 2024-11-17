@@ -62,12 +62,19 @@ const Navbar = ({ pages }) => {
 
     const closeUploadPostModal = () => {
         setIsOpenUploadPost(false);
+        window.location.reload();
         setActive('');
     };
 
     return (
         <div>
-            <Modal open={modalUploadPostIsOpen} onClose={closeUploadPostModal}>
+            <Modal
+                open={modalUploadPostIsOpen}
+                onClose={closeUploadPostModal}
+                BackdropProps={{
+                    onClick: (e) => e.stopPropagation(), // Ngăn click ngoài modal đóng nó
+                }}
+            >
                 <UploadContent closeModal={closeUploadPostModal} />
             </Modal>
 

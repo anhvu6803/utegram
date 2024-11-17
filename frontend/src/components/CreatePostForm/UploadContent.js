@@ -308,7 +308,8 @@ export default function UploadContent({ closeModal }) {
                         })
                     });
                 }
-                const responseData = await response.json();
+                
+                const responseData = await response?.json();
                 final_decision = responseData.final_decision;
                 
                 if (responseData.final_decision === 'KO') {
@@ -316,12 +317,13 @@ export default function UploadContent({ closeModal }) {
                     setLoading(false)
                     return null;
                 }
+                console.log(final_decision);
                 urls.push(url); // Thêm URL vào mảng uploadedUrls
             } catch (err) {
                 console.error(err);
             }
         }
-
+        console.log(final_decision);
         if (urls.length > 0 && final_decision === 'OK') {
             try {
                 const result = splitDescriptionAndHashtags(inputValue);
@@ -378,7 +380,6 @@ export default function UploadContent({ closeModal }) {
             <IconButton
                 onClick={() => {
                     { (!isLoading || files.length <= 0) && closeModal() }
-                    window.location.reload();
                 }}
                 sx={{
                     position: 'absolute', left: '90%', marginTop: '30px',

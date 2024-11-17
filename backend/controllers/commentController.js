@@ -209,12 +209,117 @@ const createRely = async (req, res, next) => {
   res.status(201).json({ comment: userNameOfAuthor, commentId });
 };
 
-const updatePost = async (req, res, next) => {
+const deleteComment = async (req, res, next) => {
+  const commentId = req.params.cid;
 
+  let comment;
+  try {
+    comment = await Comment.findById(commentId).populate('post');
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong, could not delete comment.',
+      500
+    );
+    return next(error);
+  }
+
+  if (!comment) {
+    const error = new HttpError('Could not find comment for this id.', 404);
+    return next(error);
+  }
+
+  let replies;
+  try {
+    replies = await Comment.findById(commentId).populate('replies');
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong, could not delete replies.',
+      500
+    );
+    return next(error);
+  }
+
+  if (replies.replies.length > 0) {
+    try {
+      for (const reply of replies.replies) {
+        await Comment.findByIdAndRemove(reply._id);
+      }
+    } catch (err) {
+      const error = new HttpError(
+        'Something went wrong, could not delete place.',
+        500
+      );
+      return next(error);
+    }
+
+    comment.replies = [];
+    await comment.save();
+  }
+
+  const sess = await mongoose.startSession();
+  try {
+    sess.startTransaction();
+    await comment.deleteOne({ session: sess });
+    comment.post.comments.pull(comment._id);
+    await comment.post.save({ session: sess });
+    await sess.commitTransaction();
+    sess.endSession();
+
+    res.status(200).json({ message: 'Comment deleted successfully.' });
+  } catch (err) {
+    await sess.abortTransaction();
+    sess.endSession();
+
+    const error = new HttpError(
+      'Something went wrong, could not delete the comment.',
+      500
+    );
+    return next(error);
+  }
 };
 
-const deletePost = async (req, res, next) => {
+const deleteReply = async (req, res, next) => {
+  const repliesId = req.params.cid;
+  const { commentId } = req.body;
+  let reply;
+  let comment;
+  try {
+    reply = await Comment.findById(repliesId);
+    comment = await Comment.findById(commentId).populate('replies');
 
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong, could not delete comment.',
+      500
+    );
+    return next(error);
+  }
+
+  if (!reply && !comment) {
+    const error = new HttpError('Could not find comment for this id.', 404);
+    return next(error);
+  }
+
+  const sess = await mongoose.startSession();
+  try {
+    sess.startTransaction();
+    await reply.deleteOne({ session: sess });
+    comment.replies.pull(reply._id);
+    await comment.save({ session: sess });
+    await sess.commitTransaction();
+    sess.endSession();
+
+    res.status(200).json({ message: 'Reply deleted successfully.' });
+  } catch (err) {
+    await sess.abortTransaction();
+    sess.endSession();
+
+    const error = new HttpError(
+      'Something went wrong, could not delete the reply.',
+      500
+    );
+    return next(error);
+  }
 };
 
 const likeComment = async (req, res, next) => {
@@ -255,6 +360,6 @@ const likeComment = async (req, res, next) => {
 exports.getRepliesByCommentId = getRepliesByCommentId;
 exports.createComment = createComment;
 exports.createRely = createRely;
-exports.updatePost = updatePost;
-exports.deletePost = deletePost;
+exports.deleteComment = deleteComment;
+exports.deleteReply = deleteReply;
 exports.likeComment = likeComment;
