@@ -1,65 +1,164 @@
-.home-container {             
-    width: 900px;               
-    height: 100%;            
-    display: flex;              
-    background-color: #fff;
-}
-.profile-video{
-    margin-left: 80px;
-}
-.appname {
+/* Global container for the profile page */
+.profile-container {
     display: flex;
-    color: #000000;
-    margin-top: 30px;
-    text-decoration: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+    width: 100%;
+  }
+  
+  /* Main content box that holds videos */
+  .video-container {
+    width: 920px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* Styling for no video state */
+  .no-video {
+    text-align: center;
+    margin-top: 50px;
+  }
+  
+  .no-video img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    margin-bottom: 20px;
+  }
+  
+  .title-no-video {
     font-size: 24px;
     font-weight: bold;
-}
-.no-video {
-    display: flex;
+    color: #333;
+  }
+  
+  .desc-no-video {
+    font-size: 16px;
+    color: #777;
+    margin-top: 10px;
+  }
+  
+  /* Style the video grid */
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
     width: 100%;
-    flex-direction: column;
-    align-items: center;         
-    justify-content: center;     
-    height: 100%;             
-    text-align: center;         
-    margin-top: 50px;        
-    padding: 20px;              
-    border-radius: 10px;       
-}
-
-.no-video img {
-    width: 150px;                
-    height: 150px;               
-    object-fit: contain;        
-    margin-bottom: 20px;         
-}
-
-.title-no-video {
-    font-size: 24px;            
-    font-weight: bold;           
-    color: #333;                
-    margin-bottom: 10px;        
-}
-
-.desc-no-video {
-    font-size: 16px;           
-    color: #666;                
-    margin-bottom: 20px;         
-    max-width: 500px;      
-}
-
-.no-video-link {
-    font-size: 16px;            
-}
-
-.no-video-link a {
-    color: #007bff;           
-    text-decoration: none;       
-    font-weight: 600;          
-}
-
-.no-video-link a:hover {
-    text-decoration: underline;  
-}
-
+    margin-top: 50px;
+  }
+  
+  .video-item {
+    width: 300px;
+    height: 300px;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .video-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .video-item:hover img {
+    transform: scale(1.1);
+  }
+  
+  .video-item .MuiImageListItemBar-root {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 10;
+  }
+  
+  .video-item .MuiIconButton-root {
+    color: white;
+  }
+  
+  /* Modal styling */
+  .modal-content {
+    margin-top: 35px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    width: 80%;
+    max-width: 800px;
+    max-height: 90%;
+    margin: 0 auto;
+  }
+  
+  .modal-video {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+  }
+  
+  .modal-controls {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+  }
+  
+  .modal-controls .MuiIconButton-root {
+    color: white;
+    font-size: 40px;
+  }
+  
+  .modal-controls .MuiIconButton-root:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Loading spinner styles */
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 500px;
+  }
+  
+  .loading-spinner .MuiCircularProgress-root {
+    color: #f09433;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .video-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+  
+    .video-item {
+      width: 250px;
+      height: 250px;
+    }
+  
+    .modal-content {
+      width: 90%;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .video-grid {
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+  
+    .video-item {
+      width: 200px;
+      height: 200px;
+    }
+  }
+  

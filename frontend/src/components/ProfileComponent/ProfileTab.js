@@ -5,6 +5,7 @@ import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 import TurnedInNotIcon from '@mui/icons-material/TurnedInNot';
 import ProfilePost from './Post/ProfilePost';
 import ProfileVideo from './Video/ProfileVideo';
+import ProfileBookmark from './Bookmark/ProfileBookmark'; 
 const PostsContent = () => (
     <ProfilePost  />
 );
@@ -14,7 +15,7 @@ const VideosContent = () => (
 );
 
 const SavedContent = () => (
-  <ProfilePost />
+  <ProfileBookmark />
 );
 
 const ProfileTabs = () => {
@@ -28,7 +29,7 @@ const ProfileTabs = () => {
           onClick={() => setActiveTab('posts')}
         >
           <GridOnIcon fontSize="large" />
-          <span>Bài Viết</span>
+          <span>Hình Ảnh</span>
         </div>
         <div 
           className={`tab ${activeTab === 'videos' ? 'active' : ''}`} 
