@@ -1,0 +1,81 @@
+.profile-bookmark {
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+    padding: 20px;
+  }
+  
+  .home-container {
+    width: 100%;
+  }
+  
+  .no-bookmark {
+    text-align: center;
+    margin-top: 50px;
+  }
+  
+  .no-bookmark img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+  }
+  
+  .title-no-bookmark {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 20px;
+  }
+  
+  .desc-no-bookmark {
+    font-size: 16px;
+    color: #777;
+    margin-top: 10px;
+  }
+  
+  .MuiImageList-root {
+    margin-top: 50px;
+  }
+  
+  .MuiImageListItem-root {
+    position: relative;
+  }
+  
+  .MuiImageListItemBar-root {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  
+  .MuiIconButton-root {
+    color: white;
+  }
+  
+  .modal-content {
+    max-width: 800px;
+    max-height: 90%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-controls {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+  }
+  
+  .modal-controls .MuiIconButton-root {
+    color: white;
+    font-size: 40px;
+  }
+  
+  .modal-controls .MuiIconButton-root:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+  

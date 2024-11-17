@@ -24,5 +24,6 @@
     display: flex;
     justify-content: center; /* Centers the content horizontally */
     align-items: center;     /* Centers the content vertically */
-    min-height: 200px;      /* Adjust height as needed to ensure proper centering */
+    min-height: 200px;
+    background-color: #fafafa;        /* Adjust height as needed to ensure proper centering */
 }

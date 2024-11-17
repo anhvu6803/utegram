@@ -286,67 +286,91 @@ const likePost = async (req, res, next) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-const getImagePostsByUserId = async (req, res, next) => {
-  const userId = req.params.uid;
-
+const getImagePostsByUsername = async (req, res, next) => {
+  const username = req.params.username;  
+  let user;
   let posts;
+  
   try {
-    posts = await Post.find({ author: userId, type: 'image' }).populate('author', 'username avatar');
+
+    user = await User.findOne({ username: username });
+    
+    if (!user) {
+      const error = new HttpError('User not found with the given username.', 404);
+      return next(error);
+    }
+    posts = await Post.find({ author: user._id, type: 'image' }).populate('author', 'username avatar');
   } catch (err) {
     const error = new HttpError('Fetching image posts failed, please try again later.', 500);
     return next(error);
   }
 
   if (!posts || posts.length === 0) {
-    return next(new HttpError('No image posts found for the given user id.', 404));
+    return next(new HttpError('No image posts found for the given user username.', 404));
   }
+
   res.json({
     posts: posts.map(post => post.toObject({ getters: true }))
   });
 };
-const getVideoPostsByUserId = async (req, res, next) => {
-  const userId = req.params.uid;
+const getVideoPostsByUsername = async (req, res, next) => {
+  const username = req.params.username;  // Get username from the URL parameter
 
+  let user;
   let posts;
+
   try {
-    posts = await Post.find({ author: userId, type: 'video' }).populate('author', 'username avatar');
+    // Find the user by username
+    user = await User.findOne({ username: username });
+    
+    if (!user) {
+      const error = new HttpError('User not found with the given username.', 404);
+      return next(error);
+    }
+
+    // Fetch posts by the user's ID and type 'video'
+    posts = await Post.find({ author: user._id, type: 'video' }).populate('author', 'username avatar');
   } catch (err) {
     const error = new HttpError('Fetching video posts failed, please try again later.', 500);
     return next(error);
   }
 
   if (!posts || posts.length === 0) {
-    return next(new HttpError('No video posts found for the given user id.', 404));
+    return next(new HttpError('No video posts found for the given user username.', 404));
   }
+
   res.json({
     posts: posts.map(post => post.toObject({ getters: true }))
   });
 };
-const getBookmarkedPostsByUserId = async (req, res, next) => {
-  const userId = req.params.uid;
+const getBookmarkedPostsByUsername = async (req, res, next) => {
+  const username = req.params.username;  // Get username from the URL parameter
 
   let userWithBookmarks;
+
   try {
-    userWithBookmarks = await User.findById(userId).populate({
+    // Find the user by username
+    userWithBookmarks = await User.findOne({ username: username }).populate({
       path: 'bookmarks',
       populate: {
         path: 'author',
         select: 'username avatar',
       }
     });
+    
+    if (!userWithBookmarks || userWithBookmarks.bookmarks.length === 0) {
+      return next(new HttpError('No bookmarked posts found for the given user username.', 404));
+    }
   } catch (err) {
     const error = new HttpError('Fetching bookmarked posts failed, please try again later.', 500);
     return next(error);
-  }
-
-  if (!userWithBookmarks || userWithBookmarks.bookmarks.length === 0) {
-    return next(new HttpError('No bookmarked posts found for the given user id.', 404));
   }
 
   res.json({
     posts: userWithBookmarks.bookmarks.map(post => post.toObject({ getters: true }))
   });
 };
+
 const bookmarkPost = async (req, res, next) => {
   const { userId, postId } = req.body;
 
@@ -432,25 +456,21 @@ const getPostByTag = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-const getRandomVideoPostsExcludeUser = async (req, res) => {
+const getRandomPostsVideoExcludeUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 5 } = req.query; 
+
     const skip = (page - 1) * limit;
-    const posts = await Post.find({
-      type: 'video',
-      author: { $ne: userId },
-    })
-      .skip(skip)
-      .limit(parseInt(limit))
-      .populate('author', 'username')
-      .populate('likes', 'username')
-      .populate('comments')
-      .sort({ createdAt: -1 });
-    return res.json(posts);
+
+    const videoPosts = await Post.find({ type: 'video', author: { $ne: userId } })
+      .sort({ createdAt: -1 }) 
+      .skip(skip) 
+      .limit(parseInt(limit));  
+    res.status(200).json(videoPosts);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 const getRandomPostsExcludeUser = async (req, res) => {
@@ -481,11 +501,11 @@ exports.createPost = createPost;
 exports.updatePost = updatePost;
 exports.deletePost = deletePost;
 exports.likePost = likePost;
-exports.getImagePostsByUserId = getImagePostsByUserId;
-exports.getVideoPostsByUserId = getVideoPostsByUserId;
-exports.getBookmarkedPostsByUserId = getBookmarkedPostsByUserId;
+exports.getImagePostsByUsername= getImagePostsByUsername;
+exports.getVideoPostsByUsername = getVideoPostsByUsername;
+exports.getBookmarkedPostsByUsername= getBookmarkedPostsByUsername;
 exports.bookmarkPost = bookmarkPost;
 exports.unbookmarkPost = unbookmarkPost;
 exports.getPostByTag = getPostByTag;
-exports.getRandomVideoPostsExcludeUser = getRandomVideoPostsExcludeUser;
+exports.getRandomPostsVideoExcludeUser = getRandomPostsVideoExcludeUser;
 exports.getRandomPostsExcludeUser = getRandomPostsExcludeUser;

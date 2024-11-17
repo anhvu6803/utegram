@@ -32,12 +32,12 @@ router.patch(
 );
 
 router.delete('/:pid', postControllers.deletePost);
-router.get('/image/:uid', postControllers.getImagePostsByUserId);
-router.get('/video/:uid', postControllers.getVideoPostsByUserId);
-router.get('/bookmark/:uid', postControllers.getBookmarkedPostsByUserId);
+router.get('/image/:username', postControllers.getImagePostsByUsername);
+router.get('/video/:username', postControllers.getVideoPostsByUsername);
+router.get('/bookmark/:username', postControllers.getBookmarkedPostsByUsername);
 router.post('/bookmark', postControllers.bookmarkPost);
 router.post('/unbookmark', postControllers.unbookmarkPost);
 router.get('/tag/:tag', postControllers.getPostByTag);
-router.get('/random/video/:userId', postControllers.getRandomVideoPostsExcludeUser);
 router.get('/random/:userId', postControllers.getRandomPostsExcludeUser);
+router.get('/videoPosts/:userId', postControllers.getRandomPostsVideoExcludeUser);
 module.exports = router;
