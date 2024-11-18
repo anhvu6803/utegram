@@ -78,25 +78,21 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         setOpenListUserLiked(false)
     }
 
+    console.log(author.followers)
+
     const handleLikePostClick = async (e) => {
         e.preventDefault();
-        const newLikedStatus = !likedPost;
-        setLikedPost(newLikedStatus); // Toggle the boolean value
-        setLikeCount((prevCount) => newLikedStatus ? prevCount + 1 : prevCount - 1);
 
         try {
             await sendRequest(
                 `http://localhost:5000/api/posts/${post._id}/like`,
-                'POST',
+                'PATCH',
                 JSON.stringify({ userId: auth.userId }),
                 { 'Content-Type': 'application/json' }
             );
             // Phát sự kiện qua Socket.IO
             socket.emit('likePost', post._id);
         } catch (err) {
-            // Phục hồi trạng thái cũ nếu có lỗi
-            setLikedPost(!newLikedStatus);
-            setLikeCount((prevCount) => newLikedStatus ? prevCount - 1 : prevCount + 1);
         }
     };
 
@@ -112,7 +108,25 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         setIsOpen(false)
     };
 
-    const [followed, setFollowed] = useState(false);
+    const [followed, setFollowed] = useState(author.followers.includes(userId));
+
+    const handleFollow = async (event) => {
+        event.preventDefault();
+
+        try {
+            const responseData = await sendRequest(
+                `http://localhost:5000/api/profile/follow/${author._id}`,
+                'PATCH',
+                JSON.stringify({
+                    userId: userId
+                }),
+                { 'Content-Type': 'application/json' }
+            );
+            console.log(responseData.message)
+        } catch (err) {
+
+        }
+    }
 
     const [authorId, setAuthorId] = useState('');
 
@@ -230,39 +244,13 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         setViewRelied(updatedViewRelied);
     };
 
-    const [isLikeReply, setLikeReply] = useState(false)
-
     const handleLikeRelyClick = async (indexComment, indexReply, event) => {
         event.preventDefault();
-        setLikeReply(true);
-        setLikeComment(false);
-        const newLikedStatus = !likedReplyItems[indexComment][indexReply];
-        const updateLikedReplItems = likedReplyItems.map((item, index) => {
-            if (index === indexComment) {
-                const likedItems = item.map((item, index) => index === indexReply ? !item : item);
-                return likedItems;
-            }
-            else {
-                return item;
-            }
-        })
-        setLikedReplyItems(updateLikedReplItems);
-
-        const updatedLikedItemsCount = likedReplyItemsCount.map((item, index) => {
-            if (index === indexComment) {
-                const likedItems = item.map((item, index) => index === indexReply ? newLikedStatus ? item + 1 : item - 1 : item);
-                return likedItems;
-            }
-            else {
-                return item;
-            }
-        });
-        setLikedReplyItemsCount(updatedLikedItemsCount)
 
         try {
             await sendRequest(
                 `http://localhost:5000/api/comment/${listReliesComment[indexComment][indexReply]._id}/like`,
-                'POST',
+                'PATCH',
                 JSON.stringify({ userId: auth.userId }),
                 { 'Content-Type': 'application/json' }
             );
@@ -273,23 +261,14 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         }
     };
 
-    const [likeCountComment, setLikeCountComment] = useState(null);
-    const [isLikeComment, setLikeComment] = useState(false)
 
-    const handleLikeCommentClick = async (index, e, likeCountComment) => {
+    const handleLikeCommentClick = async (index, e) => {
         e.preventDefault();
-        setLikeComment(true)
-        setLikeReply(false);
-        const newLikedStatus = !likedCommentItems[index];
-        const updatedLikedItems = likedCommentItems.map((liked, i) =>
-            i === index ? !liked : liked // Toggle the clicked item only
-        );
-        setLikedCommentItems(updatedLikedItems);
 
         try {
             await sendRequest(
                 `http://localhost:5000/api/comment/${_listComments[index]._id}/like`,
-                'POST',
+                'PATCH',
                 JSON.stringify({ userId: auth.userId }),
                 { 'Content-Type': 'application/json' }
             );
@@ -314,10 +293,13 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         socket.on('updateLikes', (data) => {
             if (data.postId === post._id && data.likesCount >= 0) {
                 setLikeCount(data.likesCount);
+
                 if (data.message === 'Post liked') {
+                    setLikedPost(true)
                     setListUserLiked((list) => [...list, data.user])
                 }
                 else if (data.message === 'Post unliked') {
+                    setLikedPost(false)
                     setListUserLiked((list) => list.filter((item) => item._id !== data.user._id))
                 }
             }
@@ -325,19 +307,36 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
 
         socket.on('updateLikesComment', (data) => {
             if (data.likesCount >= 0) {
-                setLikeCountComment(data)
 
                 if (data.type === 'comment') {
                     const findIndexReply = _listComments.findIndex((item) => item._id === data?.commentId)
+
+                    setLikedCommentItems((list) => list.map((item, index) =>
+                        index === findIndexReply
+                            ? data.message === 'Comment liked' ? true : false
+                            : item
+                    ));
 
                     setLikedCommentItemsCount((list) => list.map((item, index) =>
                         index === findIndexReply
                             ? data.likesCount
                             : item
-                    ))
+                    ));
                 }
                 else if (data.type === 'reply') {
                     const findReplyIndex = findPositionReply(listReliesComment, data)
+
+                    setLikedReplyItems((list) => list.map((item, index) =>
+                        index === findReplyIndex[0] ?
+                            item.map((item, index) =>
+                                index === findReplyIndex[1] ?
+                                    data.message === 'Comment liked' ? true : false
+                                    :
+                                    item
+                            )
+                            :
+                            item
+                    ))
 
                     setLikedReplyItemsCount((list) => list.map((item, index) =>
                         index === findReplyIndex[0] ?
@@ -532,7 +531,10 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                 />
                                 {author.id !== userId &&
                                     <ListItemText
-                                        onClick={() => setFollowed(!followed)}
+                                        onClick={(event) => {
+                                            setFollowed(!followed)
+                                            handleFollow(event)
+                                        }}
                                         primary={followed ? 'Đã theo dõi' : 'Theo dõi'}
                                         primaryTypographyProps={{ style: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', } }}
                                         sx={{
@@ -586,8 +588,8 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                     marginTop: '10px',
                                 }}>
                                     <IconButton
-                                        sx={{ width: '40px', height: '40px', marginLeft: '10px' }}
-                                        href='/profile'
+                                        sx={{ width: '40px', height: '40px', marginLeft: '10px', cursor: 'pointer' }}
+                                        href={`/profile/${author.username}`}
                                     >
                                         <Avatar src={author.avatar || defaultAvatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
                                     </IconButton>
@@ -596,7 +598,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
 
                                             <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px', marginBottom: '5px' }}>
-                                                <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                <Link to={`/profile/${author.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                                     {author.username}
                                                 </Link>
                                             </span>
@@ -654,7 +656,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                                             position: 'absolute', left: '96%',
                                                             transform: 'translateX(-50%)',
                                                         }}
-                                                        onClick={(event) => { handleLikeCommentClick(i, event, likeCountComment) }}
+                                                        onClick={(event) => { handleLikeCommentClick(i, event) }}
                                                     >
                                                         {likedCommentItems[i] ? <FavoriteOutlinedIcon sx={{ color: '#ED4956', fontSize: 15 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 15 }} />}
                                                     </IconButton>
@@ -663,7 +665,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
 
                                                             <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px', marginBottom: '5px' }}>
-                                                                <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                                <Link to={`/profile/${_listComments[i].author.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                                                     {_listComments[i].author.username}
                                                                 </Link>
                                                             </span>
@@ -769,7 +771,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                                                                             <div style={{ display: 'flex', flexDirection: 'column' }}>
 
                                                                                                 <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px' }}>
-                                                                                                    <Link to={'/profile'} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                                                                    <Link to={`/profile/${item?.author?.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                                                                                         {item?.author?.username}
                                                                                                     </Link>
                                                                                                 </span>

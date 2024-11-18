@@ -19,7 +19,7 @@ router.post('/',
 );
 router.post('/check/image', postControllers.checkImagePost)
 router.post('/check/video', postControllers.checkVideoPost)
-router.post('/:id/like', postControllers.likePost)
+router.patch('/:id/like', postControllers.likePost)
 router.patch(
   '/:pid',
   [
