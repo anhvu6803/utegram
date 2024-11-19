@@ -13,7 +13,7 @@ router.get('/comment/:pid', postControllers.getCommentsByPostId);
 
 router.post('/',
   [
-    check('caption').isLength({ max: 2000 })
+    check('caption').isLength({ max: 2200 })
   ],
   postControllers.createPost
 );
@@ -23,10 +23,7 @@ router.patch('/:id/like', postControllers.likePost)
 router.patch(
   '/:pid',
   [
-    check('title')
-      .not()
-      .isEmpty(),
-    check('description').isLength({ min: 5 })
+    check('caption').isLength({ max: 2200 })
   ],
   postControllers.updatePost
 );
