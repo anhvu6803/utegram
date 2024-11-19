@@ -82,3 +82,17 @@ exports.getUserHasMorePosts = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+exports.checkUsernameExists = async (req, res, next) => {
+    const { username } = req.params;
+  
+    try {
+      const user = await User.findOne({ username: username });
+      if (!user) {
+        return res.status(404).json({ message: 'Username not found' });
+      }
+      res.status(200).json({ message: 'Username exists', userId: user._id });
+    } catch (err) {
+      res.status(500).json({ message: 'Fetching username failed, please try again' });
+    }
+  };
+  

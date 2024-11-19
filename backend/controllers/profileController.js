@@ -55,18 +55,20 @@ exports.followUser = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 exports.checkFollowStatus = async (req, res) => {
   try {
-    const { username } = req.params;
-    const currentUserId = req.body.userId; 
+    const { username } = req.params; 
+    const { userId: currentUserId } = req.query;
+
     if (!currentUserId) {
       return res.status(400).json({ error: 'User ID is required' });
     }
+
     const targetUser = await User.findOne({ username });
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found' });
     }
+
     const isFollowing = targetUser.followers.includes(currentUserId);
     res.json({ isFollowing });
   } catch (error) {

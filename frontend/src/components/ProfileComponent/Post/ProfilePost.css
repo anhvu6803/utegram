@@ -11,7 +11,6 @@
   padding: 20px 0;
 }
 
-/* Center the modal and give it padding for a cleaner look */
 .no-post,
 .no-post img {
   text-align: center;
@@ -20,9 +19,10 @@
 
 .no-post .title-no-video {
   font-size: 24px;
-  font-weight: 500;
+  font-weight: bold;
   color: #333;
   margin-top: 20px;
+
 }
 
 .no-post .desc-no-video {

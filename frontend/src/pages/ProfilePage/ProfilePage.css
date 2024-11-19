@@ -1,3 +1,38 @@
 .profile-page{
     margin-right: 250px;
 }
+.error-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    color: #262626;
+    font-family: Arial, sans-serif;
+  }
+  
+  .error-container {
+    max-width: 400px;
+  }
+  
+  .error-container h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .error-container p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #8e8e8e;
+  }
+  
+  .error-container .back-link {
+    color: #3897f0;
+    text-decoration: none;
+  }
+  
+  .error-container .back-link:hover {
+    text-decoration: underline;
+  }
+  

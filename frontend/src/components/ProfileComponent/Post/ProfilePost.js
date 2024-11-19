@@ -16,14 +16,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
+import NoPhotographyOutlinedIcon from '@mui/icons-material/NoPhotographyOutlined';
 
-// Image for no posts
-import imgnopost from '../../../assets/img-no-post.jpg';  // Update this path as per your file structure
 
 import './ProfilePost.css'; 
 
 const ProfilePost = () => {
-    const { username } = useParams(); // Get username from URL
+    const { username } = useParams(); 
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
     const [loadedPosts, setLoadedPosts] = useState([]);
@@ -35,7 +34,7 @@ const ProfilePost = () => {
             setIsLoading(true);
 
             try {
-                // Use the username from URL to fetch posts
+            
                 const responsePosts = await sendRequest(`http://localhost:5000/api/posts/image/${username}`);
                 setLoadedPosts(responsePosts.posts);
 
@@ -130,7 +129,7 @@ const ProfilePost = () => {
                 <LoadingButton
                     loading={isLoading}
                     loadingPosition="center"
-                    sx={{ height: '500px', marginLeft: '800px', marginTop: '100px' }}
+                    sx={{ height: '500px', marginLeft: '550px', marginTop: '100px' }}
                     loadingIndicator={
                         <CircularProgress
                             size={500} 
@@ -149,15 +148,20 @@ const ProfilePost = () => {
                 }}>
                  
                     {loadedPosts.length === 0 ? (
-                        <div className='no-post'>
-                        <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
-                            <img src={imgnopost} alt="No posts" style={{ width: '150px', height: '150px' }} />
-                            <div className="title-no-video">Chia sẻ bài viết</div>
-                            <div className="desc-no-video">
-                                Khi bạn chia sẻ bài viết, nó sẽ xuất hiện trên trang cá nhân của bạn.
-                            </div>
-                        </Box>
-                        </div>
+                           <div className='no-post'>
+                           <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
+                               <NoPhotographyOutlinedIcon 
+                                   sx={{ 
+                                       fontSize: 150, 
+                                       color: '#bdbdbd', 
+                                   }} 
+                               />
+                               <div className="title-no-video">Chia sẻ bài viết</div>
+                               <div className="desc-no-video">
+                                   Khi bạn chia sẻ bài viết, nó sẽ xuất hiện trên trang cá nhân của bạn.
+                               </div>
+                           </Box>
+                       </div>
                     ) : (
                         <>
                             <Modal open={modalIsOpen} onClose={closeModal}>
