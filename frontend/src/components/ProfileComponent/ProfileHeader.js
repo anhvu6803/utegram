@@ -4,10 +4,11 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import './ProfileHeader.css';
 import profilePic from '../../assets/avatar_default.jpg';
-import imgsetting from '../../assets/img-setting.jpg';
-import imgoption from '../../assets/img-option.jpg';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import OptionForm from '../OptionFormInProfile/OptionForm';
 import ReportForm from '../OptionFormInProfile/ReportFromInProfile';
+import NavbarSetting from '../OptionSetting/OptionSetting';
 import { AuthContext } from '../../shared/context/auth-context';
 
 const ProfileHeader = () => {
@@ -16,6 +17,7 @@ const ProfileHeader = () => {
   const [isFollowing, setIsFollowing] = useState(false); 
   const [modalIsOpen, setModalIsOpen] = useState(false); 
   const [isReportMode, setIsReportMode] = useState(false);
+  const [isSettingModalOpen, setIsSettingModalOpen] = useState(false);  // State for the settings modal
   const navigate = useNavigate();
 
   const auth = useContext(AuthContext); 
@@ -28,14 +30,10 @@ const ProfileHeader = () => {
         const data = await response.json();
   
         if (response.ok) {
-          setProfile(data); 
-          const followResponse = await fetch(`http://localhost:5000/api/profile/follow-status/${username}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userId }), 
-          });
+          setProfile(data);
+          const followResponse = await fetch(
+            `http://localhost:5000/api/profile/follow-status/${username}?userId=${userId}`
+          );
           const followData = await followResponse.json();
   
           if (followResponse.ok) {
@@ -51,21 +49,19 @@ const ProfileHeader = () => {
       }
     };
   
-    fetchProfile(); 
+    fetchProfile();
   }, [username, userId]); 
 
   const handleFollowClick = async () => {
     try {
-      const url = isFollowing
-        ? `http://localhost:5000/api/profile/unfollow/${username}`
-        : `http://localhost:5000/api/profile/follow/${username}`;
+      const url = `http://localhost:5000/api/profile/follow/${profile._id}`;
 
       const response = await fetch(url, {
-        method: 'POST',
+        method: 'PATCH', 
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId }), 
+        body: JSON.stringify({ userId }),
       });
 
       const data = await response.json();
@@ -84,22 +80,24 @@ const ProfileHeader = () => {
     }
   };
 
-  const handleEditClick = () => navigate('/accounts/edit');
-  const handleOptionClick = () => {
-    setModalIsOpen(true);
-    setIsReportMode(false);
+  const handleMetaClick = (type) => {
+    if (type === 'posts') {
+      navigate(`/profile/${username}/posts`);
+    } else if (type === 'followers') {
+      navigate(`/profile/${username}/followers`);
+    } else if (type === 'following') {
+      navigate(`/profile/${username}/following`);
+    }
   };
 
-  const closeModal = () => {
-    setModalIsOpen(false);
-    setIsReportMode(false);
-  };
-
-  const openReportForm = () => setIsReportMode(true);
-  const toggleToOptionForm = () => setIsReportMode(false);
-  const handleNavigateToProfile = () => navigate(`/profile/${username}`);
-  const handleMessageClick = () => {
-    navigate(`/messages`); 
+  const formatNumber = (number) => {
+    if (number >= 1000000) {
+      return (number / 1000000).toFixed(1) + 'M';
+    } else if (number >= 1000) {
+      return (number / 1000).toFixed(1) + 'K';
+    } else {
+      return number;
+    }
   };
 
   if (!profile) {
@@ -115,22 +113,22 @@ const ProfileHeader = () => {
           src={profile.avatar || profilePic}
           alt="Profile"
           className="profile-picture"
-          onClick={handleNavigateToProfile}
+          onClick={() => navigate(`/profile/${username}`)}
           style={{ cursor: 'pointer' }}
           onError={(e) => (e.target.src = profilePic)}
         />
         <div className="profile-stats">
           <div className="profile-name">
-            <h2 onClick={handleNavigateToProfile} style={{ cursor: 'pointer' }}>
+            <h2 onClick={() => navigate(`/profile/${username}`)} style={{ cursor: 'pointer' }}>
               {profile.username || username}
             </h2>
             {isUserProfile ? (
               <button
                 className="edit-profile-btn"
-                onClick={handleEditClick}
+                onClick={() => setIsSettingModalOpen(true)} 
                 aria-label="Edit Profile"
               >
-                <img src={imgsetting} alt="Edit" className="edit-icon" />
+                <SettingsOutlinedIcon className="edit-icon" />
               </button>
             ) : (
               <>
@@ -147,13 +145,13 @@ const ProfileHeader = () => {
                 </button>
                 <button
                   className="message-btn"
-                  onClick={handleMessageClick}
-                  disabled={!isFollowing}  // Disable the button if not following
+                  onClick={() => navigate(`/messages`)}
+                  disabled={!isFollowing}
                   style={{
-                    backgroundColor: isFollowing ? '#0095f6' : '#EFEFEF', // Highlight when following
-                    color: isFollowing ? '#fff' : '#b0b0b0', // Change text color when not following
+                    backgroundColor: isFollowing ? '#0095f6' : '#EFEFEF',
+                    color: isFollowing ? '#fff' : '#b0b0b0',
                     marginLeft: '10px',
-                    cursor: isFollowing ? 'pointer' : 'not-allowed', // Pointer cursor when active
+                    cursor: isFollowing ? 'pointer' : 'not-allowed',
                   }}
                   aria-label="Send Message"
                 >
@@ -161,23 +159,29 @@ const ProfileHeader = () => {
                 </button>
                 <button
                   className="option-profile-btn"
-                  onClick={handleOptionClick}
+                  onClick={() => setModalIsOpen(true)} 
                   aria-label="Profile Options"
                 >
-                  <img src={imgoption} alt="Option" className="option-icon" />
+                  <MoreHorizOutlinedIcon className="option-icon" />
                 </button>
               </>
             )}
           </div>
           <div className="profile-meta">
-            <span>
-              <strong>{profile.posts}</strong> bài viết
+            <span style={{ marginRight: '30px' }}>
+              <strong>{formatNumber(profile.posts)}</strong> bài viết
             </span>
-            <span>
-              <strong>{profile.followers}</strong> người theo dõi
+            <span
+              onClick={() => handleMetaClick('followers')}
+              style={{ cursor: 'pointer', marginLeft: '10px' }}
+            >
+              <strong>{formatNumber(profile.followers)}</strong> người theo dõi
             </span>
-            <span>
-              <strong>{profile.following}</strong> đang theo dõi
+            <span
+              onClick={() => handleMetaClick('following')}
+              style={{ cursor: 'pointer', marginLeft: '10px' }}
+            >
+              Đang theo dõi <strong>{formatNumber(profile.following)}</strong> người dùng
             </span>
           </div>
           <div className="profile-bio">
@@ -186,9 +190,27 @@ const ProfileHeader = () => {
         </div>
       </div>
 
+      {/* Modal for NavbarSetting (opened by Edit Profile button) */}
+      <Modal
+        open={isSettingModalOpen}
+        onClose={() => setIsSettingModalOpen(false)}  // Close the settings modal
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          sx={{ height: '100vh', outline: 'none' }}
+        >
+          <NavbarSetting option="edit" />  {/* Display NavbarSetting when Edit Profile button is clicked */}
+        </Box>
+      </Modal>
+
+      {/* Existing Modal for Report or Options */}
       <Modal
         open={modalIsOpen}
-        onClose={closeModal}
+        onClose={() => setModalIsOpen(false)}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
@@ -199,9 +221,9 @@ const ProfileHeader = () => {
           sx={{ height: '100vh', outline: 'none' }}
         >
           {isReportMode ? (
-            <ReportForm handleClose={closeModal} toggleToOptionForm={toggleToOptionForm} />
+            <ReportForm handleClose={() => setModalIsOpen(false)} />
           ) : (
-            <OptionForm closeModal={closeModal} author={profile.username} openReportForm={openReportForm} />
+            <OptionForm closeModal={() => setModalIsOpen(false)} author={profile.username} />
           )}
         </Box>
       </Modal>
@@ -210,4 +232,3 @@ const ProfileHeader = () => {
 };
 
 export default ProfileHeader;
-

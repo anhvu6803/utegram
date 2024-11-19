@@ -10,12 +10,12 @@ import ImageListItemBar from '@mui/material/ImageListItemBar';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
-import imgnobookmark from '../../../assets/nobookmark.jpg'; // Placeholder for no bookmarks
-
+import imgnobookmark from '../../../assets/nobookmark.jpg'; 
+import BookmarkAddOutlinedIcon from '@mui/icons-material/BookmarkAddOutlined';
 import './ProfileBookmark.css';
 
 const ProfileBookmark = () => {
-    const { username } = useParams(); // Get username from URL
+    const { username } = useParams(); 
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
     const [loadedBookmarks, setLoadedBookmarks] = useState([]);
@@ -23,15 +23,12 @@ const ProfileBookmark = () => {
     const [indexBookmark, setIndexBookmark] = useState(0);
 
     const navigate = useNavigate();
-
-    // Fetch bookmarks (images and videos)
     useEffect(() => {
         const fetchBookmarks = async () => {
             setIsLoading(true);
             try {
-                // Use the username from URL to fetch bookmarks (both images and videos)
                 const response = await sendRequest(`http://localhost:5000/api/posts/bookmark/${username}`);
-                setLoadedBookmarks(response.posts); // Response is structured as posts
+                setLoadedBookmarks(response.posts); 
                 setTimeout(() => {
                     setIsLoading(false);
                 }, timeLoading * 1000 + 1000);
@@ -44,16 +41,12 @@ const ProfileBookmark = () => {
 
         fetchBookmarks();
     }, [sendRequest, username]);
-
-    // Open modal for a specific bookmark
     const openModal = (index) => {
         setIndexBookmark(index);
         setIsOpen(true);
     };
 
     const closeModal = () => setIsOpen(false);
-
-    // Handle next and previous buttons for modal
     const handleIncreseIndex = () => {
         setIndexBookmark((prev) => Math.min(prev + 1, loadedBookmarks.length - 1));
     };
@@ -68,7 +61,7 @@ const ProfileBookmark = () => {
                 <LoadingButton
                     loading={isLoading}
                     loadingPosition="center"
-                    sx={{ height: '500px', marginLeft: '800px', marginTop: '100px' }}
+                    sx={{ height: '500px', marginLeft: '550px', marginTop: '100px' }}
                     loadingIndicator={
                         <CircularProgress size={500} sx={{ color: '#f09433' }} />
                     }
@@ -76,15 +69,20 @@ const ProfileBookmark = () => {
             ) : (
                 <Box sx={{ width: '1000px', height: '100%', display: 'flex', marginLeft: '550px', flexDirection: 'column' }}>
                     {loadedBookmarks.length === 0 ? (
-                        <div className='no-bookmark'>
-                            <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
-                                <img src={imgnobookmark} alt="No bookmarks" style={{ width: '150px', height: '150px' }} />
-                                <div className="title-no-video">Chưa có nội dung được đánh dấu</div>
-                                <div className="desc-no-video">
-                                    Khi bạn đánh dấu nội dung, chúng sẽ xuất hiện tại đây để bạn dễ dàng xem lại.
-                                </div>
-                            </Box>
-                        </div>
+                        <div className="no-bookmark">
+                        <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
+                            <BookmarkAddOutlinedIcon 
+                                sx={{ 
+                                    fontSize: 150, 
+                                    color: '#bdbdbd', 
+                                }} 
+                            />
+                            <div className="title-no-video">Chưa có nội dung được đánh dấu</div>
+                            <div className="desc-no-video">
+                                Khi bạn đánh dấu nội dung, chúng sẽ xuất hiện tại đây để bạn dễ dàng xem lại.
+                            </div>
+                        </Box>
+                    </div>
                     ) : (
                         <>
                             <Modal open={modalIsOpen} onClose={closeModal}>
@@ -104,7 +102,6 @@ const ProfileBookmark = () => {
                                     )}
 
                                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
-                                        {/* Render the bookmark based on its type (video or image) */}
                                         {loadedBookmarks[indexBookmark].type === 'image' ? (
                                             <img
                                                 src={loadedBookmarks[indexBookmark].url[0]}
@@ -159,7 +156,6 @@ const ProfileBookmark = () => {
                                                 zIndex: 10,
                                             }}
                                         />
-                                        {/* Render the bookmark based on its type (video or image) */}
                                         {bookmark.type === 'image' ? (
                                             <img
                                                 src={bookmark.url[0]}

@@ -16,14 +16,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
+import VideocamOffOutlinedIcon from '@mui/icons-material/VideocamOffOutlined';
 
-// Image for no videos
-import imgnovideo from '../../../assets/img-no-video.jpg';  // Update this path as per your file structure
+
 
 import './ProfileVideo.css'; 
 
 const ProfileVideo = () => {
-    const { username } = useParams(); // Get username from URL
+    const { username } = useParams(); 
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
     const [loadedPosts, setLoadedPosts] = useState([]);
@@ -35,7 +35,6 @@ const ProfileVideo = () => {
             setIsLoading(true);
 
             try {
-                // Use the username from URL to fetch posts
                 const responsePosts = await sendRequest(`http://localhost:5000/api/posts/video/${username}`);
                 setLoadedPosts(responsePosts.posts);
 
@@ -130,7 +129,7 @@ const ProfileVideo = () => {
                 <LoadingButton
                     loading={isLoading}
                     loadingPosition="center"
-                    sx={{ height: '500px', marginLeft: '800px', marginTop: '100px' }}
+                    sx={{ height: '500px', marginLeft: '550px', marginTop: '100px' }}
                     loadingIndicator={
                         <CircularProgress
                             size={500} 
@@ -148,13 +147,18 @@ const ProfileVideo = () => {
                     flexDirection: 'column'
                 }}>
                     {loadedPosts.length === 0 ? (
-                        <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
-                            <img src={imgnovideo} alt="No videos" style={{ width: '150px', height: '150px' }} />
-                            <div className="title-no-video">Chia sẻ video</div>
-                            <div className="desc-no-video">
-                                Khi bạn chia sẻ video, video sẽ xuất hiện trên trang cá nhân của bạn.
-                            </div>
-                        </Box>
+                         <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
+                         <VideocamOffOutlinedIcon 
+                             sx={{ 
+                                 fontSize: 150, 
+                                 color: '#bdbdbd', 
+                             }} 
+                         />
+                         <div className="title-no-video">Chia sẻ video</div>
+                         <div className="desc-no-video">
+                             Khi bạn chia sẻ video, video sẽ xuất hiện trên trang cá nhân của bạn.
+                         </div>
+                     </Box>
                     ) : (
                         <ImageList
                             cols={3}

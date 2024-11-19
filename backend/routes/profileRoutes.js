@@ -9,6 +9,6 @@ router.get('/:username',profileController.getUserProfile);
 
 router.patch('/follow/:uid',profileController.followUser);
 
-router.post('/follow-status/:username',profileController.checkFollowStatus);
+router.get('/follow-status/:username',profileController.checkFollowStatus);
 
 module.exports = router;

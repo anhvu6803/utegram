@@ -12,4 +12,6 @@ router.get('/except/:userId', userController.getAllUsersExcept);
 
 router.get('/morepost/:uid', userController.getUserHasMorePosts);
 
+router.get('/check-username/:username', userController.checkUsernameExists);
+
 module.exports = router;
