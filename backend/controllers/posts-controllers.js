@@ -239,11 +239,86 @@ const createPost = async (req, res, next) => {
 };
 
 const updatePost = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError('Invalid inputs passed, please check your data.', 422)
+    );
+  }
 
+  const { caption, tags, underthirteen, upeighteen } = req.body;
+  const postId = req.params.pid;
+
+  let post;
+  try {
+    post = await Post.findById(postId);
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong, could not update post.',
+      500
+    );
+    return next(error);
+  }
+
+  post.caption = caption;
+  post.tags = tags;
+  post.underthirteen = underthirteen;
+  post.upeighteen = upeighteen;
+
+  try {
+    await post.save();
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong, could not update post.',
+      500
+    );
+    return next(error);
+  }
+
+  res.status(200).json({ post: post.toObject({ getters: true }) });
 };
 
 const deletePost = async (req, res, next) => {
+  const postId = req.params.pid;
 
+  let post;
+  try {
+    post = await Post.findById(postId).populate('author');
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong, could not delete place.',
+      500
+    );
+    return next(error);
+  }
+
+  if (!post) {
+    const error = new HttpError('Could not find place for this id.', 404);
+    return next(error);
+  }
+
+  console.log(post)
+
+  const sess = await mongoose.startSession();
+  try {
+    sess.startTransaction();
+    await post.deleteOne({ session: sess });
+    post.author.posts.pull(post._id);
+    await post.author.save({ session: sess });
+    await sess.commitTransaction();
+    sess.endSession();
+
+    res.status(200).json({ message: 'Post deleted successfully.' });
+  } catch (err) {
+    await sess.abortTransaction();
+    sess.endSession();
+
+    const error = new HttpError(
+      'Something went wrong, could not delete the post.',
+      500
+    );
+    return next(error);
+  }
 };
 
 const likePost = async (req, res, next) => {
@@ -287,14 +362,14 @@ const likePost = async (req, res, next) => {
   }
 };
 const getImagePostsByUsername = async (req, res, next) => {
-  const username = req.params.username;  
+  const username = req.params.username;
   let user;
   let posts;
-  
+
   try {
 
     user = await User.findOne({ username: username });
-    
+
     if (!user) {
       const error = new HttpError('User not found with the given username.', 404);
       return next(error);
@@ -322,7 +397,7 @@ const getVideoPostsByUsername = async (req, res, next) => {
   try {
     // Find the user by username
     user = await User.findOne({ username: username });
-    
+
     if (!user) {
       const error = new HttpError('User not found with the given username.', 404);
       return next(error);
@@ -357,7 +432,7 @@ const getBookmarkedPostsByUsername = async (req, res, next) => {
         select: 'username avatar',
       }
     });
-    
+
     if (!userWithBookmarks || userWithBookmarks.bookmarks.length === 0) {
       return next(new HttpError('No bookmarked posts found for the given user username.', 404));
     }
@@ -459,14 +534,14 @@ const getPostByTag = async (req, res) => {
 const getRandomPostsVideoExcludeUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const { page = 1, limit = 5 } = req.query; 
+    const { page = 1, limit = 5 } = req.query;
 
     const skip = (page - 1) * limit;
 
     const videoPosts = await Post.find({ type: 'video', author: { $ne: userId } })
-      .sort({ createdAt: -1 }) 
-      .skip(skip) 
-      .limit(parseInt(limit));  
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
     res.status(200).json(videoPosts);
   } catch (err) {
     console.error(err);
@@ -501,9 +576,9 @@ exports.createPost = createPost;
 exports.updatePost = updatePost;
 exports.deletePost = deletePost;
 exports.likePost = likePost;
-exports.getImagePostsByUsername= getImagePostsByUsername;
+exports.getImagePostsByUsername = getImagePostsByUsername;
 exports.getVideoPostsByUsername = getVideoPostsByUsername;
-exports.getBookmarkedPostsByUsername= getBookmarkedPostsByUsername;
+exports.getBookmarkedPostsByUsername = getBookmarkedPostsByUsername;
 exports.bookmarkPost = bookmarkPost;
 exports.unbookmarkPost = unbookmarkPost;
 exports.getPostByTag = getPostByTag;

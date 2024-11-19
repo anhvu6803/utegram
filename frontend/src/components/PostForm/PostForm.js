@@ -78,8 +78,6 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         setOpenListUserLiked(false)
     }
 
-    console.log(author.followers)
-
     const handleLikePostClick = async (e) => {
         e.preventDefault();
 
@@ -422,11 +420,12 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                 >
                     <MoreForm
                         closeModal={closeMoreModal}
-                        author={authorId}
+                        author={author}
                         type={typeMoreOption}
                         itemId={itemId}
                         user={itemAuthor}
                         commentId={typeMoreOption === 'reply' ? parentCommentId : ''}
+                        post={typeMoreOption === 'post' ? post : null}
                     />
                 </Box>
             </Modal>
@@ -522,10 +521,20 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                     }
                     <Box border={1} borderColor="black" sx={{ backgroundColor: 'white' }}>
                         <ListItem sx={{ width: '100%', height: '60px', padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB' }} >
-                            <Avatar src={author.avatar || defaultAvatar} sx={{ color: '#000', width: '40px', height: '40px', marginLeft: '10px' }} />
+                            <IconButton
+                                sx={{ width: '40px', height: '40px', marginLeft: '10px', cursor: 'pointer' }}
+                                href={`/profile/${author.username}`}
+                            >
+                                <Avatar src={author.avatar || defaultAvatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                            </IconButton>
+
                             <Box display="flex" alignItems="center">
                                 <ListItemText
-                                    primary={author.username}
+                                    primary={
+                                        <Link to={`/profile/${author.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                            {author.username}
+                                        </Link>
+                                    }
                                     primaryTypographyProps={{ style: { fontSize: 14, textAlign: 'center', fontWeight: 'bold' } }}
                                     sx={{ width: 'fit-content' }}
                                 />
@@ -589,17 +598,17 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                 }}>
                                     <IconButton
                                         sx={{ width: '40px', height: '40px', marginLeft: '10px', cursor: 'pointer' }}
-                                        href={`/profile/${author.username}`}
+                                        href={`/profile/${author?.username}`}
                                     >
-                                        <Avatar src={author.avatar || defaultAvatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                        <Avatar src={author?.avatar || defaultAvatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
                                     </IconButton>
 
                                     <Box sx={{ bgcolor: 'background.paper', display: 'flex' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
 
                                             <span style={{ fontSize: 14, fontWeight: 'bold', marginLeft: '10px', marginBottom: '5px' }}>
-                                                <Link to={`/profile/${author.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                    {author.username}
+                                                <Link to={`/profile/${author?.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                    {author?.username}
                                                 </Link>
                                             </span>
 

@@ -107,6 +107,7 @@ export default function UploadContent({ closeModal }) {
     const [itemDisplay, setItemDisplay] = useState(null);
     const [isSetContent, setChangeSetContent] = useState(false);
     const [isFinishCreate, setChangeFinishCreate] = useState(false);
+    const [isCancelUpload, setCancelUpload] = useState(false);
 
     const handleButtonClick = () => {
         if (fileType !== 'video') {
@@ -213,7 +214,11 @@ export default function UploadContent({ closeModal }) {
 
     const handleInputChange = (event) => {
         const value = event.target.value;
-        setInputValue(value);
+
+        if (value.length <= 2200) {
+            setInputValue(value);
+        }
+
         const result = splitDescriptionAndHashtags(value)
         const lastestTag = result.des[inputCount]
 
@@ -308,10 +313,10 @@ export default function UploadContent({ closeModal }) {
                         })
                     });
                 }
-                
+
                 const responseData = await response?.json();
                 final_decision = responseData.final_decision;
-                
+
                 if (responseData.final_decision === 'KO') {
                     setUploadPolicy(responseData.final_decision);
                     setLoading(false)
@@ -369,394 +374,125 @@ export default function UploadContent({ closeModal }) {
 
     return (
         <div>
-            <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                accept="image/*,video/*"
-                onChange={handleFileChange}
-                multiple={fileType === '' || fileType === 'image'} // Cho phép chọn nhiều nếu là ảnh
-            />
-            <IconButton
-                onClick={() => {
-                    { (!isLoading || files.length <= 0) && closeModal() }
-                }}
-                sx={{
-                    position: 'absolute', left: '90%', marginTop: '30px',
+            {isCancelUpload ?
+                <Box sx={{
+                    width: '450px', bgcolor: 'background.paper',
+                    marginTop: '100px', border: 1, borderColor: '#777777', borderRadius: 3,
+                    flexDirection: 'column', position: 'absolute', left: '50%', top: '20%',
                     transform: 'translateX(-50%)',
                 }}
-            >
-                <ClearIcon
-                    sx={{ color: 'white', fontSize: 25 }}
-                />
-            </IconButton>
-
-            <Box
-                position='flex'
-                sx={{
-                    position: 'absolute', left: '50%', marginTop: '80px',
-                    transform: 'translateX(-50%)',
-                }}
-            >
-                {isFinishCreate ?
-                    <Box
+                >
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexDirection: 'column',
+                        marginTop: '30px'
+                    }}>
+                        <span
+                            style={{
+                                fontSize: 18, fontWeight: 'bold',
+                                width: '380px', textAlign: 'center',
+                                marginBottom: '10px'
+                            }}
+                        >
+                            {`Bỏ bài viết ?`}
+                        </span>
+                        <span
+                            style={{
+                                fontSize: 15,
+                                width: '380px', textAlign: 'center',
+                                marginBottom: '20px'
+                            }}
+                        >
+                            {`Bạn có chắc chắn muốn bỏ bài viết này không?`}
+                        </span>
+                    </Box>
+                    <Divider />
+                    <ListItemButton
+                        onClick={() => {
+                            closeModal();
+                        }}
+                        sx={{ width: '450px', height: '48px', justifyContent: 'center', color: '#ED4956' }}
+                    >
+                        <span>Bỏ</span>
+                    </ListItemButton>
+                    <Divider />
+                    <ListItemButton
+                        onClick={() => {
+                            setCancelUpload(!isCancelUpload)
+                        }}
+                        sx={{ width: '450px', height: '48px', justifyContent: 'center' }}
+                    >
+                        <span>Hủy</span>
+                    </ListItemButton>
+                </Box>
+                :
+                <div>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                        accept="image/*,video/*"
+                        onChange={handleFileChange}
+                        multiple={fileType === '' || fileType === 'image'} // Cho phép chọn nhiều nếu là ảnh
+                    />
+                    <IconButton
+                        onClick={() => {
+                            setCancelUpload(!isCancelUpload)
+                        }}
                         sx={{
-                            width: '500px', bgcolor: 'background.paper',
-                            height: '500px', border: 1, borderRadius: 3, borderColor: 'white'
+                            position: 'absolute', left: '90%', marginTop: '30px',
+                            transform: 'translateX(-50%)',
                         }}
                     >
-                        <FinishCreate
-                            isLoading={isLoading}
-                            uploadPolicy={uploadPolicy}
+                        <ClearIcon
+                            sx={{ color: 'white', fontSize: 25 }}
                         />
-                    </Box>
-                    :
-                    <div>
-                        {isSetContent ?
+                    </IconButton>
 
-                            <Box
-                                sx={{
-                                    width: '800px', bgcolor: 'background.paper',
-                                    height: '500px', border: 1, borderRadius: 3, borderColor: 'white'
-                                }}
-                            >
-                                <Box display="flex" alignItems="center" justifyContent="center">
-                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                        <Box
-                                            sx={{
-                                                width: '800px', height: '50px', display: 'flex',
-                                                justifyContent: 'space-between', alignItems: 'center',
-                                                padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB'
-                                            }}
-                                        >
-                                            <IconButton
-                                                onClick={() => {
-                                                    setChangeSetContent(false)
-                                                    setInputCount(0)
-                                                    setInputValue('')
-                                                }}
-                                                sx={{
-                                                    height: '25px', width: '25px', marginLeft: '20px'
-                                                }}
-                                            >
-                                                <KeyboardBackspaceIcon sx={{ fontSize: 25, color: 'black' }} />
-                                            </IconButton>
-                                            <form onSubmit={handleSubmit}>
-                                                <button
-                                                    type='submit'
-                                                    style={{
-                                                        fontSize: 15, fontWeight: 'normal',
-                                                        marginRight: '20px', color: '#0095F6',
-                                                        cursor: 'pointer',
-                                                        background: 'none',
-                                                        border: 'none',
-                                                    }}
-                                                >
-                                                    Chia sẻ
-                                                </button>
-                                            </form>
-
-                                        </Box>
-                                        <div>
-                                            <Box sx={{ width: '800px', height: '449px', justifyContent: 'space-between' }} >
-                                                <Box display="flex" sx={{ width: '800px', height: '449px', justifyContent: 'space-between' }}>
-                                                    {files[0].type.startsWith('video') ?
-                                                        <Box border={1} borderColor="black" sx={{ width: '300px', height: '449px', padding: '0px' }} >
-                                                            <video controls autoPlay style={{
-                                                                width: '500px', height: '449px', objectFit: 'cover', zIndex: 1,
-                                                                borderBottomLeftRadius: '12px',
-                                                            }}>
-                                                                <source src={item[0]} type='video/mp4' />
-                                                            </video>
-                                                        </Box>
-                                                        :
-                                                        <Box
-                                                            display="flex"
-                                                            sx={{ width: '500px', height: '449px', padding: '0px', position: 'relative', display: 'inline-block' }}
-                                                        >
-                                                            {index > 0 &&
-                                                                <IconButton
-                                                                    onClick={() => {
-                                                                        handleIndexImageDecrease()
-                                                                    }}
-                                                                    sx={{
-                                                                        position: 'absolute', bottom: '45%', left: '5%',
-                                                                        transform: 'translateX(-50%)',
-                                                                        color: 'white',
-                                                                        backgroundColor: 'rgba(51, 51, 51, 0.5)',
-                                                                        fontSize: 25,
-                                                                        zIndex: 1000,
-                                                                    }}
-                                                                >
-                                                                    <ArrowCircleLeftIcon />
-                                                                </IconButton>
-                                                            }
-                                                            <img
-                                                                src={item[index]}
-                                                                style={{
-                                                                    width: '500px', height: '449px', objectFit: 'cover', zIndex: 1,
-                                                                    borderBottomLeftRadius: '12px',
-                                                                }}
-                                                            />
-                                                            {item.length > 1 &&
-                                                                <Box
-                                                                    sx={{
-                                                                        position: 'absolute', bottom: '1%', left: '50%',
-                                                                        transform: 'translateX(-50%)',
-                                                                    }}
-                                                                >
-                                                                    <List>
-                                                                        {Array.from({ length: item.length }, (_, i) => (
-                                                                            <ListItem key={i} sx={{ display: 'inline', width: '15px', height: '15px', padding: '2px' }}>
-                                                                                {index === i ?
-                                                                                    <CircleIcon sx={{ color: 'white', fontSize: 8, zIndex: 1000, }} /> :
-                                                                                    <CircleOutlinedIcon sx={{ color: 'white', fontSize: 8, zIndex: 1000, }} />
-                                                                                }
-                                                                            </ListItem>
-                                                                        ))}
-                                                                    </List>
-                                                                </Box>
-                                                            }
-                                                            {(item.length > 1 && index < item.length - 1) &&
-                                                                <IconButton
-                                                                    onClick={() => {
-                                                                        handleIndexImageIncrease()
-                                                                    }}
-                                                                    sx={{
-                                                                        position: 'absolute', bottom: '45%', left: '95%',
-                                                                        transform: 'translateX(-50%)',
-                                                                        color: 'white',
-                                                                        backgroundColor: 'rgba(51, 51, 51, 0.5)',
-                                                                        fontSize: 25,
-                                                                        zIndex: 1000,
-                                                                    }}
-                                                                >
-                                                                    <ArrowCircleRightIcon />
-                                                                </IconButton>
-                                                            }
-                                                        </Box>
-
-                                                    }
-                                                    <Box
-                                                        sx={{
-                                                            backgroundColor: 'white', width: '300px', height: '449px',
-                                                            borderBottomRightRadius: '12px', display: 'flex', flexDirection: 'column',
-                                                            overflow: 'auto',
-                                                            '&::-webkit-scrollbar': {
-                                                                display: 'none',  // Hide scrollbar on Chrome/Safari
-                                                            },
-                                                            '-ms-overflow-style': 'none',  // Hide scrollbar on IE/Edge
-                                                            'scrollbar-width': 'none',  // Hide scrollbar on Firefox
-                                                        }}
-                                                    >
-                                                        <Box sx={{
-                                                            display: 'flex', flexDirection: 'row', alignItems: 'center',
-                                                            width: '299px', height: '50px', marginLeft: '10px'
-                                                        }}>
-                                                            <Avatar src={avatar} sx={{ color: '#000', width: '30px', height: '30px', }} />
-                                                            <span style={{ fontSize: 13, fontWeight: 'bold', marginLeft: '10px' }}>wasabi1234</span>
-                                                        </Box>
-                                                        <TextField
-                                                            fullWidth
-                                                            variant="outlined"
-                                                            multiline
-                                                            maxRows={12}
-                                                            value={inputValue}
-                                                            onChange={handleInputChange}
-                                                            autoFocus={true}
-                                                            onKeyDown={handleKeyDown}
-                                                            style={{
-                                                                height: '300px',
-                                                                overflow: 'auto',
-                                                                textAlign: 'start',
-                                                            }}
-
-                                                            slotProps={{
-
-                                                                input: {
-                                                                    sx: {
-                                                                        '& .MuiOutlinedInput-notchedOutline': {
-                                                                            border: 'none', // Hide border of TextField
-                                                                        },
-                                                                        '&::-webkit-scrollbar': {
-                                                                            display: 'none', // Hide scrollbar on Chrome/Safari
-                                                                        },
-                                                                        '-ms-overflow-style': 'none', // Hide scrollbar on IE/Edge
-                                                                        'scrollbar-width': 'none', // Hide scrollbar on Firefox
-                                                                    },
-                                                                },
-                                                            }}
-                                                        />
-
-                                                        {showSuggestions && (
-                                                            <Box sx={{
-                                                                width: '300px', height: '250px', zIndex: 9999,
-                                                                position: 'absolute', top: '30%', overflow: 'auto'
-                                                            }}>
-                                                                <List
-                                                                    sx={{
-                                                                        position: 'absolute',
-                                                                        top: 0, // Adjust top position to ensure dropdown shows under the TextField
-                                                                        width: '100%',
-                                                                        backgroundColor: 'white',
-                                                                        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-                                                                        zIndex: 9999,
-                                                                        overflow: 'auto'
-                                                                    }}
-                                                                >
-                                                                    {filteredTags.map((tag, index) => (
-                                                                        <ListItem key={index} disablePadding>
-                                                                            <ListItemButton onClick={() => handleTagSelection(tag)}>
-                                                                                <ListItemText primary={tag} />
-                                                                            </ListItemButton>
-                                                                        </ListItem>
-                                                                    ))}
-                                                                </List>
-                                                            </Box>
-                                                        )}
-                                                        <Divider />
-                                                        <Box sx={{
-                                                            display: 'flex', flexDirection: 'row', alignItems: 'center',
-                                                            width: '299px', height: '90px', marginLeft: '10px', justifyContent: 'space-between'
-                                                        }}>
-                                                            <span style={{ fontSize: 16, fontWeight: isAdvanceSetting ? 'bold' : 'normal', marginLeft: '10px' }}>Cài đặt nâng cao</span>
-                                                            <IconButton
-                                                                onClick={() => { handleToggle() }}
-                                                                sx={{ marginRight: '20px' }}
-                                                            >
-                                                                {isAdvanceSetting ? <ArrowDropUpIcon sx={{ fontSize: 20, color: 'black' }} /> : <ArrowDropDownIcon sx={{ fontSize: 20, color: 'black' }} />}
-                                                            </IconButton>
-                                                        </Box>
-                                                        <div ref={collapseRef}>
-                                                            <Collapse in={isAdvanceSetting} timeout="auto" unmountOnExit>
-                                                                <Box
-                                                                    sx={{
-                                                                        width: '299px', height: 'fit-content',
-                                                                        display: 'flex',
-                                                                        flexDirection: 'column',
-                                                                        marginTop: '10px',
-                                                                        backgroundColor: 'transparent',
-                                                                        marginLeft: '20px'
-                                                                    }}
-
-                                                                >
-                                                                    <span style={{ fontSize: 16, fontWeight: 'normal', marginBottom: '20px' }}>
-                                                                        Đối tượng người xem
-                                                                    </span>
-                                                                    <FormControl>
-                                                                        <RadioGroup
-                                                                            aria-labelledby="demo-radio-buttons-group-label"
-                                                                            value={underThirteen}
-                                                                            onChange={handleChangeUnderThirteen}
-                                                                            defaultValue={'no'}
-                                                                        >
-                                                                            <FormControlLabel label="Có, nội dung này dành cho trẻ em" control={
-                                                                                <Radio
-                                                                                    sx={{
-                                                                                        color: '#000',
-                                                                                        '&.Mui-checked': {
-                                                                                            color: '#000',
-                                                                                        },
-                                                                                    }}
-                                                                                />}
-                                                                                value="yes" sx={{ marginBottom: '10px', width: '280px' }} />
-                                                                            <FormControlLabel label="Không, nội dung này không dành cho trẻ em"
-                                                                                control={
-                                                                                    <Radio
-                                                                                        sx={{
-                                                                                            color: '#000',
-                                                                                            '&.Mui-checked': {
-                                                                                                color: '#000',
-                                                                                            },
-                                                                                        }}
-                                                                                    />}
-                                                                                value="no" sx={{ marginBottom: '10px', width: '280px' }} />
-                                                                        </RadioGroup>
-                                                                    </FormControl>
-                                                                    <Divider />
-                                                                </Box>
-                                                                {underThirteen === 'no' &&
-                                                                    <Box
-                                                                        sx={{
-                                                                            width: '299px', height: 'fit-content',
-                                                                            display: 'flex',
-                                                                            flexDirection: 'column',
-                                                                            marginTop: '10px',
-                                                                            backgroundColor: 'transparent',
-                                                                            marginLeft: '20px'
-                                                                        }}
-
-                                                                    >
-                                                                        <span style={{ fontSize: 16, fontWeight: 'normal', marginBottom: '20px' }}>
-                                                                            Giới hạn độ tuổi
-                                                                        </span>
-                                                                        <FormControl>
-                                                                            <RadioGroup
-                                                                                aria-labelledby="demo-radio-buttons-group-label"
-                                                                                value={upEighteen}
-                                                                                onChange={handleChangeUpEighteen}
-                                                                                defaultValue={'no'}
-
-                                                                            >
-                                                                                <FormControlLabel label="Có, giới hạn video của tôi ở những người xem trên 18 tuổi"
-                                                                                    control={
-                                                                                        <Radio
-                                                                                            sx={{
-                                                                                                color: '#000',
-                                                                                                '&.Mui-checked': {
-                                                                                                    color: '#000',
-                                                                                                },
-                                                                                            }}
-                                                                                        />}
-                                                                                    value="yes" sx={{ marginBottom: '10px', width: '280px' }} />
-                                                                                <FormControlLabel label="Không, không giới hạn video của tôi ở những người xem trên 18 tuổi"
-                                                                                    control={
-                                                                                        <Radio
-                                                                                            sx={{
-                                                                                                color: '#000',
-                                                                                                '&.Mui-checked': {
-                                                                                                    color: '#000',
-                                                                                                },
-                                                                                            }}
-                                                                                        />}
-                                                                                    value="no" sx={{ marginBottom: '10px', width: '280px' }} />
-                                                                            </RadioGroup>
-                                                                        </FormControl>
-                                                                    </Box>
-                                                                }
-                                                            </Collapse>
-                                                        </div>
-                                                    </Box>
-                                                </Box>
-
-                                            </Box>
-                                        </div>
-
-                                    </Box>
-                                </Box>
-
-                            </Box>
-                            :
+                    <Box
+                        position='flex'
+                        sx={{
+                            position: 'absolute', left: '50%', marginTop: '80px',
+                            transform: 'translateX(-50%)',
+                        }}
+                    >
+                        {isFinishCreate ?
                             <Box
                                 sx={{
                                     width: '500px', bgcolor: 'background.paper',
                                     height: '500px', border: 1, borderRadius: 3, borderColor: 'white'
                                 }}
                             >
-                                {fileUrls.length > 0 ?
-                                    (
+                                <FinishCreate
+                                    isLoading={isLoading}
+                                    uploadPolicy={uploadPolicy}
+                                />
+                            </Box>
+                            :
+                            <div>
+                                {isSetContent ?
+
+                                    <Box
+                                        sx={{
+                                            width: '800px', bgcolor: 'background.paper',
+                                            height: '500px', border: 1, borderRadius: 3, borderColor: 'white'
+                                        }}
+                                    >
                                         <Box display="flex" alignItems="center" justifyContent="center">
                                             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                                 <Box
                                                     sx={{
-                                                        width: '500px', height: '50px', display: 'flex',
+                                                        width: '800px', height: '50px', display: 'flex',
                                                         justifyContent: 'space-between', alignItems: 'center',
                                                         padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB'
                                                     }}
                                                 >
                                                     <IconButton
                                                         onClick={() => {
-                                                            handleRemoveAllFile()
+                                                            setChangeSetContent(false)
+                                                            setInputCount(0)
+                                                            setInputValue('')
                                                         }}
                                                         sx={{
                                                             height: '25px', width: '25px', marginLeft: '20px'
@@ -764,206 +500,541 @@ export default function UploadContent({ closeModal }) {
                                                     >
                                                         <KeyboardBackspaceIcon sx={{ fontSize: 25, color: 'black' }} />
                                                     </IconButton>
-
-                                                    <span
-                                                        onClick={() => { setChangeSetContent(true) }}
-                                                        style={{
-                                                            fontSize: 15, fontWeight: 'normal',
-                                                            marginRight: '20px', color: '#0095F6',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        Tiếp
-                                                    </span>
-                                                </Box>
-                                                <Box display="flex" alignItems="center" justifyContent="center">
-
-                                                    {files[0].type.startsWith('image') ? (
-                                                        <div>
-                                                            <img
-                                                                src={itemDisplay || fileUrls[0]}
-                                                                style={{
-                                                                    width: '500px', height: '449px', objectFit: 'cover', zIndex: 1,
-                                                                    borderBottomLeftRadius: '12px',
-                                                                    borderBottomRightRadius: '12px',
-                                                                }}
-                                                            />
-                                                            <IconButton
-                                                                onClick={() => {
-                                                                    setActive(!active)
-                                                                }}
-                                                                sx={{
-                                                                    position: 'absolute', bottom: '3%', left: '5%',
-                                                                    transform: 'translateX(-50%)',
-                                                                    backgroundColor: active ? '#f5f5f5' : '#333',  // Dark gray/charcoal color similar to Instagram's style
-                                                                }}
-                                                            >
-                                                                <FilterNoneIcon sx={{ color: 'white', fontSize: 15, zIndex: 1000, }} />
-                                                            </IconButton>
-                                                            {active &&
-                                                                <Box sx={{
-                                                                    width: '500px', height: '100px',
-                                                                    position: 'absolute', bottom: '10%', left: '50%',
-                                                                    transform: 'translateX(-50%)',
-                                                                }}>
-                                                                    <Box
-                                                                        sx={{
-                                                                            width: 'fit-content', maxWidth: '400px', height: '100px',
-                                                                            padding: '0px', backgroundColor: 'rgba(51, 51, 51, 0.7)',
-                                                                            borderRadius: '15px', overflow: 'auto',
-                                                                            display: "flex", alignItems: "center", justifyContent: "center",
-                                                                        }}
-                                                                    >
-                                                                        <IconButton
-                                                                            onClick={() => {
-                                                                                handleButtonClick()
-                                                                            }}
-                                                                            sx={{
-                                                                                width: '30px', height: '30px',
-                                                                                marginTop: '10px',
-                                                                                backgroundColor: '#333',
-                                                                                marginLeft: '10px',
-                                                                                marginRight: '10px'
-                                                                            }}
-                                                                        >
-                                                                            <AddIcon sx={{ color: 'white', fontSize: 30, zIndex: 1000, }} />
-                                                                        </IconButton>
-                                                                        <Box
-                                                                            sx={{
-                                                                                width: 'fit-content', maxWidth: '300px', height: '100px',
-                                                                                padding: '0px',
-                                                                                borderRadius: '15px', overflow: 'auto',
-                                                                                marginRight: '10px',
-                                                                                display: "flex", alignItems: "center", justifyContent: "center",
-                                                                                '&::-webkit-scrollbar': {
-                                                                                    display: 'none',
-                                                                                },
-                                                                                '-ms-overflow-style': 'none',
-                                                                                'scrollbar-width': 'none',
-                                                                            }}
-                                                                        >
-
-                                                                            <ImageList cols={fileUrls.length} sx={{ width: '100%', height: '80px' }}>
-                                                                                {fileUrls.map((url, index) => (
-                                                                                    <div key={index}>
-                                                                                        <ImageListItem
-                                                                                            sx={{
-                                                                                                width: '80px', height: '80px', padding: '0px', background: 'rgba(0, 0, 0, 0)'
-                                                                                            }}
-                                                                                        >
-                                                                                            <img
-                                                                                                onClick={() => {
-                                                                                                    setItemDisplay(url)
-
-                                                                                                }}
-                                                                                                src={url} alt={`Hình ảnh ${index + 1}`}
-                                                                                                style={{
-                                                                                                    width: '80px', height: '80px', objectFit: 'cover', zIndex: 1
-                                                                                                }}
-                                                                                            />
-                                                                                            <ImageListItemBar
-                                                                                                sx={{
-                                                                                                    zIndex: 100, background: 'rgba(0, 0, 0, 0)'
-                                                                                                }}
-                                                                                                position="top"
-                                                                                                actionIcon={
-                                                                                                    <IconButton
-                                                                                                        onClick={() => {
-                                                                                                            handleRemoveFile(index)
-                                                                                                        }}
-                                                                                                        sx={{
-                                                                                                            width: '18px', height: '18px',
-                                                                                                            marginTop: '3px',
-                                                                                                            backgroundColor: 'rgba(51, 51, 51, 0.5)',
-                                                                                                            marginRight: '3px',
-                                                                                                            zIndex: 1000,
-                                                                                                        }}
-                                                                                                    >
-                                                                                                        <ClearIcon sx={{ color: 'white', fontSize: 15 }} />
-                                                                                                    </IconButton>
-
-                                                                                                }
-                                                                                                actionPosition="right"
-                                                                                            />
-
-                                                                                        </ImageListItem>
-
-                                                                                    </div>
-                                                                                ))}
-                                                                            </ImageList>
-
-
-                                                                        </Box>
-                                                                    </Box>
-                                                                </Box>
-                                                            }
-                                                        </div>
-                                                    ) : (
-                                                        <video controls
+                                                    <form onSubmit={handleSubmit}>
+                                                        <button
+                                                            type='submit'
                                                             style={{
-                                                                maxWidth: '500px', height: '449px', objectFit: 'cover',
-                                                                borderBottomLeftRadius: '12px',
-                                                                borderBottomRightRadius: '12px',
+                                                                fontSize: 15, fontWeight: 'normal',
+                                                                marginRight: '20px', color: '#0095F6',
+                                                                cursor: 'pointer',
+                                                                background: 'none',
+                                                                border: 'none',
                                                             }}
                                                         >
-                                                            <source src={fileUrls[0]} type="video/mp4" />
-                                                        </video>
-                                                    )}
+                                                            Chia sẻ
+                                                        </button>
+                                                    </form>
+
                                                 </Box>
+                                                <div>
+                                                    <Box sx={{ width: '800px', height: '449px', justifyContent: 'space-between' }} >
+                                                        <Box display="flex" sx={{ width: '800px', height: '449px', justifyContent: 'space-between' }}>
+                                                            {files[0].type.startsWith('video') ?
+                                                                <Box border={1} borderColor="black" sx={{ width: '300px', height: '449px', padding: '0px' }} >
+                                                                    <video controls autoPlay style={{
+                                                                        width: '500px', height: '449px', objectFit: 'cover', zIndex: 1,
+                                                                        borderBottomLeftRadius: '12px',
+                                                                    }}>
+                                                                        <source src={item[0]} type='video/mp4' />
+                                                                    </video>
+                                                                </Box>
+                                                                :
+                                                                <Box
+                                                                    display="flex"
+                                                                    sx={{ width: '500px', height: '449px', padding: '0px', position: 'relative', display: 'inline-block' }}
+                                                                >
+                                                                    {index > 0 &&
+                                                                        <IconButton
+                                                                            onClick={() => {
+                                                                                handleIndexImageDecrease()
+                                                                            }}
+                                                                            sx={{
+                                                                                position: 'absolute', bottom: '45%', left: '5%',
+                                                                                transform: 'translateX(-50%)',
+                                                                                color: 'white',
+                                                                                backgroundColor: 'rgba(51, 51, 51, 0.5)',
+                                                                                fontSize: 25,
+                                                                                zIndex: 1000,
+                                                                            }}
+                                                                        >
+                                                                            <ArrowCircleLeftIcon />
+                                                                        </IconButton>
+                                                                    }
+                                                                    <img
+                                                                        src={item[index]}
+                                                                        style={{
+                                                                            width: '500px', height: '449px', objectFit: 'cover', zIndex: 1,
+                                                                            borderBottomLeftRadius: '12px',
+                                                                        }}
+                                                                    />
+                                                                    {item.length > 1 &&
+                                                                        <Box
+                                                                            sx={{
+                                                                                position: 'absolute', bottom: '1%', left: '50%',
+                                                                                transform: 'translateX(-50%)',
+                                                                            }}
+                                                                        >
+                                                                            <List>
+                                                                                {Array.from({ length: item.length }, (_, i) => (
+                                                                                    <ListItem key={i} sx={{ display: 'inline', width: '15px', height: '15px', padding: '2px' }}>
+                                                                                        {index === i ?
+                                                                                            <CircleIcon sx={{ color: 'white', fontSize: 8, zIndex: 1000, }} /> :
+                                                                                            <CircleOutlinedIcon sx={{ color: 'white', fontSize: 8, zIndex: 1000, }} />
+                                                                                        }
+                                                                                    </ListItem>
+                                                                                ))}
+                                                                            </List>
+                                                                        </Box>
+                                                                    }
+                                                                    {(item.length > 1 && index < item.length - 1) &&
+                                                                        <IconButton
+                                                                            onClick={() => {
+                                                                                handleIndexImageIncrease()
+                                                                            }}
+                                                                            sx={{
+                                                                                position: 'absolute', bottom: '45%', left: '95%',
+                                                                                transform: 'translateX(-50%)',
+                                                                                color: 'white',
+                                                                                backgroundColor: 'rgba(51, 51, 51, 0.5)',
+                                                                                fontSize: 25,
+                                                                                zIndex: 1000,
+                                                                            }}
+                                                                        >
+                                                                            <ArrowCircleRightIcon />
+                                                                        </IconButton>
+                                                                    }
+                                                                </Box>
+
+                                                            }
+                                                            <Box
+                                                                sx={{
+                                                                    backgroundColor: 'white', width: '300px', height: '449px',
+                                                                    borderBottomRightRadius: '12px', display: 'flex', flexDirection: 'column',
+                                                                    overflow: 'auto',
+                                                                    '&::-webkit-scrollbar': {
+                                                                        display: 'none',  // Hide scrollbar on Chrome/Safari
+                                                                    },
+                                                                    '-ms-overflow-style': 'none',  // Hide scrollbar on IE/Edge
+                                                                    'scrollbar-width': 'none',  // Hide scrollbar on Firefox
+                                                                }}
+                                                            >
+                                                                <Box sx={{
+                                                                    display: 'flex', flexDirection: 'row', alignItems: 'center',
+                                                                    width: '299px', height: '50px', marginLeft: '10px'
+                                                                }}>
+                                                                    <Avatar src={avatar} sx={{ color: '#000', width: '30px', height: '30px', }} />
+                                                                    <span style={{ fontSize: 13, fontWeight: 'bold', marginLeft: '10px' }}>wasabi1234</span>
+                                                                </Box>
+                                                                <Box sx={{
+                                                                    display: 'flex', flexDirection: 'column',
+                                                                    width: '299px',
+                                                                }}>
+                                                                    <TextField
+                                                                        fullWidth
+                                                                        variant="outlined"
+                                                                        multiline
+                                                                        maxRows={12}
+                                                                        value={inputValue}
+                                                                        onChange={handleInputChange}
+                                                                        autoFocus={true}
+                                                                        onKeyDown={handleKeyDown}
+                                                                        style={{
+                                                                            height: '300px',
+                                                                            textAlign: 'start',
+                                                                            '&::-webkit-scrollbar': {
+                                                                                display: 'none', // Hide scrollbar on Chrome/Safari
+                                                                            },
+                                                                            '-ms-overflow-style': 'none', // Hide scrollbar on IE/Edge
+                                                                            'scrollbar-width': 'none', // Hide scrollbar on Firefox
+                                                                        }}
+
+                                                                        slotProps={{
+                                                                            input: {
+                                                                                maxLength: 2200,
+                                                                                sx: {
+                                                                                    '& .MuiOutlinedInput-notchedOutline': {
+                                                                                        border: 'none', // Hide border of TextField
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        }}
+                                                                    />
+                                                                    <span style={{
+                                                                        textAlign: 'right', marginRight: '20px', color: '#c7c7c7', fontSize: 13,
+                                                                        marginBottom: '10px'
+                                                                    }}>
+                                                                        {`${inputValue.length} / 2200`}
+                                                                    </span>
+                                                                </Box>
+
+                                                                {showSuggestions && (
+                                                                    <Box sx={{
+                                                                        width: '300px', height: '250px', zIndex: 9999,
+                                                                        position: 'absolute', top: '30%', overflow: 'auto'
+                                                                    }}>
+                                                                        <List
+                                                                            sx={{
+                                                                                position: 'absolute',
+                                                                                top: 0, // Adjust top position to ensure dropdown shows under the TextField
+                                                                                width: '100%',
+                                                                                backgroundColor: 'white',
+                                                                                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+                                                                                zIndex: 9999,
+                                                                                overflow: 'auto'
+                                                                            }}
+                                                                        >
+                                                                            {filteredTags.map((tag, index) => (
+                                                                                <ListItem key={index} disablePadding>
+                                                                                    <ListItemButton onClick={() => handleTagSelection(tag)}>
+                                                                                        <ListItemText primary={tag} />
+                                                                                    </ListItemButton>
+                                                                                </ListItem>
+                                                                            ))}
+                                                                        </List>
+                                                                    </Box>
+                                                                )}
+                                                                <Divider />
+                                                                <Box sx={{
+                                                                    display: 'flex', flexDirection: 'row', alignItems: 'center',
+                                                                    width: '299px', height: '90px', marginLeft: '10px', justifyContent: 'space-between'
+                                                                }}>
+                                                                    <span style={{ fontSize: 16, fontWeight: isAdvanceSetting ? 'bold' : 'normal', marginLeft: '10px' }}>Cài đặt nâng cao</span>
+                                                                    <IconButton
+                                                                        onClick={() => { handleToggle() }}
+                                                                        sx={{ marginRight: '20px' }}
+                                                                    >
+                                                                        {isAdvanceSetting ? <ArrowDropUpIcon sx={{ fontSize: 20, color: 'black' }} /> : <ArrowDropDownIcon sx={{ fontSize: 20, color: 'black' }} />}
+                                                                    </IconButton>
+                                                                </Box>
+                                                                <div ref={collapseRef}>
+                                                                    <Collapse in={isAdvanceSetting} timeout="auto" unmountOnExit>
+                                                                        <Box
+                                                                            sx={{
+                                                                                width: '299px', height: 'fit-content',
+                                                                                display: 'flex',
+                                                                                flexDirection: 'column',
+                                                                                marginTop: '10px',
+                                                                                backgroundColor: 'transparent',
+                                                                                marginLeft: '20px'
+                                                                            }}
+
+                                                                        >
+                                                                            <span style={{ fontSize: 16, fontWeight: 'normal', marginBottom: '20px' }}>
+                                                                                Đối tượng người xem
+                                                                            </span>
+                                                                            <FormControl>
+                                                                                <RadioGroup
+                                                                                    aria-labelledby="demo-radio-buttons-group-label"
+                                                                                    value={underThirteen}
+                                                                                    onChange={handleChangeUnderThirteen}
+                                                                                    defaultValue={'no'}
+                                                                                >
+                                                                                    <FormControlLabel label="Có, nội dung này dành cho trẻ em" control={
+                                                                                        <Radio
+                                                                                            sx={{
+                                                                                                color: '#000',
+                                                                                                '&.Mui-checked': {
+                                                                                                    color: '#000',
+                                                                                                },
+                                                                                            }}
+                                                                                        />}
+                                                                                        value="yes" sx={{ marginBottom: '10px', width: '280px' }} />
+                                                                                    <FormControlLabel label="Không, nội dung này không dành cho trẻ em"
+                                                                                        control={
+                                                                                            <Radio
+                                                                                                sx={{
+                                                                                                    color: '#000',
+                                                                                                    '&.Mui-checked': {
+                                                                                                        color: '#000',
+                                                                                                    },
+                                                                                                }}
+                                                                                            />}
+                                                                                        value="no" sx={{ marginBottom: '10px', width: '280px' }} />
+                                                                                </RadioGroup>
+                                                                            </FormControl>
+                                                                            <Divider />
+                                                                        </Box>
+                                                                        {underThirteen === 'no' &&
+                                                                            <Box
+                                                                                sx={{
+                                                                                    width: '299px', height: 'fit-content',
+                                                                                    display: 'flex',
+                                                                                    flexDirection: 'column',
+                                                                                    marginTop: '10px',
+                                                                                    backgroundColor: 'transparent',
+                                                                                    marginLeft: '20px'
+                                                                                }}
+
+                                                                            >
+                                                                                <span style={{ fontSize: 16, fontWeight: 'normal', marginBottom: '20px' }}>
+                                                                                    Giới hạn độ tuổi
+                                                                                </span>
+                                                                                <FormControl>
+                                                                                    <RadioGroup
+                                                                                        aria-labelledby="demo-radio-buttons-group-label"
+                                                                                        value={upEighteen}
+                                                                                        onChange={handleChangeUpEighteen}
+                                                                                        defaultValue={'no'}
+
+                                                                                    >
+                                                                                        <FormControlLabel label="Có, giới hạn video của tôi ở những người xem trên 18 tuổi"
+                                                                                            control={
+                                                                                                <Radio
+                                                                                                    sx={{
+                                                                                                        color: '#000',
+                                                                                                        '&.Mui-checked': {
+                                                                                                            color: '#000',
+                                                                                                        },
+                                                                                                    }}
+                                                                                                />}
+                                                                                            value="yes" sx={{ marginBottom: '10px', width: '280px' }} />
+                                                                                        <FormControlLabel label="Không, không giới hạn video của tôi ở những người xem trên 18 tuổi"
+                                                                                            control={
+                                                                                                <Radio
+                                                                                                    sx={{
+                                                                                                        color: '#000',
+                                                                                                        '&.Mui-checked': {
+                                                                                                            color: '#000',
+                                                                                                        },
+                                                                                                    }}
+                                                                                                />}
+                                                                                            value="no" sx={{ marginBottom: '10px', width: '280px' }} />
+                                                                                    </RadioGroup>
+                                                                                </FormControl>
+                                                                            </Box>
+                                                                        }
+                                                                    </Collapse>
+                                                                </div>
+                                                            </Box>
+                                                        </Box>
+
+                                                    </Box>
+                                                </div>
+
                                             </Box>
                                         </Box>
-                                    )
+
+                                    </Box>
                                     :
-                                    (
-                                        <Box display="flex" alignItems="center" justifyContent="center">
-                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                                <Box sx={{ width: '500px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB' }}>
-                                                    <span style={{ fontSize: 15, fontWeight: 'bold' }}>
-                                                        Tạo bài viết mới
-                                                    </span>
-                                                </Box>
-                                                <Box sx={{
-                                                    width: '500px', height: '450px', display: 'flex',
-                                                    justifyContent: 'center', alignItems: 'center',
-                                                    padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB',
-                                                    flexDirection: 'column'
-                                                }}>
-                                                    <Box sx={{ display: 'flex', flexDirection: 'row', marginBottom: '50px' }}>
-                                                        <CropOriginalIcon sx={{ fontSize: 100, transform: 'rotate(-20deg)' }} />
-                                                        <SmartDisplayIcon sx={{ fontSize: 100, transform: 'rotate(20deg)', marginTop: '20px' }} />
-                                                    </Box>
-                                                    <span style={{ fontSize: 22, fontWeight: 'lighter' }}>
-                                                        Thêm ảnh và video vào đây
-                                                    </span>
-                                                    <Box
-                                                        sx={{
-                                                            backgroundColor: '#0095F6', borderRadius: 2, marginTop: '20px',
-                                                            height: '40px', width: '140px',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                        onClick={() => {
-                                                            handleButtonClick()
-                                                            setActive(false)
-                                                        }}
-                                                    >
-                                                        <span style={{ fontSize: 13, fontWeight: 'bold', color: 'white' }}>
-                                                            Chọn từ máy tính
-                                                        </span>
-                                                    </Box>
-                                                </Box>
+                                    <Box
+                                        sx={{
+                                            width: '500px', bgcolor: 'background.paper',
+                                            height: '500px', border: 1, borderRadius: 3, borderColor: 'white'
+                                        }}
+                                    >
+                                        {fileUrls.length > 0 ?
+                                            (
+                                                <Box display="flex" alignItems="center" justifyContent="center">
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                        <Box
+                                                            sx={{
+                                                                width: '500px', height: '50px', display: 'flex',
+                                                                justifyContent: 'space-between', alignItems: 'center',
+                                                                padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB'
+                                                            }}
+                                                        >
+                                                            <IconButton
+                                                                onClick={() => {
+                                                                    handleRemoveAllFile()
+                                                                }}
+                                                                sx={{
+                                                                    height: '25px', width: '25px', marginLeft: '20px'
+                                                                }}
+                                                            >
+                                                                <KeyboardBackspaceIcon sx={{ fontSize: 25, color: 'black' }} />
+                                                            </IconButton>
 
-                                            </Box>
-                                        </Box>
-                                    )
+                                                            <span
+                                                                onClick={() => { setChangeSetContent(true) }}
+                                                                style={{
+                                                                    fontSize: 15, fontWeight: 'normal',
+                                                                    marginRight: '20px', color: '#0095F6',
+                                                                    cursor: 'pointer'
+                                                                }}
+                                                            >
+                                                                Tiếp
+                                                            </span>
+                                                        </Box>
+                                                        <Box display="flex" alignItems="center" justifyContent="center">
+
+                                                            {files[0].type.startsWith('image') ? (
+                                                                <div>
+                                                                    <img
+                                                                        src={itemDisplay || fileUrls[0]}
+                                                                        style={{
+                                                                            width: '500px', height: '449px', objectFit: 'cover', zIndex: 1,
+                                                                            borderBottomLeftRadius: '12px',
+                                                                            borderBottomRightRadius: '12px',
+                                                                        }}
+                                                                    />
+                                                                    <IconButton
+                                                                        onClick={() => {
+                                                                            setActive(!active)
+                                                                        }}
+                                                                        sx={{
+                                                                            position: 'absolute', bottom: '3%', left: '5%',
+                                                                            transform: 'translateX(-50%)',
+                                                                            backgroundColor: active ? '#f5f5f5' : '#333',  // Dark gray/charcoal color similar to Instagram's style
+                                                                        }}
+                                                                    >
+                                                                        <FilterNoneIcon sx={{ color: 'white', fontSize: 15, zIndex: 1000, }} />
+                                                                    </IconButton>
+                                                                    {active &&
+                                                                        <Box sx={{
+                                                                            width: '500px', height: '100px',
+                                                                            position: 'absolute', bottom: '10%', left: '50%',
+                                                                            transform: 'translateX(-50%)',
+                                                                        }}>
+                                                                            <Box
+                                                                                sx={{
+                                                                                    width: 'fit-content', maxWidth: '400px', height: '100px',
+                                                                                    padding: '0px', backgroundColor: 'rgba(51, 51, 51, 0.7)',
+                                                                                    borderRadius: '15px', overflow: 'auto',
+                                                                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                                                                }}
+                                                                            >
+                                                                                <IconButton
+                                                                                    onClick={() => {
+                                                                                        handleButtonClick()
+                                                                                    }}
+                                                                                    sx={{
+                                                                                        width: '30px', height: '30px',
+                                                                                        marginTop: '10px',
+                                                                                        backgroundColor: '#333',
+                                                                                        marginLeft: '10px',
+                                                                                        marginRight: '10px'
+                                                                                    }}
+                                                                                >
+                                                                                    <AddIcon sx={{ color: 'white', fontSize: 30, zIndex: 1000, }} />
+                                                                                </IconButton>
+                                                                                <Box
+                                                                                    sx={{
+                                                                                        width: 'fit-content', maxWidth: '300px', height: '100px',
+                                                                                        padding: '0px',
+                                                                                        borderRadius: '15px', overflow: 'auto',
+                                                                                        marginRight: '10px',
+                                                                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                                                                        '&::-webkit-scrollbar': {
+                                                                                            display: 'none',
+                                                                                        },
+                                                                                        '-ms-overflow-style': 'none',
+                                                                                        'scrollbar-width': 'none',
+                                                                                    }}
+                                                                                >
+
+                                                                                    <ImageList cols={fileUrls.length} sx={{ width: '100%', height: '80px' }}>
+                                                                                        {fileUrls.map((url, index) => (
+                                                                                            <div key={index}>
+                                                                                                <ImageListItem
+                                                                                                    sx={{
+                                                                                                        width: '80px', height: '80px', padding: '0px', background: 'rgba(0, 0, 0, 0)'
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <img
+                                                                                                        onClick={() => {
+                                                                                                            setItemDisplay(url)
+
+                                                                                                        }}
+                                                                                                        src={url} alt={`Hình ảnh ${index + 1}`}
+                                                                                                        style={{
+                                                                                                            width: '80px', height: '80px', objectFit: 'cover', zIndex: 1
+                                                                                                        }}
+                                                                                                    />
+                                                                                                    <ImageListItemBar
+                                                                                                        sx={{
+                                                                                                            zIndex: 100, background: 'rgba(0, 0, 0, 0)'
+                                                                                                        }}
+                                                                                                        position="top"
+                                                                                                        actionIcon={
+                                                                                                            <IconButton
+                                                                                                                onClick={() => {
+                                                                                                                    handleRemoveFile(index)
+                                                                                                                }}
+                                                                                                                sx={{
+                                                                                                                    width: '18px', height: '18px',
+                                                                                                                    marginTop: '3px',
+                                                                                                                    backgroundColor: 'rgba(51, 51, 51, 0.5)',
+                                                                                                                    marginRight: '3px',
+                                                                                                                    zIndex: 1000,
+                                                                                                                }}
+                                                                                                            >
+                                                                                                                <ClearIcon sx={{ color: 'white', fontSize: 15 }} />
+                                                                                                            </IconButton>
+
+                                                                                                        }
+                                                                                                        actionPosition="right"
+                                                                                                    />
+
+                                                                                                </ImageListItem>
+
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </ImageList>
+
+
+                                                                                </Box>
+                                                                            </Box>
+                                                                        </Box>
+                                                                    }
+                                                                </div>
+                                                            ) : (
+                                                                <video controls
+                                                                    style={{
+                                                                        maxWidth: '500px', height: '449px', objectFit: 'cover',
+                                                                        borderBottomLeftRadius: '12px',
+                                                                        borderBottomRightRadius: '12px',
+                                                                    }}
+                                                                >
+                                                                    <source src={fileUrls[0]} type="video/mp4" />
+                                                                </video>
+                                                            )}
+                                                        </Box>
+                                                    </Box>
+                                                </Box>
+                                            )
+                                            :
+                                            (
+                                                <Box display="flex" alignItems="center" justifyContent="center">
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                        <Box sx={{ width: '500px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB' }}>
+                                                            <span style={{ fontSize: 15, fontWeight: 'bold' }}>
+                                                                Tạo bài viết mới
+                                                            </span>
+                                                        </Box>
+                                                        <Box sx={{
+                                                            width: '500px', height: '450px', display: 'flex',
+                                                            justifyContent: 'center', alignItems: 'center',
+                                                            padding: '0px',
+                                                            flexDirection: 'column'
+                                                        }}>
+                                                            <Box sx={{ display: 'flex', flexDirection: 'row', marginBottom: '50px' }}>
+                                                                <CropOriginalIcon sx={{ fontSize: 100, transform: 'rotate(-20deg)' }} />
+                                                                <SmartDisplayIcon sx={{ fontSize: 100, transform: 'rotate(20deg)', marginTop: '20px' }} />
+                                                            </Box>
+                                                            <span style={{ fontSize: 22, fontWeight: 'lighter' }}>
+                                                                Thêm ảnh và video vào đây
+                                                            </span>
+                                                            <Box
+                                                                sx={{
+                                                                    backgroundColor: '#0095F6', borderRadius: 2, marginTop: '20px',
+                                                                    height: '40px', width: '140px',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    cursor: 'pointer'
+                                                                }}
+                                                                onClick={() => {
+                                                                    handleButtonClick()
+                                                                    setActive(false)
+                                                                }}
+                                                            >
+                                                                <span style={{ fontSize: 13, fontWeight: 'bold', color: 'white' }}>
+                                                                    Chọn từ máy tính
+                                                                </span>
+                                                            </Box>
+                                                        </Box>
+
+                                                    </Box>
+                                                </Box>
+                                            )
+                                        }
+
+                                    </Box>
                                 }
-
-                            </Box>
+                            </div>
                         }
-                    </div>
-                }
 
-            </Box >
+                    </Box >
+                </div>
+            }
         </div >
     );
 }
