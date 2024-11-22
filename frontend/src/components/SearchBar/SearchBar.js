@@ -62,7 +62,27 @@ const SearchForm = () => {
         }
     }, 300);
 
-    console.log(suggestions)
+    console.log(history)
+    const handleClearHistory = async (event) => {
+        event.preventDefault();
+        try {
+            setIsLoading(true);
+            for (let i = 0; i < history.length; i++) {
+                await sendRequest(
+                    `http://localhost:5000/api/historySearch/${history[i]._id}`,
+                    'DELETE',
+                );
+            }
+            setHistory([])
+            setTimeout(() => {
+                setIsLoading(false);
+            }, timeLoading * 1000 + 1000);
+        } catch (err) {
+            setTimeout(() => {
+                setIsLoading(false);
+            }, timeLoading * 1000 + 1000);
+        }
+    }
 
     const handleCreateHistoryUser = async (event, suggestions) => {
         event.preventDefault();
@@ -181,7 +201,7 @@ const SearchForm = () => {
                                     Gần đây
                                 </a>
                                 {history.length > 0 &&
-                                    <a className='recent-delete' onClick={() => { }}>
+                                    <a className='recent-delete' onClick={(event) => { handleClearHistory(event) }}>
                                         Xóa tất cả
                                     </a>
                                 }
