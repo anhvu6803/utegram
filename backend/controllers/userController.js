@@ -84,15 +84,15 @@ exports.getUserHasMorePosts = async (req, res) => {
 };
 exports.checkUsernameExists = async (req, res, next) => {
     const { username } = req.params;
-  
+
     try {
-      const user = await User.findOne({ username: username });
-      if (!user) {
-        return res.status(404).json({ message: 'Username not found' });
-      }
-      res.status(200).json({ message: 'Username exists', userId: user._id });
+        const user = await User.findOne({ username: username });
+        if (!user) {
+            return res.status(404).json({ message: 'Username not found' });
+        }
+        res.status(200).json({ message: 'Username exists', userId: user._id });
     } catch (err) {
-      res.status(500).json({ message: 'Fetching username failed, please try again' });
+        res.status(500).json({ message: 'Fetching username failed, please try again' });
     }
   };
   exports.getFollowDataByUserId = async (req, res) => {
@@ -137,3 +137,36 @@ exports.banUser = async (req, res) => {
     }
   };
   
+};
+exports.searchUser = async (req, res, next) => {
+    const { query, userId } = req.query;
+    if (!query || query.trim() === "") {
+        return res.status(400).json({ error: "Từ khóa tìm kiếm không được để trống." });
+    }
+
+    try {
+        const users = await User.aggregate([
+            {
+                $match: {
+                    username: { $regex: query, $options: "i" }, // Tìm kiếm chuỗi con bất kỳ trong username
+                }
+            },
+            { $sample: { size: 5 } }, // Lấy 5 kết quả ngẫu nhiên
+            {
+                $project: {
+                    _id: 1,
+                    username: 1,
+                    fullname: 1,
+                    avatar: 1
+                }
+            }
+        ]);
+
+        const exceptUser = users.filter((item) => item._id.toString() !== userId);
+
+        res.json(exceptUser);
+    } catch (err) {
+        res.status(500).json({ error: "Có lỗi xảy ra khi tìm kiếm." });
+    }
+};
+

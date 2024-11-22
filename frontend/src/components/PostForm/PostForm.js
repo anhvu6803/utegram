@@ -625,7 +625,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                                 {Array.from({ length: captionSplit.length }, (_, i) => (
                                                     <span>
                                                         {captionSplit[i].startsWith('#') ?
-                                                            <Link style={{ textDecoration: 'none', color: '#00376B' }} >
+                                                            <Link to={`/tag/${captionSplit[i].replace('#', '')}`} style={{ textDecoration: 'none', color: '#00376B' }} >
                                                                 {captionSplit[i] + ' '}
                                                             </Link>
                                                             :

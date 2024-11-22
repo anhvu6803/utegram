@@ -1,54 +1,143 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './SearchBar.css';
 import avatar from '../../assets/user.png';
+import debounce from "lodash.debounce";
+import { useHttpClient } from '../../shared/hooks/http-hook';
+import { AuthContext } from '../../shared/context/auth-context';
 
 //// Material UI 
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
+import LoadingButton from '@mui/lab/LoadingButton';
+import CircularProgress from '@mui/material/CircularProgress';
 import ListItemButton from '@mui/material/ListItemButton';
 import Avatar from '@mui/material/Avatar';
 import { Box } from '@mui/material';
 
-const items = [
-    {
-        username: 'wasabi123',
-        state: 'Đang theo dõi'
-    },
-    {
-        username: 'wasabi3343',
-        state: '21,5 triệu người theo dõi'
-    },
-    {
-        username: 'vusabi3343',
-        state: '21,5 triệu người theo dõi'
-    },
-    {
-        username: 'NguyenMEOU',
-        state: '21,5 triệu người theo dõi'
-    }
-];
 
 const SearchForm = () => {
+    const auth = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const { timeLoading, error, sendRequest, clearError } = useHttpClient();
+
     const [searchTerm, setSearchTerm] = useState('');
     const [suggestions, setSuggestions] = useState([]);
+    const [history, setHistory] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const handleSearch = (event) => {
+    const handleSearch = async (event) => {
+        event.preventDefault();
         const searchValue = event.target.value.toLowerCase();
-        console.log(searchValue);
         setSearchTerm(searchValue);
+        await handleSearchDebounced(searchValue)
+    };
 
-        if (searchValue) {
-            const filteredSuggestions = items.filter(({ username }) =>
-                username.toLowerCase().includes(searchValue)
-            );
-            setSuggestions(filteredSuggestions);
-            console.log(filteredSuggestions);
-        } else {
+    const handleSearchDebounced = debounce(async (value) => {
+        if (value.trim() === "") {
             setSuggestions([]);
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            const response = await sendRequest(
+                `http://localhost:5000/api/users/search/username?query=${value}&&userId=${auth.userId}`,
+                'GET',
+            );
+            setSuggestions(response);
+
+            setTimeout(() => {
+                setIsLoading(false);
+            }, timeLoading * 1000 + 1000);
+
+        } catch (err) {
+
+            setTimeout(() => {
+                setIsLoading(false);
+            }, timeLoading * 1000 + 1000);
+            console.error("Lỗi tìm kiếm:", err);
+        }
+    }, 300);
+
+    console.log(suggestions)
+
+    const handleCreateHistoryUser = async (event, suggestions) => {
+        event.preventDefault();
+        navigate(`/profile/${suggestions.username}`)
+        try {
+            setIsLoading(true);
+            const response = await sendRequest(
+                `http://localhost:5000/api/historySearch`,
+                'POST',
+                JSON.stringify({
+                    type: 'user',
+                    owner: auth.userId,
+                    userId: suggestions._id
+                }),
+                { 'Content-Type': 'application/json' }
+            );
+            setSuggestions(response);
+
+            setTimeout(() => {
+                setIsLoading(false);
+            }, timeLoading * 1000 + 1000);
+
+        } catch (err) {
+            setTimeout(() => {
+                setIsLoading(false);
+            }, timeLoading * 1000 + 1000);
         }
     };
+
+    const handleCreateHistoryTag = async (event, tag) => {
+        event.preventDefault();
+        try {
+            setIsLoading(true);
+            const response = await sendRequest(
+                `http://localhost:5000/api/historySearch`,
+                'POST',
+                JSON.stringify({
+                    type: 'hashtag',
+                    owner: auth.userId,
+                    tag: tag
+                }),
+                { 'Content-Type': 'application/json' }
+            );
+            setSuggestions(response);
+
+            setTimeout(() => {
+                setIsLoading(false);
+            }, timeLoading * 1000 + 1000);
+
+        } catch (err) {
+            setTimeout(() => {
+                setIsLoading(false);
+            }, timeLoading * 1000 + 1000);
+        }
+    };
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            setIsLoading(true)
+            try {
+                const response = await sendRequest(`http://localhost:5000/api/historySearch/${auth.userId}`);
+
+                setHistory(response.history);
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, timeLoading * 1000 + 1000);
+
+            } catch (err) {
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, timeLoading * 1000 + 1000);
+            }
+        };
+        fetchHistory();
+    }, [sendRequest]);
 
     return (
         <div className="search-container">
@@ -62,55 +151,105 @@ const SearchForm = () => {
                             type="text"
                             placeholder="Tìm kiếm"
                             value={searchTerm}
-                            onChange={handleSearch}
+                            onChange={(event) => { handleSearch(event) }}
                             className="search-input"
                         />
                     </Box>
                 </Box>
 
             </div>
-            {suggestions <= 0 ? (
+            {searchTerm.length <= 0 ? (
+
                 <div className="result-search-box">
+                    {isLoading ?
+                        <LoadingButton
+                            loading={isLoading}
+                            loadingPosition="center"
+                            sx={{ height: '100px', marginLeft: '150px', marginTop: '50px' }}
+                            loadingIndicator={
+                                <CircularProgress
+                                    size={100} // Set the size of the loading indicator
+                                    sx={{ color: '#f09433' }} // Optional: change color to match your design
+                                />
+                            }
+                        >
+                        </LoadingButton>
+                        :
+                        <div>
+                            <div className="recent-box">
+                                <a className='recent-text'>
+                                    Gần đây
+                                </a>
+                                {history.length > 0 &&
+                                    <a className='recent-delete' onClick={() => { }}>
+                                        Xóa tất cả
+                                    </a>
+                                }
+                            </div>
 
-                    <div className="recent-box">
-                        <a className='recent-text'>
-                            Gần đây
-                        </a>
-                        {items.length > 0 &&
-                            <a className='recent-delete'>
-                                Xóa tất cả
-                            </a>
-                        }
-                    </div>
-
-                    <div className="recent-list-box">
-                        <List sx={{ width: '100%', height: '100%' }}>
-                            {items.map((item, index) => (
-                                <ListItem key={index} disablePadding>
-                                    <ListItemButton href={`/profile/${item.username}`}>
-                                        <ListItemAvatar>
-                                            <Avatar src={avatar} sx={{ width: 35, height: 35 }} />
-                                        </ListItemAvatar>
-                                        <ListItemText style={{ display: 'block' }} primary={item.username} secondary={item.state} />
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
-                        </List>
-                    </div>
+                            <div className="recent-list-box">
+                                <List sx={{ width: '100%', height: '100%' }}>
+                                    {history.map((item, index) => (
+                                        <div>
+                                            {item.type === 'user' ?
+                                                <ListItem key={index} disablePadding>
+                                                    <ListItemButton href={`/profile/${item.userId.username}`}>
+                                                        <Avatar src={item.userId.avatar || avatar} sx={{ width: 35, height: 35 }} />
+                                                        <ListItemText style={{ display: 'block' }} primary={item.userId.username} secondary={item.userId.fullname} />
+                                                    </ListItemButton>
+                                                </ListItem>
+                                                :
+                                                <ListItem key={index} disablePadding>
+                                                    <ListItemButton href={`/tag/${item.tag.replace('#', '')}`}>
+                                                        <ListItemText style={{ display: 'block' }} primary={item.tag} />
+                                                    </ListItemButton>
+                                                </ListItem>
+                                            }
+                                        </div>
+                                    ))}
+                                </List>
+                            </div>
+                        </div>
+                    }
                 </div>
             ) : (<div className="result-search-box">
-                <List sx={{ width: '100%', height: '100%' }}>
-                    {suggestions.map((item, index) => (
-                        <ListItem key={index} disablePadding>
-                            <ListItemButton href={`/profile/${item.username}`}>
-                                <ListItemAvatar>
-                                    <Avatar src={avatar} sx={{ width: 35, height: 35 }} />
-                                </ListItemAvatar>
-                                <ListItemText primary={item.username} secondary={item.state} />
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
-                </List>
+                {isLoading ?
+                    <LoadingButton
+                        loading={isLoading}
+                        loadingPosition="center"
+                        sx={{ height: '100px', marginLeft: '150px', marginTop: '50px' }}
+                        loadingIndicator={
+                            <CircularProgress
+                                size={100} // Set the size of the loading indicator
+                                sx={{ color: '#f09433' }} // Optional: change color to match your design
+                            />
+                        }
+                    >
+                    </LoadingButton>
+                    :
+                    <div>
+                        {suggestions.length === 0 ?
+                            <span style={{ fontSize: 18, display: 'flex', justifyContent: 'center' }}>
+                                Không tìm thấy kết quả
+                            </span>
+                            :
+                            <List sx={{ width: '100%', height: '100%' }}>
+                                {Array.from({ length: suggestions.length }, (_, i) => (
+                                    <ListItem disablePadding>
+                                        <ListItemButton
+                                            onClick={(event) => {
+                                                handleCreateHistoryUser(event, suggestions[i])
+                                            }}
+                                        >
+                                            <Avatar src={suggestions[i].avatar || avatar} sx={{ width: 35, height: 35 }} />
+                                            <ListItemText primary={suggestions[i].username} secondary={suggestions[i].fullname} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        }
+                    </div>
+                }
             </div>)
             }
         </div >

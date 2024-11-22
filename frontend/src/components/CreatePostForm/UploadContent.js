@@ -95,9 +95,9 @@ const tagSuggestions = [
 export default function UploadContent({ closeModal }) {
     const auth = useContext(AuthContext);
     // Replace with your own cloud name
-    const [cloudName] = useState("dbmynlh3f");
+    const cloudName = "dbmynlh3f";
 
-    const [uploadPreset] = useState("iezes36w");
+    const uploadPreset = "iezes36w";
 
     const fileInputRef = useRef(null);
     const [files, setFiles] = useState([]);

@@ -14,6 +14,8 @@ router.get('/morepost/:uid', userController.getUserHasMorePosts);
 
 router.get('/check-username/:username', userController.checkUsernameExists);
 
+router.get('/search/username', userController.searchUser);
+
 router.get('/follow/:userId', userController.getFollowDataByUserId);
 
 router.patch('/ban/:userId', isAdmin, userController.banUser); 
