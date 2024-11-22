@@ -7,6 +7,7 @@ const messageRoutes = require('./routes/chatRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const historySearchRoutes = require('./routes/historySearchRoutes');
 
 const mongoose = require('mongoose');
 
@@ -32,6 +33,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/comment', commentRoutes);
 app.use('/api/report', reportRoutes);
+app.use('/api/historySearch', historySearchRoutes);
 
 app.use((req, res, next) => {
   const error = new HttpError('Could not find this route.', 404);

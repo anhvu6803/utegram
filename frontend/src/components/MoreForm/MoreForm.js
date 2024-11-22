@@ -225,7 +225,7 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
     const [isAdvanceSetting, SetAdvanceSetting] = useState(false);
     const [underThirteen, setUnderThirteen] = useState('no');
     const [upEighteen, setUpEighteen] = useState('no');
-    const [inputValue, setInputValue] = useState(post.caption);
+    const [inputValue, setInputValue] = useState(post?.caption);
     const [inputCount, setInputCount] = useState(0);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [filteredTags, setFilteredTags] = useState([]);
@@ -278,7 +278,7 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
     }
 
     let item;
-    if (post.url.length > 0) {
+    if (post?.url.length > 0) {
         item = post.url;
     }
 

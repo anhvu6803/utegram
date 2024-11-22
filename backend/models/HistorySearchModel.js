@@ -5,14 +5,18 @@ const historySearchSchema = new mongoose.Schema({
     enum: ['user', 'hashtag'], 
     required: true 
   },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', 
+    required: true 
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', 
     required: function () { return this.type === 'user'; } 
   },
-  tagId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Tag', 
+  tag: {
+    type: String,
     required: function () { return this.type === 'hashtag'; } 
   }
 }, { timestamps: true }); 
