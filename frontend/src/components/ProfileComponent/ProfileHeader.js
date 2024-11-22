@@ -6,21 +6,23 @@ import './ProfileHeader.css';
 import profilePic from '../../assets/avatar_default.jpg';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import OptionForm from '../OptionFormInProfile/OptionForm';
-import ReportForm from '../OptionFormInProfile/ReportFromInProfile';
-import NavbarSetting from '../OptionSetting/OptionSetting';
 import { AuthContext } from '../../shared/context/auth-context';
+import MoreForm from '../MoreForm/MoreForm'
+import ListFollow from '../ProfileComponent/ListFollow';
 
 const ProfileHeader = () => {
-  const { username } = useParams(); 
-  const [profile, setProfile] = useState(null); 
-  const [isFollowing, setIsFollowing] = useState(false); 
-  const [modalIsOpen, setModalIsOpen] = useState(false); 
-  const [isReportMode, setIsReportMode] = useState(false);
-  const [isSettingModalOpen, setIsSettingModalOpen] = useState(false);  // State for the settings modal
+  const { username } = useParams();
+  const [profile, setProfile] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowersModalOpen, setIsFollowersModalOpen] = useState(false);
+  const [isFollowingModalOpen, setIsFollowingModalOpen] = useState(false);
+  const [modalIsOpen, setOpenModal] = useState(false);
+  const [modalOptionIsOpen, setIsOptionModalOpen] = useState(false); 
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const navigate = useNavigate();
 
-  const auth = useContext(AuthContext); 
+  const auth = useContext(AuthContext);
   const userId = auth.userId;
 
   useEffect(() => {
@@ -28,16 +30,17 @@ const ProfileHeader = () => {
       try {
         const response = await fetch(`http://localhost:5000/api/profile/${username}`);
         const data = await response.json();
-  
+
         if (response.ok) {
           setProfile(data);
+
           const followResponse = await fetch(
             `http://localhost:5000/api/profile/follow-status/${username}?userId=${userId}`
           );
           const followData = await followResponse.json();
-  
+
           if (followResponse.ok) {
-            setIsFollowing(followData.isFollowing); 
+            setIsFollowing(followData.isFollowing);
           } else {
             console.error('Error checking follow status:', followData.error);
           }
@@ -48,16 +51,17 @@ const ProfileHeader = () => {
         console.error('Error fetching profile:', error);
       }
     };
-  
+
     fetchProfile();
-  }, [username, userId]); 
+  }, [username, userId]);
+
 
   const handleFollowClick = async () => {
     try {
       const url = `http://localhost:5000/api/profile/follow/${profile._id}`;
 
       const response = await fetch(url, {
-        method: 'PATCH', 
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -80,13 +84,60 @@ const ProfileHeader = () => {
     }
   };
 
-  const handleMetaClick = (type) => {
-    if (type === 'posts') {
-      navigate(`/profile/${username}/posts`);
-    } else if (type === 'followers') {
-      navigate(`/profile/${username}/followers`);
-    } else if (type === 'following') {
-      navigate(`/profile/${username}/following`);
+  const handleFollowersClick = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/profile/followers/${username}`);
+      const data = await response.json();
+  
+      if (response.ok) {
+        const enrichedFollowers = await Promise.all(
+          data.followers.map(async (follower) => {
+            const followStatusResponse = await fetch(
+              `http://localhost:5000/api/profile/follow-status/${follower.username}?userId=${userId}`
+            );
+            const followStatusData = await followStatusResponse.json();
+            return {
+              ...follower,
+              isFollowing: followStatusData.isFollowing,
+            };
+          })
+        );
+  
+        setFollowers(enrichedFollowers);
+        setIsFollowersModalOpen(true);
+      } else {
+        console.error('Error fetching followers:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+    }
+  };
+  const handleFollowingClick = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/profile/following/${username}`);
+      const data = await response.json();
+  
+      if (response.ok) {
+        const enrichedFollowing = await Promise.all(
+          data.followings.map(async (followingUser) => {
+            const followStatusResponse = await fetch(
+              `http://localhost:5000/api/profile/follow-status/${followingUser.username}?userId=${userId}`
+            );
+            const followStatusData = await followStatusResponse.json();
+            return {
+              ...followingUser,
+              isFollowing: followStatusData.isFollowing,
+            };
+          })
+        );
+  
+        setFollowing(enrichedFollowing);
+        setIsFollowingModalOpen(true);
+      } else {
+        console.error('Error fetching following:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching following:', error);
     }
   };
 
@@ -101,10 +152,16 @@ const ProfileHeader = () => {
   };
 
   if (!profile) {
-    return <p>Loading...</p>; 
+    return <p>Loading...</p>;
   }
 
-  const isUserProfile = userId === profile._id; 
+  const isUserProfile = userId === profile._id;
+  const closeModal =() => {
+    setOpenModal(false);
+  }
+  const closeOptionModal=()=>{
+    setIsOptionModalOpen(false);
+  }
 
   return (
     <div className="profile-header">
@@ -125,7 +182,7 @@ const ProfileHeader = () => {
             {isUserProfile ? (
               <button
                 className="edit-profile-btn"
-                onClick={() => setIsSettingModalOpen(true)} 
+                onClick={() => setOpenModal(true)}
                 aria-label="Edit Profile"
               >
                 <SettingsOutlinedIcon className="edit-icon" />
@@ -144,22 +201,22 @@ const ProfileHeader = () => {
                   {isFollowing ? 'Đã theo dõi' : 'Theo dõi'}
                 </button>
                 <button
-                  className="message-btn"
-                  onClick={() => navigate(`/messages`)}
-                  disabled={!isFollowing}
-                  style={{
-                    backgroundColor: isFollowing ? '#0095f6' : '#EFEFEF',
-                    color: isFollowing ? '#fff' : '#b0b0b0',
-                    marginLeft: '10px',
-                    cursor: isFollowing ? 'pointer' : 'not-allowed',
-                  }}
-                  aria-label="Send Message"
-                >
-                  Nhắn tin
-                </button>
+  className="message-btn"
+  onClick={() => navigate(`/messages/${profile.username}`)}  // Navigate to the messages page for this user
+  disabled={!isFollowing}
+  style={{
+    backgroundColor: isFollowing ? '#0095f6' : '#EFEFEF',
+    color: isFollowing ? '#fff' : '#b0b0b0',
+    marginLeft: '10px',
+    cursor: isFollowing ? 'pointer' : 'not-allowed',
+  }}
+  aria-label="Send Message"
+>
+  Nhắn tin
+</button>
                 <button
                   className="option-profile-btn"
-                  onClick={() => setModalIsOpen(true)} 
+                  onClick={() => setIsOptionModalOpen(true)}
                   aria-label="Profile Options"
                 >
                   <MoreHorizOutlinedIcon className="option-icon" />
@@ -172,13 +229,13 @@ const ProfileHeader = () => {
               <strong>{formatNumber(profile.posts)}</strong> bài viết
             </span>
             <span
-              onClick={() => handleMetaClick('followers')}
+              onClick={handleFollowersClick}
               style={{ cursor: 'pointer', marginLeft: '10px' }}
             >
               <strong>{formatNumber(profile.followers)}</strong> người theo dõi
             </span>
             <span
-              onClick={() => handleMetaClick('following')}
+              onClick={handleFollowingClick}
               style={{ cursor: 'pointer', marginLeft: '10px' }}
             >
               Đang theo dõi <strong>{formatNumber(profile.following)}</strong> người dùng
@@ -190,43 +247,65 @@ const ProfileHeader = () => {
         </div>
       </div>
 
-      {/* Modal for NavbarSetting (opened by Edit Profile button) */}
+      {/* Followers Modal */}
       <Modal
-        open={isSettingModalOpen}
-        onClose={() => setIsSettingModalOpen(false)}  // Close the settings modal
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
+        open={isFollowersModalOpen}
+        onClose={() => setIsFollowersModalOpen(false)}
+        aria-labelledby="followers-modal-title"
+        aria-describedby="followers-modal-description"
       >
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          sx={{ height: '100vh', outline: 'none' }}
-        >
-          <NavbarSetting option="edit" />  {/* Display NavbarSetting when Edit Profile button is clicked */}
+        <Box display="flex" alignItems="center" justifyContent="center" sx={{ height: '100vh' }}>
+          <ListFollow listUser={followers} closeModal={() => setIsFollowersModalOpen(false)} modalType="followers" />
         </Box>
       </Modal>
 
-      {/* Existing Modal for Report or Options */}
+
       <Modal
-        open={modalIsOpen}
-        onClose={() => setModalIsOpen(false)}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
+        open={isFollowingModalOpen}
+        onClose={() => setIsFollowingModalOpen(false)}
+        aria-labelledby="following-modal-title"
+        aria-describedby="following-modal-description"
       >
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          sx={{ height: '100vh', outline: 'none' }}
-        >
-          {isReportMode ? (
-            <ReportForm handleClose={() => setModalIsOpen(false)} />
-          ) : (
-            <OptionForm closeModal={() => setModalIsOpen(false)} author={profile.username} />
-          )}
+        <Box display="flex" alignItems="center" justifyContent="center" sx={{ height: '100vh' }}>
+          <ListFollow listUser={following} closeModal={() => setIsFollowingModalOpen(false)} modalType="followings" />
         </Box>
       </Modal>
+
+      {/* Settings Modal */}
+      <Modal open={modalIsOpen} onClose={closeModal} >
+                <Box sx={{
+                    height: '100%',
+                    display: "flex",  justifyContent: "center", marginTop: "100px",
+                    overflow: 'auto'
+                }}
+                >
+                    <MoreForm
+                        closeModal={closeModal}
+                        author={profile}
+                        type={"user"}
+
+                    />
+                </Box>
+            </Modal>
+
+
+            <Modal open={modalOptionIsOpen} onClose={closeOptionModal} >
+                <Box sx={{
+                    height: '100%',
+                    display: "flex",  justifyContent: "center", alignItems:"center",
+                    overflow: 'auto'
+                }}
+                >
+                    <MoreForm
+                        closeModal={closeOptionModal}
+                        author={profile}
+                        type={"user"}
+                        itemId={profile._id}
+                    />
+                </Box>
+            </Modal>
+
+
     </div>
   );
 };

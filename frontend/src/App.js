@@ -91,6 +91,7 @@ const App = () => {
         <Route path="/tag/:tagName" element={<PostWithTag />} />
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/admin/posts" element={<PostManagement />} />
+        <Route path="/messages/:username" element={<MessagePage />} />
         <Route path="/messages" element={<MessagePage />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>

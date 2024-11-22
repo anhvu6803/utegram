@@ -21,7 +21,7 @@ const UserManagement = () => {
         { id: 3, name: 'Lê Văn C', username: 'levanc', email: 'c@example.com', creationDate: '2023-10-03', hasReport: true },
         { id: 4, name: 'Phạm Thị D', username: 'phamthid', email: 'd@example.com', creationDate: '2023-10-04', hasReport: false },
         { id: 5, name: 'Nguyễn Thị E', username: 'nguyenthiE', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
-        { id: 6, name: 'Trần Nhật Nguyên', username: 'nhatnguye.hcmute', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
+        { id: 6, name: 'Trần Nhật Nguyên', username: 'nhatnguyen.hcmute', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
         { id: 7, name: 'Nguyễn Quốc Anh Vũ', username: 'anhvu.wasabi', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
  
     ];

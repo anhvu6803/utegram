@@ -6,7 +6,6 @@ import { AuthContext } from '../../shared/context/auth-context';
 
 const LoginPage = () => {
   const auth = useContext(AuthContext);
-  const [loadedUser, setLoadedUser] = useState();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -35,24 +34,33 @@ const LoginPage = () => {
       });
 
       const data = await response.json();
-      auth.login(data.user.id)
       if (!response.ok) {
         setErrorMessage(data.msg || 'Đăng nhập thất bại');
         setIsLoading(false);
         return;
       }
+
+      // Lưu thông tin người dùng và token vào localStorage
       const tokenCreationTime = new Date().getTime();
       localStorage.setItem('token', data.token);
       localStorage.setItem('tokenCreationTime', tokenCreationTime);
 
-      navigate('/home');
+      // Gọi hàm login từ AuthContext để lưu thông tin người dùng
+      auth.login(data.user.id);
+
+      // Nếu là admin, chuyển hướng đến trang admin
+      if (data.user.isAdmin) {
+        navigate('/admin/users');
+      } else {
+        navigate('/home');
+      }
+
     } catch (error) {
       setErrorMessage('Đã có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
   };
-
 
   return (
     <div className="login-page">

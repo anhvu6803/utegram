@@ -1,30 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import './MessagePage.css';
 import imgava from '../../assets/avatar_default.jpg';
 import OptionBar from '../../components/OptionBar/OptionBar';
+import { AuthContext } from '../../shared/context/auth-context';
 
 const socket = io('http://localhost:5000');
 
 const MessagePage = () => {
-  const [contacts, setContacts] = useState([]);
-  const [activeChat, setActiveChat] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const { username } = useParams();
+  const navigate = useNavigate();
+  const [contacts, setContacts] = useState([]); 
+  const [activeChat, setActiveChat] = useState(null);  
+  const [messages, setMessages] = useState([]);  
+  const [newMessage, setNewMessage] = useState(''); 
   const messageEndRef = useRef(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);  
+  const auth = useContext(AuthContext);
+  const userId = auth.userId;
 
-  const userId = sessionStorage.getItem('userId');
-
+ 
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/users/except/${userId}`); 
+        const response = await fetch(`http://localhost:5000/api/users/follow/${userId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch users');
+          throw new Error('Failed to fetch following list');
         }
-        const usersData = await response.json();
-        setContacts(usersData);
+        const data = await response.json();
+        setContacts(data.following);  
+        if (username) {
+          const contact = data.following.find(contact => contact.username === username);
+          if (contact) {
+            handleChatClick(contact);  
+          } else {
+            console.error('No user found with the username:', username);
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch contacts:', error);
       }
@@ -46,7 +59,8 @@ const MessagePage = () => {
     return () => {
       socket.off('newMessage');
     };
-  }, [userId]);
+  }, [userId, username]);
+
 
   const handleChatClick = async (contact) => {
     setActiveChat(contact);
@@ -58,9 +72,11 @@ const MessagePage = () => {
         throw new Error('Failed to fetch messages');
       }
       const data = await response.json();
-      setMessages(Array.isArray(data) ? data : []);
+      setMessages(Array.isArray(data) ? data : []);  
 
       socket.emit('joinRoom', { userId, otherUserId: contact._id });
+
+      navigate(`/messages/${contact.username}`);
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     }
@@ -85,8 +101,9 @@ const MessagePage = () => {
           const savedMessage = await response.json();
           setMessages((prevMessages) => [...prevMessages, savedMessage]);
           setNewMessage('');
-          socket.emit('sendMessage', savedMessage);
+          socket.emit('sendMessage', savedMessage);  
 
+  
           setContacts((prevContacts) =>
             prevContacts.map((contact) =>
               contact._id === activeChat._id ? { ...contact, lastMessage: savedMessage } : contact
@@ -127,7 +144,7 @@ const MessagePage = () => {
               <img className="profile-pic" src={contact.avatar || imgava} alt={contact.fullname} />
               <div className="contact-info">
                 <div className="contact-name">{contact.fullname}</div>
-                <div className="contact-username">@{contact.username}</div> 
+                <div className="contact-username">@{contact.username}</div>
               </div>
             </li>
           ))}
@@ -143,7 +160,7 @@ const MessagePage = () => {
             </div>
 
             <div className="chat-messages">
-              {Array.isArray(messages) && messages.map((msg, index) => (
+              {messages.map((msg, index) => (
                 <div key={index} className={msg.senderId === userId ? 'message sent' : 'message received'}>
                   {msg.content}
                 </div>
