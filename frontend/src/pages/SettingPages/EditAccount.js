@@ -1,13 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import './SettingPages.css';
 import Navbar from '../../components/OptionBar/OptionBar';
 import NavbarSetting from '../../components/OptionSetting/OptionSetting';
 import avatar from '../../assets/user.png'
 import axios from 'axios';
+import { AuthContext } from '../../shared/context/auth-context';
+import FinishCreate from '../../components/CreatePostForm/FinishCreate';
 
 //// Material UI 
-import { Box, ListItemText, TextField } from '@mui/material';
+import { Box, ListItemText, TextField, Modal } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Autocomplete from '@mui/material/Autocomplete';
 
@@ -17,33 +19,46 @@ import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 
 const EditAccount = () => {
     const { option } = useParams();
+    const auth = useContext(AuthContext);
 
     const cloudName = "dbmynlh3f";
 
     const uploadPreset = "iezes36w";
 
     const fileInputRef = useRef(null);
-    const [file, setFile] = useState();
+    const [files, setFiles] = useState([]);
+    const [fileUrls, setFileUrls] = useState();
+    const [bioValue, setBioValue] = useState();
+    const [genderValue, setGenderValue] = useState();
+    const [isFinishCreate, setChangeFinishCreate] = useState(false);
     const [uploadPolicy, setUploadPolicy] = useState();
     const [isLoading, setLoading] = useState(false);
+    const [isOpenModal, setOpenModal] = useState(false)
 
 
     const handleChooseImage = () => {
         fileInputRef.current.click(); // Kích hoạt chọn file
     };
     const handleFileChange = (event) => {
-        const newFile = event.target.files;
-        setFile(newFile);
+        const newFiles = Array.from(event.target.files)
+        const updatedFiles = [...newFiles, ...files.slice(1)];
+        setFiles(updatedFiles);
+        const newUrls = newFiles.map(file => URL.createObjectURL(file));
+        setFileUrls(newUrls);
     };
 
-    const handleUpload = async () => {
+    console.log(files)
+
+    const handleUpload = async (e) => {
+        e.preventDefault();
+        setChangeFinishCreate(true);
+        setOpenModal(true);
         let url;
         let final_decision;
         setLoading(true);
 
-
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', files[0]);
         formData.append('upload_preset', uploadPreset); // Thay bằng upload preset của bạn
         formData.append('cloud_name', cloudName); // Thay bằng cloud_name của bạn
 
@@ -78,34 +93,63 @@ const EditAccount = () => {
             }
 
         } catch (err) {
+            setLoading(false)
             console.error(err);
         }
-
+        console.log(url)
+        console.log(final_decision)
         if (final_decision === 'OK') {
             try {
 
-                const response = await fetch('http://localhost:5000/api/posts/', {
-                    method: 'POST',
+                await fetch(`http://localhost:5000/api/users/${auth.userId}`, {
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-
+                        avatar: url,
+                        bio: bioValue,
+                        gender: genderValue,
                     })
                 });
 
-                const responseData = await response.json();
-                console.log(responseData);
                 setLoading(false);
             } catch (error) {
+                setLoading(false)
                 console.error('Error posting data', error);
             }
         }
 
     };
+    console.log(bioValue);
+    console.log(genderValue)
+
+    const closeModal = () => {
+        if (!isLoading) {
+            setOpenModal(false);
+        }
+    }
 
     return (
+
         <div>
+            {isFinishCreate &&
+                <Modal open={isOpenModal} onClose={closeModal} >
+                    <Box
+                        sx={{
+                            width: '500px', bgcolor: 'background.paper',
+                            height: '500px', border: 1, borderRadius: 3, borderColor: 'white',
+                            position: 'absolute', bottom: '20%', left: '50%',
+                            transform: 'translateX(-50%)',
+                        }}
+                    >
+                        <FinishCreate
+                            isLoading={isLoading}
+                            uploadPolicy={uploadPolicy}
+                        />
+                    </Box>
+                </Modal>
+            }
             <input
                 type="file"
                 ref={fileInputRef}
@@ -155,7 +199,7 @@ const EditAccount = () => {
                                     flexDirection: 'row',
                                     alignItems: 'center',
                                 }}>
-                                    <Avatar src={avatar} sx={{ color: 'black', width: '45px', height: '45px', marginLeft: '20px' }} />
+                                    <Avatar src={fileUrls || avatar} sx={{ color: 'black', width: '45px', height: '45px', marginLeft: '20px' }} />
                                     <ListItemText
                                         sx={{ width: '150px' }}
                                         style={{ display: 'block' }}
@@ -197,6 +241,10 @@ const EditAccount = () => {
                                 <TextField
                                     fullWidth
                                     variant="outlined"
+                                    value={bioValue}
+                                    onChange={(event) => {
+                                        setBioValue(event.target.value);  // Update the state with the selected value
+                                    }}
                                     multiline
                                     maxRows={2}
                                     placeholder="Tiểu sử"
@@ -226,6 +274,10 @@ const EditAccount = () => {
                                 <span style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '20px', }}>Giới tính</span>
                                 <Autocomplete
                                     disablePortal
+                                    value={genderValue}
+                                    onChange={(event, newValue) => {
+                                        setGenderValue(newValue); // Use newValue instead of event.target.value
+                                    }}
                                     options={['Nam', 'Nữ', 'Khác']}
                                     sx={{ width: '100%', height: '50px' }}
                                     renderInput={(params) => <TextField {...params} />}
@@ -239,10 +291,10 @@ const EditAccount = () => {
                                     backgroundColor: '#0095F6', borderRadius: 2, zIndex: 100,
                                     width: '150px', height: '30px',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    marginLeft: '600px', marginTop: '20px'
+                                    marginLeft: '600px', marginTop: '20px', cursor: 'pointer'
                                 }}
-                                onClick={() => {
-
+                                onClick={(event) => {
+                                    handleUpload(event)
                                 }}
                             >
                                 <span style={{ fontSize: 12, fontWeight: 'bold', color: 'white' }}>

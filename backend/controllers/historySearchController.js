@@ -63,9 +63,19 @@ const createHistorySearch = async (req, res, next) => {
     }
 };
 
-
+const deleteHistorySearch = async (req, res, next) => {
+    const historyId = req.params.hid;
+    try {
+        await HistorySearch.findByIdAndDelete(historyId);
+        res.status(201).json({ message: 'Deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting history search', error: error.message });
+        console.error('Error deleting History Search');
+    }
+};
 
 exports.getHistorySearchByOwnerId = getHistorySearchByOwnerId;
 exports.createHistorySearch = createHistorySearch;
+exports.deleteHistorySearch = deleteHistorySearch;
 
 

@@ -1,4 +1,6 @@
 const User = require('../models/UserModel');
+const HttpError = require('../models/http-error');
+const { validationResult } = require('express-validator');
 
 exports.getAllUsers = async (req, res) => {
     try {
@@ -39,6 +41,44 @@ exports.createUser = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Failed to create user', error: error.message });
     }
+};
+exports.updateInformationUser = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(
+            new HttpError('Invalid inputs passed, please check your data.', 422)
+        );
+    }
+
+    const { avatar, bio, gender } = req.body;
+    const userId = req.params.uid;
+
+    let user;
+    try {
+        user = await User.findById(userId);
+    } catch (err) {
+        const error = new HttpError(
+            'Something went wrong, could not update user.',
+            500
+        );
+        return next(error);
+    }
+
+    user.avatar = avatar;
+    user.bio = bio;
+    user.gender = gender;
+
+    try {
+        await user.save();
+    } catch (err) {
+        const error = new HttpError(
+            'Something went wrong, could not update post.',
+            500
+        );
+        return next(error);
+    }
+
+    res.status(200).json({ user: user.toObject({ getters: true }) });
 };
 exports.getAllUsersExcept = async (req, res) => {
     const { userId } = req.params;
@@ -136,7 +176,7 @@ exports.banUser = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-  
+
 exports.searchUser = async (req, res, next) => {
     const { query, userId } = req.query;
     if (!query || query.trim() === "") {

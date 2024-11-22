@@ -20,5 +20,6 @@ router.get('/follow/:userId', userController.getFollowDataByUserId);
 
 router.patch('/ban/:userId', isAdmin, userController.banUser); 
 
+router.patch('/:uid', userController.updateInformationUser);
 
 module.exports = router;
