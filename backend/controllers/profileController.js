@@ -25,27 +25,32 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 exports.followUser = async (req, res) => {
-  const targetUserId = req.params.uid;
-  const { userId } = req.body;
+  const targetUserId = req.params.uid; 
+  const { userId } = req.body; 
 
   try {
     const targetUser = await User.findById(targetUserId);
+    const currentUser = await User.findById(userId); 
 
     if (!targetUser) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
+      return res.status(404).json({ success: false, message: 'Target user not found' });
     }
 
-    // Toggle like/unlike
+    if (!currentUser) {
+      return res.status(404).json({ success: false, message: 'Current user not found' });
+    }
     let message;
     if (targetUser.followers.includes(userId)) {
-      targetUser.followers.pull(userId); // Unlike
+      targetUser.followers.pull(userId);
+      currentUser.followings.pull(targetUserId);
       message = 'Unfollowed';
     } else {
-      targetUser.followers.push(userId); // Like
+      targetUser.followers.push(userId); 
+      currentUser.followings.push(targetUserId); 
       message = 'Followed';
     }
-
     await targetUser.save();
+    await currentUser.save();
 
     res.status(200).json({
       success: true,
@@ -55,6 +60,7 @@ exports.followUser = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 exports.checkFollowStatus = async (req, res) => {
   try {
     const { username } = req.params; 
@@ -74,5 +80,37 @@ exports.checkFollowStatus = async (req, res) => {
   } catch (error) {
     console.error('Error checking follow status:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getListFollowerByUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const user = await User.findOne({ username }).populate('followers', 'username fullname');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ followers: user.followers });
+  } catch (error) {
+    console.error('Error fetching followers:', error);
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
+
+exports.getListFollowingByUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const user = await User.findOne({ username }).populate('followings', 'username fullname');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ followings: user.followings });
+  } catch (error) {
+    console.error('Error fetching following:', error);
+    res.status(500).json({ error: 'Server Error' });
   }
 };

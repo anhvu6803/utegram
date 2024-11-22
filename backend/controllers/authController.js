@@ -87,7 +87,9 @@ exports.login = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                fullname: user.fullname
+                fullname: user.fullname,
+                isAdmin: user.isAdmin,
+                avatar: user.avatar,
             }
         });
     } catch (err) {
