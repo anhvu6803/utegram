@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';  
+import { useNavigate, useParams } from 'react-router-dom';
 import PostForm from '../../PostForm/PostForm';
 import { useHttpClient } from '../../../shared/hooks/http-hook';
 
@@ -20,10 +20,10 @@ import VideocamOffOutlinedIcon from '@mui/icons-material/VideocamOffOutlined';
 
 
 
-import './ProfileVideo.css'; 
+import './ProfileVideo.css';
 
 const ProfileVideo = () => {
-    const { username } = useParams(); 
+    const { username } = useParams();
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
     const [loadedPosts, setLoadedPosts] = useState([]);
@@ -55,11 +55,12 @@ const ProfileVideo = () => {
     const [indexPost, setIndexPost] = useState(0);
 
     const openModal = (index) => {
+        setIndexPostNext(index);
         setIndexPost(index);
         setIsOpen(true);
     };
 
-    const [indexPostNext, setIndexPostNext] = useState(indexPost);
+    let [indexPostNext, setIndexPostNext] = useState(indexPost);
 
     const handleIncreseIndex = (itemData) => {
         indexPostNext++;
@@ -132,8 +133,8 @@ const ProfileVideo = () => {
                     sx={{ height: '500px', marginLeft: '550px', marginTop: '100px' }}
                     loadingIndicator={
                         <CircularProgress
-                            size={500} 
-                            sx={{ color: '#f09433' }} 
+                            size={500}
+                            sx={{ color: '#f09433' }}
                         />
                     }
                 >
@@ -147,18 +148,18 @@ const ProfileVideo = () => {
                     flexDirection: 'column'
                 }}>
                     {loadedPosts.length === 0 ? (
-                         <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
-                         <VideocamOffOutlinedIcon 
-                             sx={{ 
-                                 fontSize: 150, 
-                                 color: '#bdbdbd', 
-                             }} 
-                         />
-                         <div className="title-no-video">Chia sẻ video</div>
-                         <div className="desc-no-video">
-                             Khi bạn chia sẻ video, video sẽ xuất hiện trên trang cá nhân của bạn.
-                         </div>
-                     </Box>
+                        <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
+                            <VideocamOffOutlinedIcon
+                                sx={{
+                                    fontSize: 150,
+                                    color: '#bdbdbd',
+                                }}
+                            />
+                            <div className="title-no-video">Chia sẻ video</div>
+                            <div className="desc-no-video">
+                                Khi bạn chia sẻ video, video sẽ xuất hiện trên trang cá nhân của bạn.
+                            </div>
+                        </Box>
                     ) : (
                         <ImageList
                             cols={3}
@@ -169,33 +170,34 @@ const ProfileVideo = () => {
                                     sx={{
                                         width: '300px', height: '300px', padding: '0px', position: 'relative',
                                     }}
-                                    key={post._id}
-                                    onClick={() => navigate(`/post/${post._id}`)} 
+                                    onClick={(event) => {
+                                        openModal(index)
+                                        handleLoadPost(event, post._id)
+                                    }}
                                 >
-                                    <ImageListItemBar
-                                        actionIcon={
-                                            <IconButton sx={{ color: 'white' }}>
-                                                <SlideshowIcon />
-                                            </IconButton>
-                                        }
-                                        sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,  
-                                            background: 'rgba(0, 0, 0, 0)',  
-                                            zIndex: 10,  
-                                        }}
-                                    />
                                     <video
-                                        src={post.url[0]}  
+                                        src={post.url[0]}
                                         alt={post.caption}
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     />
+                                    <ImageListItemBar
+                                        actionIcon={
+                                            <SlideshowIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
+                                        }
+                                        actionPosition="right"
+                                        sx={{
+                                            background:
+                                                'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
+                                                'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                                        }}
+                                        position="top"
+                                    />
+
                                 </ListItemButton>
                             ))}
                         </ImageList>
                     )}
-                    
+
                     <Modal open={modalIsOpen} onClose={closeModal}>
                         {isLoadingPost ? (
                             <LoadingButton
@@ -204,8 +206,8 @@ const ProfileVideo = () => {
                                 sx={{ height: '500px', marginLeft: '800px', marginTop: '100px' }}
                                 loadingIndicator={
                                     <CircularProgress
-                                        size={500} 
-                                        sx={{ color: '#f09433' }} 
+                                        size={500}
+                                        sx={{ color: '#f09433' }}
                                     />
                                 }
                             >

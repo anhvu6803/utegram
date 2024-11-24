@@ -30,9 +30,7 @@ const HomePage = () => {
     const auth = useContext(AuthContext);
 
     const userId = auth.userId;
-
-    console.log(userId)
-
+    
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
     const [loadedUsers, setLoadedUsers] = useState();
@@ -63,11 +61,27 @@ const HomePage = () => {
     console.log(loadedUsers)
     const [followedItems, setFollowedItems] = useState(itemData.map(() => false));
 
-    const handleFollowedClick = (index) => {
+    const handleFollowedClick = async (event, index) => {
         const updatedFollowedItems = followedItems.map((followed, i) =>
             i === index ? !followed : followed // Toggle the clicked item only
         );
         setFollowedItems(updatedFollowedItems);
+
+        event.preventDefault();
+
+        try {
+            const responseData = await sendRequest(
+                `http://localhost:5000/api/profile/follow/${loadedUsers[index]._id}`,
+                'PATCH',
+                JSON.stringify({
+                    userId: userId
+                }),
+                { 'Content-Type': 'application/json' }
+            );
+            console.log(responseData.message)
+        } catch (err) {
+
+        }
     };
 
     const [modalIsOpen, setIsOpen] = useState(false);
@@ -146,11 +160,6 @@ const HomePage = () => {
     }
 
     const closeModal = () => setIsOpen(false);
-
-    console.log(isLoadingPost)
-    console.log(`Time taken to load: ${timeLoading * 1000 + 1000} seconds`);
-    console.log(loadedPost)
-    console.log(loadedUser)
 
     return (
         <Box sx={{ position: 'absolute', top: 0 }}>
@@ -319,7 +328,7 @@ const HomePage = () => {
                                     primaryTypographyProps={{ style: { fontSize: 13 } }}
                                     secondaryTypographyProps={{ style: { fontSize: 11 } }} />
                                 <ListItemText
-                                    onClick={() => handleFollowedClick(index)}
+                                    onClick={(event) => handleFollowedClick(event, index)}
                                     primary={followedItems[index] ? 'Đã theo dõi' : 'Theo dõi'}
                                     primaryTypographyProps={{ style: { fontSize: 11, fontWeight: 'bold', textAlign: 'center', } }}
                                     sx={{

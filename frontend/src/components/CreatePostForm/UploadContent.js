@@ -35,7 +35,7 @@ import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
 
 
 function splitDescriptionAndHashtags(input) {
-    const parts = input.split(' ');
+    const parts = input.split(/[\s\n]+/);
 
     // Phần mô tả là các từ không bắt đầu bằng '#'
     const des = parts;
@@ -208,7 +208,6 @@ export default function UploadContent({ closeModal }) {
     };
 
     const [inputValue, setInputValue] = useState('');
-    const [inputCount, setInputCount] = useState(0);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [filteredTags, setFilteredTags] = useState([]);
 
@@ -220,7 +219,11 @@ export default function UploadContent({ closeModal }) {
         }
 
         const result = splitDescriptionAndHashtags(value)
-        const lastestTag = result.des[inputCount]
+        const inputCount = result.des.length;
+        let lastestTag;
+        if (inputCount > 0) {
+            lastestTag = result.des[inputCount - 1]
+        }
 
         // Check if '#' was typed and show suggestions
         if (lastestTag.startsWith('#')) {
@@ -247,12 +250,6 @@ export default function UploadContent({ closeModal }) {
         const newInput = inputValue.substring(0, lastIndex) + selectedTag;
         setInputValue(newInput);
         setShowSuggestions(false);  // Close the suggestions after selection
-    };
-
-    const handleKeyDown = (event) => {
-        if (event.key === ' ') {
-            setInputCount((prevCount) => prevCount + 1);
-        }
     };
 
     // upload post
@@ -491,7 +488,6 @@ export default function UploadContent({ closeModal }) {
                                                     <IconButton
                                                         onClick={() => {
                                                             setChangeSetContent(false)
-                                                            setInputCount(0)
                                                             setInputValue('')
                                                         }}
                                                         sx={{
@@ -626,8 +622,7 @@ export default function UploadContent({ closeModal }) {
                                                                         maxRows={12}
                                                                         value={inputValue}
                                                                         onChange={handleInputChange}
-                                                                        autoFocus={true}
-                                                                        onKeyDown={handleKeyDown}
+                                                                        autoFocus={true}        
                                                                         style={{
                                                                             height: '300px',
                                                                             textAlign: 'start',

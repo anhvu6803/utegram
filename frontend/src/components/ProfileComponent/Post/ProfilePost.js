@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';  
+import { useNavigate, useParams } from 'react-router-dom';
 import PostForm from '../../PostForm/PostForm';
 import { useHttpClient } from '../../../shared/hooks/http-hook';
 
@@ -19,10 +19,10 @@ import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import NoPhotographyOutlinedIcon from '@mui/icons-material/NoPhotographyOutlined';
 
 
-import './ProfilePost.css'; 
+import './ProfilePost.css';
 
 const ProfilePost = () => {
-    const { username } = useParams(); 
+    const { username } = useParams();
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
     const [loadedPosts, setLoadedPosts] = useState([]);
@@ -34,7 +34,7 @@ const ProfilePost = () => {
             setIsLoading(true);
 
             try {
-            
+
                 const responsePosts = await sendRequest(`http://localhost:5000/api/posts/image/${username}`);
                 setLoadedPosts(responsePosts.posts);
 
@@ -55,11 +55,12 @@ const ProfilePost = () => {
     const [indexPost, setIndexPost] = useState(0);
 
     const openModal = (index) => {
+        setIndexPostNext(index);
         setIndexPost(index);
         setIsOpen(true);
     };
 
-    const [indexPostNext, setIndexPostNext] = useState(indexPost);
+    let [indexPostNext, setIndexPostNext] = useState(indexPost);
 
     const handleIncreseIndex = (itemData) => {
         indexPostNext++;
@@ -132,8 +133,8 @@ const ProfilePost = () => {
                     sx={{ height: '500px', marginLeft: '550px', marginTop: '100px' }}
                     loadingIndicator={
                         <CircularProgress
-                            size={500} 
-                            sx={{ color: '#f09433' }} 
+                            size={500}
+                            sx={{ color: '#f09433' }}
                         />
                     }
                 >
@@ -146,24 +147,24 @@ const ProfilePost = () => {
                     marginLeft: '550px',
                     flexDirection: 'column'
                 }}>
-                 
+
                     {loadedPosts.length === 0 ? (
-                           <div className='no-post'>
-                           <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
-                               <NoPhotographyOutlinedIcon 
-                                   sx={{ 
-                                       fontSize: 150, 
-                                       color: '#bdbdbd', 
-                                   }} 
-                               />
-                               <div className="title-no-video">Chia sẻ bài viết</div>
-                               <div className="desc-no-video">
-                                   Khi bạn chia sẻ bài viết, nó sẽ xuất hiện trên trang cá nhân của bạn.
-                               </div>
-                           </Box>
-                       </div>
+                        <div className='no-post'>
+                            <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
+                                <NoPhotographyOutlinedIcon
+                                    sx={{
+                                        fontSize: 150,
+                                        color: '#bdbdbd',
+                                    }}
+                                />
+                                <div className="title-no-video">Chia sẻ bài viết</div>
+                                <div className="desc-no-video">
+                                    Khi bạn chia sẻ bài viết, nó sẽ xuất hiện trên trang cá nhân của bạn.
+                                </div>
+                            </Box>
+                        </div>
                     ) : (
-                        <>
+                        <div>
                             <Modal open={modalIsOpen} onClose={closeModal}>
                                 {isLoadingPost ? (
                                     <LoadingButton
@@ -172,8 +173,8 @@ const ProfilePost = () => {
                                         sx={{ height: '500px', marginLeft: '800px', marginTop: '100px' }}
                                         loadingIndicator={
                                             <CircularProgress
-                                                size={500} 
-                                                sx={{ color: '#f09433' }} 
+                                                size={500}
+                                                sx={{ color: '#f09433' }}
                                             />
                                         }
                                     >
@@ -240,34 +241,39 @@ const ProfilePost = () => {
                                 {loadedPosts.map((post, index) => (
                                     <ListItemButton
                                         sx={{
-                                            width: '300px', height: '300px', padding: '0px', position: 'relative',
+                                            width: '300px', height: '300px', padding: '0px', background:
+                                                'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
+                                                'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)'
                                         }}
-                                        key={post._id}
-                                        onClick={() => navigate(`/post/${post._id}`)} 
+                                        onClick={(event) => {
+                                            openModal(index)
+                                            handleLoadPost(event, post._id)
+                                        }}
                                     >
-                                        <ImageListItemBar
-                                            actionIcon={
-                                                <IconButton sx={{ color: 'white' }}>
-                                                    <PhotoLibraryIcon />
-                                                </IconButton>
-                                            }
-                                            sx={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                right: 0,  
-                                                background: 'rgba(0, 0, 0, 0)',  
-                                                zIndex: 10,  
-                                            }}
-                                        />
                                         <img
-                                            src={post.url[0]}  
+                                            src={post.url[0]}
                                             alt={post.caption}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         />
+                                        <ImageListItemBar
+                                            sx={{
+                                                background:
+                                                    'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
+                                                    'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)'
+                                            }}
+                                            position="top"
+                                            actionIcon={
+                                                (post.type === 'image' && post.url.length > 1 ? (
+                                                    <PhotoLibraryIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
+                                                ) : [])
+                                            }
+                                            actionPosition="right"
+                                        />
+
                                     </ListItemButton>
                                 ))}
                             </ImageList>
-                        </>
+                        </div>
                     )}
                 </Box>
             )}

@@ -447,66 +447,35 @@ const getBookmarkedPostsByUsername = async (req, res, next) => {
 };
 
 const bookmarkPost = async (req, res, next) => {
-  const { userId, postId } = req.body;
-
-  let user, post;
-  try {
-    user = await User.findById(userId);
-    post = await Post.findById(postId);
-  } catch (err) {
-    const error = new HttpError('Failed to find user or post, please try again.', 500);
-    return next(error);
-  }
-
-  if (!user || !post) {
-    return next(new HttpError('User or post not found.', 404));
-  }
-
-  if (user.bookmarks.includes(postId)) {
-    return next(new HttpError('This post is already bookmarked.', 400));
-  }
+  const postId = req.params.pid;
+  const { userId } = req.body;
 
   try {
-    user.bookmarks.push(postId);
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    let message;
+    if (user.bookmarks.includes(postId)) {
+      user.bookmarks.pull(postId);
+      message = 'Unbookmarked';
+    } else {
+      user.bookmarks.push(postId);
+      message = 'Bookmarked';
+    }
+    console.log(postId)
     await user.save();
-  } catch (err) {
-    const error = new HttpError('Failed to bookmark the post, please try again.', 500);
-    return next(error);
-  }
 
-  res.status(201).json({ message: 'Post bookmarked successfully.' });
+    res.status(200).json({
+      success: true,
+      message,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
-const unbookmarkPost = async (req, res, next) => {
-  const { userId, postId } = req.body;
-
-  let user;
-  try {
-    user = await User.findById(userId);
-  } catch (err) {
-    const error = new HttpError('Failed to find user, please try again.', 500);
-    return next(error);
-  }
-
-  if (!user) {
-    return next(new HttpError('User not found.', 404));
-  }
-
-  if (!user.bookmarks.includes(postId)) {
-    return next(new HttpError('This post is not bookmarked.', 400));
-  }
-
-  try {
-    user.bookmarks.pull(postId);
-    await user.save();
-  } catch (err) {
-    const error = new HttpError('Failed to unbookmark the post, please try again.', 500);
-    return next(error);
-  }
-
-  res.status(200).json({ message: 'Post removed from bookmarks successfully.' });
-};
-
-
 const getPostByTag = async (req, res) => {
   try {
     let { tag } = req.params;
@@ -580,7 +549,6 @@ exports.getImagePostsByUsername = getImagePostsByUsername;
 exports.getVideoPostsByUsername = getVideoPostsByUsername;
 exports.getBookmarkedPostsByUsername = getBookmarkedPostsByUsername;
 exports.bookmarkPost = bookmarkPost;
-exports.unbookmarkPost = unbookmarkPost;
 exports.getPostByTag = getPostByTag;
 exports.getRandomPostsVideoExcludeUser = getRandomPostsVideoExcludeUser;
 exports.getRandomPostsExcludeUser = getRandomPostsExcludeUser;

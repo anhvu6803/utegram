@@ -3,7 +3,7 @@ const User = require('../models/UserModel');
 exports.getUserProfile = async (req, res) => {
   try {
     const { username } = req.params;
-    const user = await User.findOne({ username }) 
+    const user = await User.findOne({ username })
       .populate('followers', 'username')
       .populate('followings', 'username')
       .populate('posts', 'content');
@@ -25,12 +25,12 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 exports.followUser = async (req, res) => {
-  const targetUserId = req.params.uid; 
-  const { userId } = req.body; 
+  const targetUserId = req.params.uid;
+  const { userId } = req.body;
 
   try {
     const targetUser = await User.findById(targetUserId);
-    const currentUser = await User.findById(userId); 
+    const currentUser = await User.findById(userId);
 
     if (!targetUser) {
       return res.status(404).json({ success: false, message: 'Target user not found' });
@@ -45,8 +45,8 @@ exports.followUser = async (req, res) => {
       currentUser.followings.pull(targetUserId);
       message = 'Unfollowed';
     } else {
-      targetUser.followers.push(userId); 
-      currentUser.followings.push(targetUserId); 
+      targetUser.followers.push(userId);
+      currentUser.followings.push(targetUserId);
       message = 'Followed';
     }
     await targetUser.save();
@@ -63,7 +63,7 @@ exports.followUser = async (req, res) => {
 
 exports.checkFollowStatus = async (req, res) => {
   try {
-    const { username } = req.params; 
+    const { username } = req.params;
     const { userId: currentUserId } = req.query;
 
     if (!currentUserId) {
@@ -86,7 +86,7 @@ exports.getListFollowerByUsername = async (req, res) => {
   try {
     const { username } = req.params;
 
-    const user = await User.findOne({ username }).populate('followers', 'username fullname');
+    const user = await User.findOne({ username }).populate('followers', 'username fullname avatar');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -103,7 +103,7 @@ exports.getListFollowingByUsername = async (req, res) => {
   try {
     const { username } = req.params;
 
-    const user = await User.findOne({ username }).populate('followings', 'username fullname');
+    const user = await User.findOne({ username }).populate('followings', 'username fullname avatar');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

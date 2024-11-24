@@ -10,15 +10,15 @@
 
 .profile-info {
     display: flex;
-    align-items: center; 
+    align-items: center;
 }
 
 .profile-picture {
-    width: 200px;
-    height: 200px;
-    margin-right: 30px;  
-    border-radius: 50%;  
-    object-fit: cover;   
+    width: 180px;
+    height: 180px;
+    margin-right: 30px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .profile-stats {
@@ -30,11 +30,13 @@
 .profile-name {
     display: flex;
     align-items: center;
-    font-size: 18px;
+    font-size: 15px;
+    margin-bottom: 30px;
+    margin-top: 20px;
 }
 
 .edit-profile-btn {
-    margin-left: 15px; 
+    margin-left: 15px;
     padding: 0;
     border: none;
     background-color: transparent;
@@ -42,44 +44,46 @@
 }
 
 .edit-profile-btn .edit-icon {
-    width: 48px;   
-    height: 48px;  
+    width: 30px;
+    height: 30px;
     margin-left: 10px;
-    margin-top: 8px; 
     object-fit: cover;
 }
+
 .option-profile-btn {
-    margin-left: 15px; 
+    margin-left: 15px;
     border: none;
     background-color: transparent;
     cursor: pointer;
 }
 
 .option-profile-btn .option-icon {
-    width: 45px;   
-    height: 45px;  
+    width: 32px;
+    height: 32px;
     margin-left: 15px;
-    margin-top: 15px; 
+    margin-top: 8px;
     object-fit: cover;
 }
 
 .profile-meta {
-    font-size: 18px;  
-    margin-bottom: 5px; 
+    font-size: 18px;
+    margin-bottom: 30px;
 }
 
 .profile-meta span {
-    margin-right: 30px;  
+    margin-right: 30px;
 }
 
 .profile-bio {
     margin-top: 15px;
+    margin-bottom: 50px;
 }
 
 .profile-bio p {
     margin: 0;
-    font-size: 16px; 
+    font-size: 15px;
 }
+
 .follow-btn {
     border: none;
     padding: 8px 30px;
@@ -89,24 +93,22 @@
     cursor: pointer;
     outline: none;
     margin-left: 20px;
-    margin-top: 5px;
-  }
-  
-  .follow-btn:active {
+}
+
+.follow-btn:active {
     transform: scale(0.98);
-  }
-  .message-btn {
+}
+
+.message-btn {
     border: none;
     padding: 8px 20px;
     font-size: 14px;
     font-weight: bold;
     border-radius: 10px;
-    margin-top: 5px;
     cursor: pointer;
     outline: none;
-  }
-  
-  .message-btn:active {
+}
+
+.message-btn:active {
     transform: scale(0.98);
-  }
-  
+}

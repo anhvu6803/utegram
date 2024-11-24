@@ -17,7 +17,7 @@ const ProfileHeader = () => {
   const [isFollowersModalOpen, setIsFollowersModalOpen] = useState(false);
   const [isFollowingModalOpen, setIsFollowingModalOpen] = useState(false);
   const [modalIsOpen, setOpenModal] = useState(false);
-  const [modalOptionIsOpen, setIsOptionModalOpen] = useState(false); 
+  const [modalOptionIsOpen, setIsOptionModalOpen] = useState(false);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const navigate = useNavigate();
@@ -88,7 +88,7 @@ const ProfileHeader = () => {
     try {
       const response = await fetch(`http://localhost:5000/api/profile/followers/${username}`);
       const data = await response.json();
-  
+
       if (response.ok) {
         const enrichedFollowers = await Promise.all(
           data.followers.map(async (follower) => {
@@ -102,7 +102,7 @@ const ProfileHeader = () => {
             };
           })
         );
-  
+
         setFollowers(enrichedFollowers);
         setIsFollowersModalOpen(true);
       } else {
@@ -116,7 +116,7 @@ const ProfileHeader = () => {
     try {
       const response = await fetch(`http://localhost:5000/api/profile/following/${username}`);
       const data = await response.json();
-  
+
       if (response.ok) {
         const enrichedFollowing = await Promise.all(
           data.followings.map(async (followingUser) => {
@@ -130,7 +130,7 @@ const ProfileHeader = () => {
             };
           })
         );
-  
+
         setFollowing(enrichedFollowing);
         setIsFollowingModalOpen(true);
       } else {
@@ -156,10 +156,10 @@ const ProfileHeader = () => {
   }
 
   const isUserProfile = userId === profile._id;
-  const closeModal =() => {
+  const closeModal = () => {
     setOpenModal(false);
   }
-  const closeOptionModal=()=>{
+  const closeOptionModal = () => {
     setIsOptionModalOpen(false);
   }
 
@@ -201,19 +201,19 @@ const ProfileHeader = () => {
                   {isFollowing ? 'Đã theo dõi' : 'Theo dõi'}
                 </button>
                 <button
-  className="message-btn"
-  onClick={() => navigate(`/messages/${profile.username}`)}  // Navigate to the messages page for this user
-  disabled={!isFollowing}
-  style={{
-    backgroundColor: isFollowing ? '#0095f6' : '#EFEFEF',
-    color: isFollowing ? '#fff' : '#b0b0b0',
-    marginLeft: '10px',
-    cursor: isFollowing ? 'pointer' : 'not-allowed',
-  }}
-  aria-label="Send Message"
->
-  Nhắn tin
-</button>
+                  className="message-btn"
+                  onClick={() => navigate(`/messages/${profile.username}`)}  // Navigate to the messages page for this user
+                  disabled={!isFollowing}
+                  style={{
+                    backgroundColor: isFollowing ? '#0095f6' : '#EFEFEF',
+                    color: isFollowing ? '#fff' : '#b0b0b0',
+                    marginLeft: '10px',
+                    cursor: isFollowing ? 'pointer' : 'not-allowed',
+                  }}
+                  aria-label="Send Message"
+                >
+                  Nhắn tin
+                </button>
                 <button
                   className="option-profile-btn"
                   onClick={() => setIsOptionModalOpen(true)}
@@ -241,9 +241,11 @@ const ProfileHeader = () => {
               Đang theo dõi <strong>{formatNumber(profile.following)}</strong> người dùng
             </span>
           </div>
-          <div className="profile-bio">
-            <strong>{profile.bio}</strong>
-          </div>
+
+          <span style={{ fontSize: 15, fontWeight: 'bold' }}>{profile.fullname}</span>
+
+          <span style={{ fontSize: 15, marginBottom: '30px' }}>{profile.bio}</span>
+
         </div>
       </div>
 
@@ -273,37 +275,37 @@ const ProfileHeader = () => {
 
       {/* Settings Modal */}
       <Modal open={modalIsOpen} onClose={closeModal} >
-                <Box sx={{
-                    height: '100%',
-                    display: "flex",  justifyContent: "center", marginTop: "100px",
-                    overflow: 'auto'
-                }}
-                >
-                    <MoreForm
-                        closeModal={closeModal}
-                        author={profile}
-                        type={"user"}
+        <Box sx={{
+          height: '100%',
+          display: "flex", justifyContent: "center", marginTop: "100px",
+          overflow: 'auto'
+        }}
+        >
+          <MoreForm
+            closeModal={closeModal}
+            author={profile}
+            type={"user"}
 
-                    />
-                </Box>
-            </Modal>
+          />
+        </Box>
+      </Modal>
 
 
-            <Modal open={modalOptionIsOpen} onClose={closeOptionModal} >
-                <Box sx={{
-                    height: '100%',
-                    display: "flex",  justifyContent: "center", alignItems:"center",
-                    overflow: 'auto'
-                }}
-                >
-                    <MoreForm
-                        closeModal={closeOptionModal}
-                        author={profile}
-                        type={"user"}
-                        itemId={profile._id}
-                    />
-                </Box>
-            </Modal>
+      <Modal open={modalOptionIsOpen} onClose={closeOptionModal} >
+        <Box sx={{
+          height: '100%',
+          display: "flex", justifyContent: "center", alignItems: "center",
+          overflow: 'auto'
+        }}
+        >
+          <MoreForm
+            closeModal={closeOptionModal}
+            author={profile}
+            type={"user"}
+            itemId={profile._id}
+          />
+        </Box>
+      </Modal>
 
 
     </div>
