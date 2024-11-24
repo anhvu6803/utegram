@@ -11,8 +11,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import Divider from '@mui/material/Divider';
-import LoadingButton from '@mui/lab/LoadingButton';
-import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from '@mui/material/Avatar';
 import { TextField, Collapse, ListItemText, } from '@mui/material';
 import Radio from '@mui/material/Radio';
@@ -23,12 +21,6 @@ import FormControl from '@mui/material/FormControl';
 
 // Material UI icon
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import ClearIcon from '@mui/icons-material/Clear';
-import CropOriginalIcon from '@mui/icons-material/CropOriginal';
-import SmartDisplayIcon from '@mui/icons-material/SmartDisplay';
-import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
-import FilterNoneIcon from '@mui/icons-material/FilterNone';
-import AddIcon from '@mui/icons-material/Add';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
@@ -111,6 +103,12 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
         }
         else if (item === 'Chỉnh sửa') {
             setChangeSetContent(!isSetContent);
+        }
+        else if(item === 'Cài đặt') {
+            navigate(`/accounts/edit`);
+        }
+        else if(item === 'Đăng xuất') {
+            auth.logout();
         }
     };
 

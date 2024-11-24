@@ -48,17 +48,6 @@ function calculateDaysFrom(mongoDate) {
     return dayDifference === 0 ? 'Hôm nay' : (weekDifference < 1 ? dayDifference + ' ngày' : weekDifference + ' tuần');
 }
 
-function findPositionReply(listReliesComment, likeComment) {
-    for (let i = 0; i < listReliesComment.length; i++) {
-        for (let j = 0; j < listReliesComment[i].length; j++) {
-            if (listReliesComment[i][j]._id === likeComment?.commentId) {
-                return [i, j]
-            }
-        }
-    }
-    return null;
-}
-
 const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
     const auth = useContext(AuthContext);
 
@@ -90,6 +79,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
             );
             // Phát sự kiện qua Socket.IO
             socket.emit('likePost', post._id);
+
         } catch (err) {
         }
     };
@@ -161,7 +151,6 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
     const [commentPost, setCommentPost] = useState(false);
     const [textComment, setTextCommnent] = useState('');
     const [_listComments, setListComment] = useState(listComments.map((item) => item));
-    const [handleCommentOnce, setHandleCommentOnce] = useState(1);
     const [likedCommentItems, setLikedCommentItems] = useState(listComments?.map((item) => item.likes.includes(userId)));
     const [likedCommentItemsCount, setLikedCommentItemsCount] = useState(listComments?.map((item) => item.likes.length));
 
@@ -169,6 +158,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
     const [isReplied, setReplied] = useState(false);
     const [parentCommentId, setParentCommentId] = useState('');
     const [handleReplyOnce, setHandleReplyOnce] = useState(1);
+    const [handleCommentOnce, setHandleCommentOnce] = useState(1);
     const [newReply, setNewReply] = useState();
     const [isViewRelied, setViewRelied] = useState(listComments.map(() => false));
     const [listReliesComment, setListReliesComment] = useState(listReplies)
@@ -187,9 +177,15 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         }
     }
 
-    const handleReplyClick = (index) => {
-        setParentCommentId(_listComments[index]._id);
-
+    const handleReplyClick = (indexComment, indexReply) => {
+        setParentCommentId(_listComments[indexComment]._id);
+        if (indexReply) {
+            setTextCommnent(`@${listReliesComment[indexComment][indexReply].author.username}`)
+        }
+        else {
+            setTextCommnent(`@${_listComments[index].author.username}`)
+        }
+        console.log(listReliesComment)
         setReplied(!isReplied);
 
         if (textFieldRef.current) {
@@ -231,6 +227,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                 socket.emit('submitReply', responseData);
                 setTextCommnent('');
                 setReplied(false);
+
             } catch (err) { }
         }
     };
@@ -253,7 +250,6 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                 { 'Content-Type': 'application/json' }
             );
             socket.emit('likeComment', listReliesComment[indexComment][indexReply]._id);
-
         } catch (err) {
 
         }
@@ -277,6 +273,71 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         }
     };
 
+    console.log(_listComments)
+    socket.on('updateLikesComment', (data) => {
+        if (data.likesCount >= 0) {
+
+            if (data.type === 'comment') {
+                const findIndexReply = _listComments.findIndex((item) => item._id === data?.commentId)
+
+                const likedComment = true;
+                if (data.user._id === userId) {
+
+                    setLikedCommentItems((list) => list?.map((item, index) =>
+                        index === findIndexReply
+                            ? data.message === 'Comment liked' ? likedComment : false
+                            : item
+                    ));
+                }
+
+                setLikedCommentItemsCount((list) => list?.map((item, index) =>
+                    index === findIndexReply
+                        ? data.likesCount
+                        : item
+                ));
+            }
+            else if (data.type === 'reply') {
+                let indexComment, indexReply;
+                for (let i = 0; i < listReliesComment.length; i++) {
+                    for (let j = 0; j < listReliesComment[i].length; j++) {
+                        if (listReliesComment[i][j]._id === data?.commentId) {
+                            indexComment = i;
+                            indexReply = j;
+                            break;
+                        }
+                    }
+                }
+
+                const likedReply = true;
+                if (data.user._id === userId) {
+                    setLikedReplyItems((list) => list?.map((item, index) =>
+                        index === indexComment ?
+                            item.map((item, index) =>
+                                index === indexReply ?
+                                    data.message === 'Comment liked' ? likedReply : false
+                                    :
+                                    item
+                            )
+                            :
+                            item
+                    ))
+                }
+
+                setLikedReplyItemsCount((list) => list?.map((item, index) =>
+                    index === indexComment ?
+                        item.map((item, index) =>
+                            index === indexReply ?
+                                data.likesCount
+                                :
+                                item
+                        )
+                        :
+                        item
+                ))
+            }
+        }
+    });
+
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -287,78 +348,6 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         };
         fetchUsers();
 
-
-        socket.on('updateLikes', (data) => {
-            if (data.postId === post._id && data.likesCount >= 0) {
-                setLikeCount(data.likesCount);
-
-                if (data.message === 'Post liked') {
-                    setLikedPost(true)
-                    setListUserLiked((list) => [...list, data.user])
-                }
-                else if (data.message === 'Post unliked') {
-                    setLikedPost(false)
-                    setListUserLiked((list) => list.filter((item) => item._id !== data.user._id))
-                }
-            }
-        });
-
-        socket.on('updateLikesComment', (data) => {
-            if (data.likesCount >= 0) {
-
-                if (data.type === 'comment') {
-                    const findIndexReply = _listComments.findIndex((item) => item._id === data?.commentId)
-
-                    setLikedCommentItems((list) => list.map((item, index) =>
-                        index === findIndexReply
-                            ? data.message === 'Comment liked' ? true : false
-                            : item
-                    ));
-
-                    setLikedCommentItemsCount((list) => list.map((item, index) =>
-                        index === findIndexReply
-                            ? data.likesCount
-                            : item
-                    ));
-                }
-                else if (data.type === 'reply') {
-                    const findReplyIndex = findPositionReply(listReliesComment, data)
-
-                    setLikedReplyItems((list) => list.map((item, index) =>
-                        index === findReplyIndex[0] ?
-                            item.map((item, index) =>
-                                index === findReplyIndex[1] ?
-                                    data.message === 'Comment liked' ? true : false
-                                    :
-                                    item
-                            )
-                            :
-                            item
-                    ))
-
-                    setLikedReplyItemsCount((list) => list.map((item, index) =>
-                        index === findReplyIndex[0] ?
-                            item.map((item, index) =>
-                                index === findReplyIndex[1] ?
-                                    data.likesCount
-                                    :
-                                    item
-                            )
-                            :
-                            item
-                    ))
-                }
-            }
-        });
-
-        // Dọn dẹp socket khi component unmount
-        return () => {
-            socket.off('updateLikes');
-            socket.off('updateLikesComment');
-        };
-    }, [post._id, sendRequest]);
-
-    useEffect(() => {
         socket.on('updateComment', (data => {
             if (handleCommentOnce === 1) {
                 setListComment((list) => [...list, data.comment.comment]);
@@ -368,7 +357,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                 setViewRelied((list) => [...list, false])
                 setLikedReplyItems((list) => [...list, []])
                 setLikedReplyItemsCount((list) => [...list, []])
-                setHandleCommentOnce(1)
+                setHandleCommentOnce(1);
             }
         }))
 
@@ -401,13 +390,82 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
             }
         }))
 
+        socket.on('updateLikes', (data) => {
+            if (data.postId === post._id && data.likesCount >= 0) {
+                setLikeCount(data.likesCount);
+
+                if (data.message === 'Post liked') {
+                    const likedPost = true;
+                    if (data.user._id === userId) {
+                        setLikedPost(likedPost);
+                    }
+
+                    setListUserLiked((list) => [...list, data.user])
+                }
+                else if (data.message === 'Post unliked') {
+                    const dislikedPost = false;
+                    if (data.user._id === userId) {
+                        setLikedPost(dislikedPost);
+                    }
+
+                    setListUserLiked((list) => list.filter((item) => item._id !== data.user._id))
+                }
+            }
+        });
+
         return () => {
             socket.off('updateComment');
             socket.off('updateReply');
         };
 
-    }, [_listComments, likedCommentItems, likedCommentItemsCount]);
+        // socket.on('updateLikesComment', (data) => {
+        //     if (data.likesCount >= 0) {
 
+        //         if (data.type === 'comment') {
+        //             const findIndexReply = _listComments.findIndex((item) => item._id === data?.commentId)
+        //             console.log(_listComments)
+        //             setLikedCommentItems((list) => list?.map((item, index) =>
+        //                 index === findIndexReply
+        //                     ? data.message === 'Comment liked' ? true : false
+        //                     : item
+        //             ));
+
+        //             setLikedCommentItemsCount((list) => list?.map((item, index) =>
+        //                 index === findIndexReply
+        //                     ? data.likesCount
+        //                     : item
+        //             ));
+        //         }
+        //         else if (data.type === 'reply') {
+        //             const findReplyIndex = findPositionReply(listReliesComment, data)
+        //             setLikedReplyItems((list) => list?.map((item, index) =>
+        //                 index === findReplyIndex[0] ?
+        //                     item.map((item, index) =>
+        //                         index === findReplyIndex[1] ?
+        //                             data.message === 'Comment liked' ? true : false
+        //                             :
+        //                             item
+        //                     )
+        //                     :
+        //                     item
+        //             ))
+
+        //             setLikedReplyItemsCount((list) => list?.map((item, index) =>
+        //                 index === findReplyIndex[0] ?
+        //                     item.map((item, index) =>
+        //                         index === findReplyIndex[1] ?
+        //                             data.likesCount
+        //                             :
+        //                             item
+        //                     )
+        //                     :
+        //                     item
+        //             ))
+        //         }
+        //     }
+        // });
+
+    }, [post._id, sendRequest]);
 
     return (
         <div>
@@ -811,7 +869,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                                                                                     }
                                                                                                     <span
                                                                                                         onClick={() => {
-                                                                                                            handleReplyClick(i)
+                                                                                                            handleReplyClick(i, index)
                                                                                                         }}
                                                                                                         style={{
                                                                                                             fontSize: 12, color: '#737373',
@@ -946,7 +1004,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                             </span>
                         </Box>
                         <Box sx={{ width: '400px', height: '55px', padding: '0px', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                            <SentimentSatisfiedAltIcon sx={{ fontSize: 30, marginLeft: '10px' }} />
+                            <Avatar src={author.avatar || defaultAvatar} sx={{ color: '#000', width: '30px', height: '30px', marginLeft: '10px' }} />
                             <Box
                                 sx={{
                                     width: '300px', height: 'auto',

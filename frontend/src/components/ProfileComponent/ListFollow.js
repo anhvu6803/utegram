@@ -52,6 +52,8 @@ const ListFollow = ({ listUser, closeModal, modalType }) => {
         }
     };
 
+    console.log(listUser[0])
+
     return (
         <Box
             sx={{

@@ -26,6 +26,7 @@ import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import InstagramIcon from '@mui/icons-material/Instagram';
+import Brightness1Icon from '@mui/icons-material/Brightness1';
 
 const Navbar = ({ pages }) => {
     const [active, setActive] = useState(pages);
@@ -158,7 +159,11 @@ const Navbar = ({ pages }) => {
                     }}
                     style={{ cursor: 'pointer' }}
                 >
-                    {active === 'message' ? <ChatBubbleOutlinedIcon sx={{ color: '#000', fontSize: 34 }} /> : <ChatBubbleOutlineOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
+                    {active === 'message' ?
+                        <ChatBubbleOutlinedIcon sx={{ color: '#000', fontSize: 34 }} />
+                        :
+                        <ChatBubbleOutlineOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />
+                    }
                     <span>Nhắn tin</span>
                 </a>
 
@@ -171,7 +176,26 @@ const Navbar = ({ pages }) => {
                     }}
                     style={{ cursor: 'pointer' }}
                 >
-                    {active === 'notification' ? <FavoriteOutlinedIcon sx={{ color: '#000', fontSize: 34 }} /> : <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />}
+                    {active === 'notification' ?
+                        <FavoriteOutlinedIcon sx={{ color: '#000', fontSize: 34 }} />
+                        :
+                        <Box
+                            sx={{
+                                flexDirection: 'row',
+                                width: '30px', height: '30px'
+                            }}
+                        >
+                            <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />
+                            <Brightness1Icon
+                                sx={{
+                                    color: '#ED4956', fontSize: 12,
+                                    position: 'absolute', marginLeft: '-10px',
+                                    marginBottom: '20px', zIndex: 1000,
+                                }}
+                            />
+
+                        </Box>
+                    }
                     <span>Thông báo</span>
                 </a>
 
