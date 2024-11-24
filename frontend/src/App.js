@@ -31,6 +31,7 @@ import InputBornDay from './pages/SignUpPage/InputBornDay';
 import ConfirmCode from './pages/SignUpPage/ConfirmCode';
 import MessagePage from './pages/MessagePage/MessagePage';
 import { AuthContext } from './shared/context/auth-context';
+
 const App = () => {
   const [authState, setAuthState] = useState({
     isLoggedIn: null, 
@@ -40,6 +41,8 @@ const App = () => {
     fullname: null,
     avatar: null,
     isAdmin: false,
+    following: [], // Mới thêm vào
+    bookmark: [],  // Mới thêm vào
   });
 
   const login = useCallback((token) => {
@@ -54,6 +57,8 @@ const App = () => {
           fullname: decoded.fullname,
           avatar: decoded.avatar,
           isAdmin: decoded.isAdmin,
+          following: decoded.following || [], // Giải mã thêm following
+          bookmark: decoded.bookmark || [],   // Giải mã thêm bookmark
         });
       } catch (error) {
         console.error('Error decoding token during login:', error);
@@ -61,6 +66,7 @@ const App = () => {
       }
     }
   }, []);
+
   const logout = useCallback(() => {
     setAuthState({
       isLoggedIn: false,
@@ -70,9 +76,12 @@ const App = () => {
       fullname: null,
       avatar: null,
       isAdmin: false,
+      following: [], 
+      bookmark: [],
     });
     Cookies.remove('accessToken');
   }, []);
+
   useEffect(() => {
     const token = Cookies.get('accessToken');
     if (token) {
@@ -85,6 +94,7 @@ const App = () => {
   if (authState.isLoggedIn === null) {
     return;
   }
+
   let routes;
 
   if (authState.isLoggedIn) {
