@@ -40,7 +40,6 @@ const Navbar = ({ pages }) => {
     if (token) {
         const decodedToken = jwtDecode(token);
         username = decodedToken.username;
-        console.log(decodedToken)
     }
 
 

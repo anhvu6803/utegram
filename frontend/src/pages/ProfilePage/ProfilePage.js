@@ -38,7 +38,7 @@ const ProfilePage = () => {
   }, [username]);
 
   if (isValidUsername === null) {
-    return <div>Loading...</div>;
+    return ;
   }
 
   if (!isValidUsername) {

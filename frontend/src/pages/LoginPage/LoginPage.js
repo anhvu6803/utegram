@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import logo from '../../assets/logo.jpg';
 import { AuthContext } from '../../shared/context/auth-context';
+import Cookies from 'js-cookie';
 
 const LoginPage = () => {
-  const auth = useContext(AuthContext);
+  const auth = useContext(AuthContext); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -35,26 +36,17 @@ const LoginPage = () => {
 
       const data = await response.json();
       if (!response.ok) {
-        setErrorMessage(data.msg || 'Đăng nhập thất bại');
-        setIsLoading(false);
+        setErrorMessage(data.msg || 'Đăng nhập thất bại.');
         return;
       }
 
-      // Lưu thông tin người dùng và token vào localStorage
-      const tokenCreationTime = new Date().getTime();
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('tokenCreationTime', tokenCreationTime);
-
-      // Gọi hàm login từ AuthContext để lưu thông tin người dùng
-      auth.login(data.user.id);
-
-      // Nếu là admin, chuyển hướng đến trang admin
-      if (data.user.isAdmin) {
-        navigate('/admin/users');
-      } else {
-        navigate('/home');
-      }
-
+      Cookies.set('accessToken', data.accessToken, {
+        secure: true,
+        sameSite: 'Strict',
+        expires: 1,
+      });
+      auth.login(data.accessToken); 
+      navigate(data.user.isAdmin ? '/admin/users' : '/home');
     } catch (error) {
       setErrorMessage('Đã có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
@@ -75,7 +67,7 @@ const LoginPage = () => {
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="input-group">
               <input
-                type="text"
+                type="email"
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -93,7 +85,12 @@ const LoginPage = () => {
                 required
               />
             </div>
-            <button type="submit" className="login-btn" disabled={isLoading}>
+            <button
+              type="submit"
+              className="login-btn"
+              disabled={isLoading}
+              style={{ opacity: isLoading ? 0.5 : 1 }}
+            >
               {isLoading ? 'Đang xử lý...' : 'Đăng nhập'}
             </button>
           </form>
