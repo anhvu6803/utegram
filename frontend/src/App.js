@@ -2,13 +2,17 @@ import './App.css';
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   BrowserRouter as Router,
-  Routes, Route, Navigate
+  Routes,
+  Route,
+  Navigate,
 } from 'react-router-dom';
-import io from 'socket.io-client'
-import { useParams } from 'react-router-dom';
-import { AuthContext } from './shared/context/auth-context';
+import io from 'socket.io-client';
+import Cookies from 'js-cookie'; // Import js-cookie
+import { jwtDecode } from 'jwt-decode'; // Correct import of jwt-decode
+
+// Import Pages
 import PostWithTag from './pages/PostWithTag/PostWithTag';
-import HomePage from './pages/HomePage/HomePage'
+import HomePage from './pages/HomePage/HomePage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import SignUpPage from './pages/SignUpPage/SignUpPage';
 import ResetPassPage from './pages/ResetPassPage/ResetPassPage';
@@ -25,67 +29,71 @@ import CommentSetting from './pages/SettingPages/CommentSetting';
 import PostManagement from './pages/Admin/PostManagement/PostManagement';
 import InputBornDay from './pages/SignUpPage/InputBornDay';
 import ConfirmCode from './pages/SignUpPage/ConfirmCode';
-import PrivateRoute from './components/PrivateRoute';
 import MessagePage from './pages/MessagePage/MessagePage';
-const socket = io.connect('http://localhost:5000');
-
-const Accounts = () => {
-  const { option } = useParams();
-
-  switch (option) {
-    case 'edit':
-      return <EditAccount />;
-    case 'notifications':
-      return <NotificationSetting />;
-    case 'blocked_accounts':
-      return <BlockedAccount />;
-    case 'comments':
-      return <CommentSetting />;
-    default:
-      return <div>Invalid Option</div>;
-  }
-};
-
+import { AuthContext } from './shared/context/auth-context';
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    () => sessionStorage.getItem('isLoggedIn') === 'true'
-  );
-  const [userId, setUserId] = useState(sessionStorage.getItem('userId') || null);
+  const [authState, setAuthState] = useState({
+    isLoggedIn: null, 
+    userId: null,
+    username: null,
+    email: null,
+    fullname: null,
+    avatar: null,
+    isAdmin: false,
+  });
 
-  const login = useCallback(uid => {
-    setIsLoggedIn(true);
-    setUserId(uid);
-    sessionStorage.setItem('isLoggedIn', 'true'); 
-    sessionStorage.setItem('userId', uid); 
-  }, []);
-
-  const logout = useCallback(() => {
-    setIsLoggedIn(false);
-    setUserId(null);
-    sessionStorage.removeItem('isLoggedIn'); 
-    sessionStorage.removeItem('userId'); 
-  }, []);
-
-
-  useEffect(() => {
-    const storedIsLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
-    if (storedIsLoggedIn) {
-      setIsLoggedIn(true);
-      setUserId(sessionStorage.getItem('userId'));
+  const login = useCallback((token) => {
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setAuthState({
+          isLoggedIn: true,
+          userId: decoded.userId,
+          username: decoded.username,
+          email: decoded.email,
+          fullname: decoded.fullname,
+          avatar: decoded.avatar,
+          isAdmin: decoded.isAdmin,
+        });
+      } catch (error) {
+        console.error('Error decoding token during login:', error);
+        logout(); 
+      }
     }
   }, []);
+  const logout = useCallback(() => {
+    setAuthState({
+      isLoggedIn: false,
+      userId: null,
+      username: null,
+      email: null,
+      fullname: null,
+      avatar: null,
+      isAdmin: false,
+    });
+    Cookies.remove('accessToken');
+  }, []);
+  useEffect(() => {
+    const token = Cookies.get('accessToken');
+    if (token) {
+      login(token);
+    } else {
+      setAuthState((prevState) => ({ ...prevState, isLoggedIn: false }));
+    }
+  }, [login]);
 
-  console.log(userId)
-
+  if (authState.isLoggedIn === null) {
+    return;
+  }
   let routes;
 
-  if (isLoggedIn) {
+  if (authState.isLoggedIn) {
     routes = (
       <Routes>
         <Route path="/home" element={<HomePage />} />
         <Route path="/explore" element={<ExplorePage />} />
-        <Route path='/post/:id' element={<DetailPost />} />
-        <Route path='/accounts/:option' element={<Accounts />} />
+        <Route path="/post/:id" element={<DetailPost />} />
+        <Route path="/accounts/:option" element={<EditAccount />} />
         <Route path="/videos" element={<VideoPage />} />
         <Route path="/profile/:username" element={<ProfilePage />} />
         <Route path="/tag/:tagName" element={<PostWithTag />} />
@@ -113,10 +121,9 @@ const App = () => {
   return (
     <AuthContext.Provider
       value={{
-        isLoggedIn: isLoggedIn,
-        userId: userId,
+        ...authState,
         login: login,
-        logout: logout
+        logout: logout,
       }}
     >
       <Router>
@@ -124,6 +131,6 @@ const App = () => {
       </Router>
     </AuthContext.Provider>
   );
-}
+};
 
 export default App;

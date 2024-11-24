@@ -80,22 +80,17 @@ const createReportUser = async (req, res, next) => {
 };
 const ListReport = async (req, res) => {
     try {
-      const reportedUserIds = await ReportUser.distinct('userId');
+      const reports = await ReportUser.find({})
+        .populate('userId', 'username fullname email avatar') 
+        .select('reason'); 
   
-      if (!reportedUserIds || reportedUserIds.length === 0) {
-        return res.status(404).json({ error: 'No users have been reported' });
+      if (reports.length === 0) {
+        return res.status(404).json({ message: 'No reports found.' });
       }
-  
-      const reportedUsers = await User.find({ '_id': { $in: reportedUserIds } });
-  
-      if (!reportedUsers || reportedUsers.length === 0) {
-        return res.status(404).json({ error: 'No users found with the reported userIds' });
-      }
-  
-      res.status(200).json({ reportedUsers });
-    } catch (error) {
-      console.error('Error fetching reported users:', error);
-      res.status(500).json({ error: 'Server error' });
+      return res.status(200).json(reports);
+    } catch (err) {
+      console.error('Error fetching reports:', err);
+      return res.status(500).json({ message: 'An error occurred while fetching reports.' });
     }
   };
 exports.getRepliesByCommentId = getRepliesByCommentId;

@@ -64,38 +64,28 @@ exports.verifyCode = async (req, res) => {
 };
 exports.login = async (req, res) => {
     const { email, password } = req.body;
-
+  
     try {
-        const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ msg: 'Người dùng không tồn tại' });
-
-        if (!user.isVerified) return res.status(400).json({ msg: 'Vui lòng xác thực email trước khi đăng nhập.' });
-
-        const isMatch = await user.matchPassword(password);
-        console.log(user.matchPassword(password))
-        if (!isMatch) return res.status(400).json({ msg: 'Mật khẩu không đúng' });
-
-        const token = jwt.sign(
-            { userId: user._id, username: user.username, isAdmin: user.isAdmin },
-            process.env.JWT_SECRET,
-            { expiresIn: '5m' }
-        );
-
-        res.json({
-            token,
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                fullname: user.fullname,
-                isAdmin: user.isAdmin,
-                avatar: user.avatar,
-            }
-        });
+      const user = await User.findOne({ email });
+      if (!user) return res.status(400).json({ msg: 'Người dùng không tồn tại' });
+  
+      if (!user.isVerified) return res.status(400).json({ msg: 'Vui lòng xác thực email trước khi đăng nhập.' });
+  
+      const isMatch = await user.matchPassword(password);
+      if (!isMatch) return res.status(400).json({ msg: 'Mật khẩu không đúng' });
+  
+      const accessToken = jwt.sign(
+        { userId: user._id, isAdmin: user.isAdmin, email: user.email, username: user.username,fullname: user.fullname, bornDay: user.bornDay, avatar: user.avatar,following: user.following,bookmark: user.bookmark },
+        process.env.JWT_SECRET,
+        { expiresIn: '1d' }
+      );
+  
+      res.status(200).json({ accessToken });
+  
     } catch (err) {
-        res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message });
     }
-};
+  };
 exports.checkDuplicateUser = async (req, res) => {
     const { email, username } = req.body;
     const errors = {};

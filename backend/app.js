@@ -8,7 +8,7 @@ const profileRoutes = require('./routes/profileRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const historySearchRoutes = require('./routes/historySearchRoutes');
-
+const cors = require('cors');
 const mongoose = require('mongoose');
 
 
@@ -25,7 +25,10 @@ app.use((req, res, next) => {
   next();
 });
 
-
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true, 
+}));
 app.use('/api/profile', profileRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
