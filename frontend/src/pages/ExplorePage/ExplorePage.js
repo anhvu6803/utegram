@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import OptionBar from '../../components/OptionBar/OptionBar';
 import PostForm from '../../components/PostForm/PostForm';
+import failLoadImage from '../../assets/picture-loading-failed-1-512.png';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { AuthContext } from '../../shared/context/auth-context';
 
@@ -39,6 +40,11 @@ const ExplorePage = () => {
                 const responsePosts = await sendRequest(`http://localhost:5000/api/posts/random/${userId}?page=${loadPageNumber}&&limit=9`);
 
                 setLoadedPosts(responsePosts);
+
+                responsePosts.map(async (item) => {
+                    await checkUrl(item.url);
+                })
+
                 setPageNumber(prevPage => prevPage + 1);
 
                 setTimeout(() => {
@@ -167,6 +173,21 @@ const ExplorePage = () => {
 
     const closeModal = () => setIsOpen(false);
 
+    const [status, setStatus] = useState([]);
+
+    const checkUrl = async (url) => {
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                setStatus((list) => [...list, 'OK']);
+            } else {
+                setStatus((list) => [...list, 'FAIL']);
+            }
+        } catch (error) {
+            setStatus((list) => [...list, 'ERROR']);
+        }
+    };
+
     return (
         <Box>
             <OptionBar pages={'explore'} />
@@ -265,7 +286,15 @@ const ExplorePage = () => {
 
                     <ImageList
                         cols={3}
-                        sx={{ width: '920px', height: '100%', marginTop: '50px', marginBottom: '10px' }}
+                        sx={{
+                            width: '930px', height: '100%', marginTop: '50px',
+                            marginBottom: '10px',
+                            '&::-webkit-scrollbar': {
+                                display: 'none',  // Ẩn thanh cuộn trên Chrome/Safari
+                            },
+                            '-ms-overflow-style': 'none',  // Ẩn thanh cuộn trên IE/Edge
+                            'scrollbar-width': 'none',
+                        }}
                     >
                         {loadedPosts.map((post, index) => (
                             <ListItemButton
@@ -280,18 +309,31 @@ const ExplorePage = () => {
                                 }}
 
                             >
-                                {post.type === 'video' ?
-                                    <video
-                                        src={`${post.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
-                                        style={{ width: '300px', height: '300px', objectFit: 'cover' }}
-                                    /> :
-                                    <img
-                                        srcSet={`${post.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                        src={`${post.url[0]}?w=248&fit=crop&auto=format`}
-                                        loading="lazy"
-                                        style={{ width: '300px', height: '300px', objectFit: 'cover' }}
-                                    />
+                                {status[index] === 'OK' ?
+                                    <div>
+                                        {post.type === 'video' && post?.url.length > 0 ?
+                                            <video
+                                                src={`${post?.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
+                                                style={{ width: '300px', height: '300px', objectFit: 'cover', }}
+                                            />
 
+                                            :
+                                            <img
+                                                srcSet={`${post?.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                                src={`${post?.url[0]}?w=248&fit=crop&auto=format`}
+                                                loading="lazy"
+                                                style={{ width: '300px', height: '300px', objectFit: 'cover', }}
+                                            />
+
+                                        }
+                                    </div>
+                                    :
+                                    <img
+                                        srcSet={`${failLoadImage}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                        src={`${failLoadImage}?w=248&fit=crop&auto=format`}
+                                        loading="lazy"
+                                        style={{ width: '300px', height: '300px', objectFit: 'cover', }}
+                                    />
                                 }
                                 <ImageListItemBar key={post.type}
                                     sx={{

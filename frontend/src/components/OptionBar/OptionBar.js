@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import './OptionBar.css';
 import avatar from '../../assets/user.png';
 import SearchForm from '../SearchBar/SearchBar';
 import Notification from '../Notification/Notification';
 import UploadContent from '../CreatePostForm/UploadContent';
 import SeeMore from '../SeeMore/SeeMore';
+import { AuthContext } from '../../shared/context/auth-context';
+import { useHttpClient } from '../../shared/hooks/http-hook';
 
 // Material UI
 import { Box, Modal } from '@mui/material';
@@ -34,15 +36,13 @@ const Navbar = ({ pages }) => {
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const { timeLoading, sendRequest } = useHttpClient();
+    const [notificationList, setNotificationList] = useState([]);
+    const [isRemindNotify, setRemindNotify] = useState([]);
 
-    const token = localStorage.getItem('token');
-    let username = '';
+    const auth = useContext(AuthContext);
 
-    if (token) {
-        const decodedToken = jwtDecode(token);
-        username = decodedToken.username;
-    }
-
+    const userId = auth.userId;
 
     const handleIconClick = (icon) => {
         setActive(icon);
@@ -65,6 +65,24 @@ const Navbar = ({ pages }) => {
         window.location.reload();
         setActive('');
     };
+
+    useEffect(() => {
+        const fetchNotifies = async () => {
+
+            try {
+                const responseNotifies = await sendRequest(`http://localhost:5000/api/notify/${userId}`);
+
+                setNotificationList(responseNotifies.notify);
+
+                setRemindNotify(responseNotifies.notify.map((item) => item.isViewed === false))
+
+            } catch (err) { }
+        };
+        fetchNotifies();
+
+    }, [sendRequest]);
+
+    console.log(isRemindNotify.includes(true))
 
     return (
         <div>
@@ -111,8 +129,8 @@ const Navbar = ({ pages }) => {
                     className={`icon ${active === 'search' ? 'active' : ''}`}
                     onClick={() => {
                         handleIconClick('search');
-                        setIsCollapsed(!isCollapsed);
-                        setIsSearchVisible(!isSearchVisible);
+                        setIsCollapsed(true);
+                        setIsSearchVisible(true);
                     }}
                     style={{ cursor: 'pointer' }}
                 >
@@ -185,13 +203,15 @@ const Navbar = ({ pages }) => {
                             }}
                         >
                             <FavoriteBorderOutlinedIcon sx={{ color: '#000', fontSize: 30 }} />
-                            <Brightness1Icon
-                                sx={{
-                                    color: '#ED4956', fontSize: 12,
-                                    position: 'absolute', marginLeft: '-10px',
-                                    marginBottom: '20px', zIndex: 1000,
-                                }}
-                            />
+                            {isRemindNotify.includes(true) &&
+                                <Brightness1Icon
+                                    sx={{
+                                        color: '#ED4956', fontSize: 12,
+                                        position: 'absolute', marginLeft: '-10px',
+                                        marginBottom: '20px', zIndex: 1000,
+                                    }}
+                                />
+                            }
 
                         </Box>
                     }
@@ -200,7 +220,7 @@ const Navbar = ({ pages }) => {
 
                 {showNotifications && (
                     <div className="notification-dropdown">
-                        <Notification />
+                        <Notification notificationList={notificationList} />
                     </div>
                 )}
 
@@ -217,12 +237,12 @@ const Navbar = ({ pages }) => {
                 </a>
 
                 <a
-                    href={`/profile/${username}`}
+                    href={`/profile/${auth.username}`}
                     className={`icon ${active === 'profile' ? 'active' : ''}`}
                     onClick={() => handleIconClick('profile')}
                     style={{ cursor: 'pointer' }}
                 >
-                    <img src={avatar} alt="Profile Avatar" />
+                    <img src={auth?.avatar || avatar} alt="Profile Avatar" />
                     <span>Trang cá nhân</span>
                 </a>
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from 'react';
+import React, { useState, useRef, useContext, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import './SettingPages.css';
 import Navbar from '../../components/OptionBar/OptionBar';
@@ -13,10 +13,6 @@ import { Box, ListItemText, TextField, Modal } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Autocomplete from '@mui/material/Autocomplete';
 
-// Material icon
-import SlideshowIcon from '@mui/icons-material/Slideshow';
-import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-
 const EditAccount = () => {
     const { option } = useParams();
     const auth = useContext(AuthContext);
@@ -28,13 +24,22 @@ const EditAccount = () => {
     const fileInputRef = useRef(null);
     const [files, setFiles] = useState([]);
     const [fileUrls, setFileUrls] = useState();
-    const [bioValue, setBioValue] = useState();
-    const [genderValue, setGenderValue] = useState();
+    const [bioValue, setBioValue] = useState('');
+    const [genderValue, setGenderValue] = useState('');
     const [isFinishCreate, setChangeFinishCreate] = useState(false);
     const [uploadPolicy, setUploadPolicy] = useState();
     const [isLoading, setLoading] = useState(false);
     const [isOpenModal, setOpenModal] = useState(false)
+    const [editAvatar, setEditAvatar] = useState(avatar)
 
+    useEffect(() => {
+        if (auth.avatar) {
+            setEditAvatar(auth.avatar);
+        }
+        else {
+            setEditAvatar(avatar);
+        }
+    })
 
     const handleChooseImage = () => {
         fileInputRef.current.click(); // Kích hoạt chọn file
@@ -51,6 +56,7 @@ const EditAccount = () => {
 
     const handleUpload = async (e) => {
         e.preventDefault();
+
         setChangeFinishCreate(true);
         setOpenModal(true);
         let url;
@@ -96,8 +102,7 @@ const EditAccount = () => {
             setLoading(false)
             console.error(err);
         }
-        console.log(url)
-        console.log(final_decision)
+
         if (final_decision === 'OK') {
             try {
 
@@ -121,8 +126,13 @@ const EditAccount = () => {
         }
 
     };
-    console.log(bioValue);
-    console.log(genderValue)
+
+    const handleBioChangeValue = (event) => {
+        const value = event.target.value
+        if (value.length <= 150) {
+            setBioValue(value);
+        }
+    }
 
     const closeModal = () => {
         if (!isLoading) {
@@ -199,12 +209,12 @@ const EditAccount = () => {
                                     flexDirection: 'row',
                                     alignItems: 'center',
                                 }}>
-                                    <Avatar src={fileUrls || avatar} sx={{ color: 'black', width: '45px', height: '45px', marginLeft: '20px' }} />
+                                    <Avatar src={fileUrls || editAvatar} sx={{ color: 'black', width: '45px', height: '45px', marginLeft: '20px' }} />
                                     <ListItemText
                                         sx={{ width: '150px' }}
                                         style={{ display: 'block' }}
-                                        primary='Wasabi1234'
-                                        secondary='wasabi123'
+                                        primary={auth.username}
+                                        secondary={auth.fullname}
                                         primaryTypographyProps={{ style: { fontSize: 14, fontWeight: 'bold' } }}
                                         secondaryTypographyProps={{ style: { fontSize: 13 } }} />
                                 </div>
@@ -238,29 +248,48 @@ const EditAccount = () => {
 
                             >
                                 <span style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '20px', }}>Tiểu sử</span>
-                                <TextField
-                                    fullWidth
-                                    variant="outlined"
-                                    value={bioValue}
-                                    onChange={(event) => {
-                                        setBioValue(event.target.value);  // Update the state with the selected value
-                                    }}
-                                    multiline
-                                    maxRows={2}
-                                    placeholder="Tiểu sử"
-                                    slotProps={{
-                                        input: {
-                                            sx: {
-                                                height: '80px',
-                                                overflow: 'auto',
-                                            },
-                                        }
-                                    }}
-                                />
+                                <Box sx={{
+                                    display: 'flex', flexDirection: 'column',
+                                    height: '100px', border: 1, width: '650px',
+                                    borderRadius: '15px', borderColor: '#e5e5e5'
+                                }}>
+                                    <TextField
+                                        fullWidth
+                                        variant="outlined"
+                                        value={bioValue}
+                                        onChange={(event) => {
+                                            handleBioChangeValue(event)
+                                        }}
+                                        multiline
+                                        maxRows={2}
+                                        placeholder="Tiểu sử"
+                                        style={{
+                                            textAlign: 'start',
+                                        }}
+                                        slotProps={{
+                                            input: {
+                                                maxLength: 150,
+                                                sx: {
+                                                    '& .MuiOutlinedInput-notchedOutline': {
+                                                        border: 'none', // Hide border of TextField
+                                                    },
+                                                    height: '70px',
+                                                    overflow: 'auto',
+                                                },
+                                            }
+                                        }}
+                                    />
+                                    <span style={{
+                                        textAlign: 'right', marginRight: '20px', color: '#c7c7c7', fontSize: 13,
+                                        marginBottom: '15px'
+                                    }}>
+                                        {`${bioValue.length} / 150`}
+                                    </span>
+                                </Box>
                             </Box>
                             <Box
                                 sx={{
-                                    width: '650px', height: '100px',
+                                    width: '650px', height: '130px',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     marginLeft: '100px',
@@ -272,16 +301,27 @@ const EditAccount = () => {
 
                             >
                                 <span style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '20px', }}>Giới tính</span>
-                                <Autocomplete
-                                    disablePortal
-                                    value={genderValue}
-                                    onChange={(event, newValue) => {
-                                        setGenderValue(newValue); // Use newValue instead of event.target.value
-                                    }}
-                                    options={['Nam', 'Nữ', 'Khác']}
-                                    sx={{ width: '100%', height: '50px' }}
-                                    renderInput={(params) => <TextField {...params} />}
-                                />
+                                <Box sx={{
+                                    display: 'flex', flexDirection: 'column',
+                                    height: '60px', border: 1, width: '650px',
+                                    borderRadius: '15px', borderColor: '#e5e5e5'
+                                }}>
+                                    <Autocomplete
+                                        disablePortal
+                                        value={genderValue}
+                                        onChange={(event, newValue) => {
+                                            setGenderValue(newValue); // Use newValue instead of event.target.value
+                                        }}
+                                        options={['Nam', 'Nữ', 'Khác']}
+                                        sx={{
+                                            width: '100%', height: '50px',
+                                            '& .MuiOutlinedInput-notchedOutline': {
+                                                border: 'none', // Hide border of TextField
+                                            },
+                                        }}
+                                        renderInput={(params) => <TextField {...params} />}
+                                    />
+                                </Box>
                                 <span style={{ fontSize: 13, fontWeight: 'normal', marginTop: '10px', color: '#737373' }}>
                                     Thông tin này sẽ không xuất hiện trên trang cá nhân công khai của bạn.
                                 </span>

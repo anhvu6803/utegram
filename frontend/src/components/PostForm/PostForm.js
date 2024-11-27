@@ -62,6 +62,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
     const [likeCount, setLikeCount] = useState(post.likes.length);
     const [listUserLiked, setListUserLiked] = useState([]);
     const [modalListUserLiked, setOpenListUserLiked] = useState(false);
+    const [loadedAuthor, setLoadedAuthor] = useState();
 
     const closeListUserLiked = () => {
         setOpenListUserLiked(false)
@@ -77,6 +78,19 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                 JSON.stringify({ userId: auth.userId }),
                 { 'Content-Type': 'application/json' }
             );
+
+            await sendRequest(
+                `http://localhost:5000/api/notify`,
+                'POST',
+                JSON.stringify({
+                    type: "post",
+                    content: "đã thích bài viết của bạn",
+                    owner: author._id,
+                    userId: auth.userId,
+                    postId: post._id
+                }),
+                { 'Content-Type': 'application/json' }
+            );
             // Phát sự kiện qua Socket.IO
             socket.emit('likePost', post._id);
 
@@ -86,8 +100,20 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
 
     const [bookmarked, setBookmarked] = useState(false); // Boolean state for a single item
 
-    const handleBookmarkClick = () => {
+    const handleBookmarkClick = async (e) => {
+        e.preventDefault();
         setBookmarked((prevbookmarked) => !prevbookmarked); // Toggle the boolean value
+
+        try {
+            await sendRequest(
+                `http://localhost:5000/api/posts/bookmark/${post._id}`,
+                'PATCH',
+                JSON.stringify({ userId: auth.userId }),
+                { 'Content-Type': 'application/json' }
+            );
+
+        } catch (err) {
+        }
     };
 
     const [modalIsOpen, setIsOpen] = useState(false);
@@ -110,7 +136,19 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                 }),
                 { 'Content-Type': 'application/json' }
             );
-            console.log(responseData.message)
+
+            await sendRequest(
+                `http://localhost:5000/api/notify`,
+                'POST',
+                JSON.stringify({
+                    type: "user",
+                    content: "đã bắt đầu theo dõi bạn",
+                    owner: author._id,
+                    userId: auth.userId,
+                }),
+                { 'Content-Type': 'application/json' }
+            );
+
         } catch (err) {
 
         }
@@ -207,6 +245,20 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                     }),
                     { 'Content-Type': 'application/json' }
                 );
+
+                await sendRequest(
+                    `http://localhost:5000/api/notify`,
+                    'POST',
+                    JSON.stringify({
+                        type: "post",
+                        content: `đã bình luận: "${textComment}"`,
+                        owner: author._id,
+                        userId: auth.userId,
+                        postId: post._id
+                    }),
+                    { 'Content-Type': 'application/json' }
+                );
+
                 socket.emit('submitComment', responseData);
                 setTextCommnent('');
                 setCommentPost(false)
@@ -224,6 +276,20 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                     }),
                     { 'Content-Type': 'application/json' }
                 );
+
+                await sendRequest(
+                    `http://localhost:5000/api/notify`,
+                    'POST',
+                    JSON.stringify({
+                        type: "post",
+                        content: `đã phản hồi: "${textComment}"`,
+                        owner: parentCommentId,
+                        userId: auth.userId,
+                        postId: post._id
+                    }),
+                    { 'Content-Type': 'application/json' }
+                );
+
                 socket.emit('submitReply', responseData);
                 setTextCommnent('');
                 setReplied(false);
@@ -249,6 +315,20 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                 JSON.stringify({ userId: auth.userId }),
                 { 'Content-Type': 'application/json' }
             );
+
+            await sendRequest(
+                `http://localhost:5000/api/notify`,
+                'POST',
+                JSON.stringify({
+                    type: "post",
+                    content: "đã thích bình luận của bạn",
+                    owner: listReliesComment[indexComment][indexReply]._id,
+                    userId: auth.userId,
+                    postId: post._id
+                }),
+                { 'Content-Type': 'application/json' }
+            );
+
             socket.emit('likeComment', listReliesComment[indexComment][indexReply]._id);
         } catch (err) {
 
@@ -260,12 +340,27 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         e.preventDefault();
 
         try {
-            await sendRequest(
+            const response = await sendRequest(
                 `http://localhost:5000/api/comment/${_listComments[index]._id}/like`,
                 'PATCH',
                 JSON.stringify({ userId: auth.userId }),
                 { 'Content-Type': 'application/json' }
             );
+            if (response.message === 'Comment liked') {
+                await sendRequest(
+                    `http://localhost:5000/api/notify`,
+                    'POST',
+                    JSON.stringify({
+                        type: "post",
+                        content: "đã thích bình luận của bạn",
+                        owner: _listComments[index]._id,
+                        userId: auth.userId,
+                        postId: post._id
+                    }),
+                    { 'Content-Type': 'application/json' }
+                );
+            }
+
             socket.emit('likeComment', _listComments[index]._id);
 
         } catch (err) {
@@ -273,7 +368,6 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         }
     };
 
-    console.log(_listComments)
     socket.on('updateLikesComment', (data) => {
         if (data.likesCount >= 0) {
 
@@ -348,6 +442,17 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         };
         fetchUsers();
 
+        const fetchAuthor = async () => {
+            try {
+                const responseUser = await sendRequest(`http://localhost:5000/api/auth/${userId}`);
+
+                setLoadedAuthor(responseUser.user);
+                setBookmarked(responseUser.user.bookmarks.includes(post._id))
+            } catch (err) {
+            }
+        };
+        fetchAuthor();
+
         socket.on('updateComment', (data => {
             if (handleCommentOnce === 1) {
                 setListComment((list) => [...list, data.comment.comment]);
@@ -418,54 +523,9 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
             socket.off('updateReply');
         };
 
-        // socket.on('updateLikesComment', (data) => {
-        //     if (data.likesCount >= 0) {
-
-        //         if (data.type === 'comment') {
-        //             const findIndexReply = _listComments.findIndex((item) => item._id === data?.commentId)
-        //             console.log(_listComments)
-        //             setLikedCommentItems((list) => list?.map((item, index) =>
-        //                 index === findIndexReply
-        //                     ? data.message === 'Comment liked' ? true : false
-        //                     : item
-        //             ));
-
-        //             setLikedCommentItemsCount((list) => list?.map((item, index) =>
-        //                 index === findIndexReply
-        //                     ? data.likesCount
-        //                     : item
-        //             ));
-        //         }
-        //         else if (data.type === 'reply') {
-        //             const findReplyIndex = findPositionReply(listReliesComment, data)
-        //             setLikedReplyItems((list) => list?.map((item, index) =>
-        //                 index === findReplyIndex[0] ?
-        //                     item.map((item, index) =>
-        //                         index === findReplyIndex[1] ?
-        //                             data.message === 'Comment liked' ? true : false
-        //                             :
-        //                             item
-        //                     )
-        //                     :
-        //                     item
-        //             ))
-
-        //             setLikedReplyItemsCount((list) => list?.map((item, index) =>
-        //                 index === findReplyIndex[0] ?
-        //                     item.map((item, index) =>
-        //                         index === findReplyIndex[1] ?
-        //                             data.likesCount
-        //                             :
-        //                             item
-        //                     )
-        //                     :
-        //                     item
-        //             ))
-        //         }
-        //     }
-        // });
-
     }, [post._id, sendRequest]);
+
+    console.log(bookmarked)
 
     return (
         <div>
@@ -938,7 +998,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                     <ChatBubbleOutlineOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />
                                 </IconButton>
                                 <IconButton
-                                    onClick={() => { handleBookmarkClick() }}
+                                    onClick={(event) => { handleBookmarkClick(event) }}
                                     sx={{ marginLeft: 'auto' }}
                                 >
                                     {bookmarked ? <BookmarkOutlinedIcon sx={{ color: '#000', fontSize: 25 }} /> : <BookmarkBorderOutlinedIcon sx={{ color: '#000', fontSize: 25 }} />}
@@ -1004,7 +1064,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                             </span>
                         </Box>
                         <Box sx={{ width: '400px', height: '55px', padding: '0px', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                            <Avatar src={author.avatar || defaultAvatar} sx={{ color: '#000', width: '30px', height: '30px', marginLeft: '10px' }} />
+                            <Avatar src={loadedAuthor?.avatar || defaultAvatar} sx={{ color: '#000', width: '30px', height: '30px', marginLeft: '10px' }} />
                             <Box
                                 sx={{
                                     width: '300px', height: 'auto',

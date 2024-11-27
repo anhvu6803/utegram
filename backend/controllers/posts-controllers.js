@@ -503,18 +503,19 @@ const getPostByTag = async (req, res) => {
 const getRandomPostsVideoExcludeUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const { page = 1, limit = 5 } = req.query;
-
+    const { page = 1, limit = 9 } = req.query;
     const skip = (page - 1) * limit;
+    const posts = await Post.aggregate([
+      { $match: { author: { $ne: userId }, type: 'video' } },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: parseInt(limit) }
+    ]);
 
-    const videoPosts = await Post.find({ type: 'video', author: { $ne: userId } })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-    res.status(200).json(videoPosts);
+    return res.json(posts);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 const getRandomPostsExcludeUser = async (req, res) => {

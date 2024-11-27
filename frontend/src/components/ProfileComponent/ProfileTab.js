@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import './ProfileTab.css';
 import GridOnIcon from '@mui/icons-material/GridOn';  
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';  
@@ -19,7 +20,10 @@ const SavedContent = () => (
 );
 
 const ProfileTabs = () => {
-  const [activeTab, setActiveTab] = useState('posts');
+  const location = useLocation();
+  const tab = location.state?.tab || 'posts';
+  
+  const [activeTab, setActiveTab] = useState(tab);
 
   return (
     <div>

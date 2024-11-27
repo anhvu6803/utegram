@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import './HomePage.css';
 import OptionBar from '../../components/OptionBar/OptionBar';
 import avatar from '../../assets/user.png';
+import failLoadImage from '../../assets/picture-loading-failed-1-512.png';
 import PostForm from '../../components/PostForm/PostForm';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { AuthContext } from '../../shared/context/auth-context';
@@ -30,11 +31,16 @@ const HomePage = () => {
     const auth = useContext(AuthContext);
 
     const userId = auth.userId;
-    
+    const following = auth.following;
+
+    console.log(following)
+
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
     const [loadedUsers, setLoadedUsers] = useState();
     const [loadedPosts, setLoadedPosts] = useState();
+    const [followedItems, setFollowedItems] = useState([]);
+
     useEffect(() => {
         const fetchHomePage = async () => {
             setIsLoading(true)
@@ -45,6 +51,17 @@ const HomePage = () => {
                 setLoadedUsers(responseUsers.users);
                 setLoadedPosts(responseUsers.posts);
 
+                responseUsers.posts.map(async (item) => {
+                    await checkUrl(item.url);
+                })
+
+                const responseUser = await sendRequest(`http://localhost:5000/api/auth/${userId}`);
+
+                const followItems = responseUsers.users.map((item) =>
+                    responseUser.user.followings.includes(item._id)
+                );
+
+                setFollowedItems(followItems);
                 setTimeout(() => {
                     setIsLoading(false);
                 }, timeLoading * 1000 + 1000);
@@ -56,10 +73,8 @@ const HomePage = () => {
             }
         };
         fetchHomePage();
-    }, [sendRequest]);
 
-    console.log(loadedUsers)
-    const [followedItems, setFollowedItems] = useState(itemData.map(() => false));
+    }, [sendRequest]);
 
     const handleFollowedClick = async (event, index) => {
         const updatedFollowedItems = followedItems.map((followed, i) =>
@@ -70,7 +85,8 @@ const HomePage = () => {
         event.preventDefault();
 
         try {
-            const responseData = await sendRequest(
+            
+            await sendRequest(
                 `http://localhost:5000/api/profile/follow/${loadedUsers[index]._id}`,
                 'PATCH',
                 JSON.stringify({
@@ -78,7 +94,19 @@ const HomePage = () => {
                 }),
                 { 'Content-Type': 'application/json' }
             );
-            console.log(responseData.message)
+
+            await sendRequest(
+                `http://localhost:5000/api/notify`,
+                'POST',
+                JSON.stringify({
+                    type: "user",
+                    content: "đã bắt đầu theo dõi bạn",
+                    owner: loadedUsers[index]._id,
+                    userId: auth.userId,
+                }),
+                { 'Content-Type': 'application/json' }
+            );
+
         } catch (err) {
 
         }
@@ -113,6 +141,7 @@ const HomePage = () => {
     const [listComments, setListComment] = useState([]);
     const [listReliesComment, setListReliesComment] = useState([])
     const [isLoadingPost, setLoadingPost] = useState(false);
+
     const handleLoadPost = async (event, id) => {
         event.preventDefault();
         setLoadingPost(true);
@@ -160,6 +189,21 @@ const HomePage = () => {
     }
 
     const closeModal = () => setIsOpen(false);
+
+    const [status, setStatus] = useState([]);
+
+    const checkUrl = async (url) => {
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                setStatus((list) => [...list, 'OK']);
+            } else {
+                setStatus((list) => [...list, 'FAIL']);
+            }
+        } catch (error) {
+            setStatus((list) => [...list, 'ERROR']);
+        }
+    };
 
     return (
         <Box sx={{ position: 'absolute', top: 0 }}>
@@ -271,18 +315,31 @@ const HomePage = () => {
                                 }}
 
                             >
-                                {post.type === 'video' ?
-                                    <video
-                                        src={`${post.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
-                                        style={{ width: '300px', height: '300px', objectFit: 'cover' }}
-                                    /> :
-                                    <img
-                                        srcSet={`${post.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                        src={`${post.url[0]}?w=248&fit=crop&auto=format`}
-                                        loading="lazy"
-                                        style={{ width: '300px', height: '300px', objectFit: 'cover' }}
-                                    />
+                                {status[index] === 'OK' ?
+                                    <div>
+                                        {post.type === 'video' && post?.url.length > 0 ?
+                                            <video
+                                                src={`${post?.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
+                                                style={{ width: '300px', height: '300px', objectFit: 'cover', }}
+                                            />
 
+                                            :
+                                            <img
+                                                srcSet={`${post?.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                                src={`${post?.url[0]}?w=248&fit=crop&auto=format`}
+                                                loading="lazy"
+                                                style={{ width: '300px', height: '300px', objectFit: 'cover', }}
+                                            />
+
+                                        }
+                                    </div>
+                                    :
+                                    <img
+                                        srcSet={`${failLoadImage}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                        src={`${failLoadImage}?w=248&fit=crop&auto=format`}
+                                        loading="lazy"
+                                        style={{ width: '300px', height: '300px', objectFit: 'cover', }}
+                                    />
                                 }
                                 <ImageListItemBar key={post.type}
                                     sx={{

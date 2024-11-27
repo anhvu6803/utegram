@@ -69,46 +69,7 @@ const NavbarSetting = ({ option }) => {
                 <BlockOutlinedIcon sx={{ fontSize: 25, color: '#000', marginRight: '10px', marginLeft: '20px' }} />
                 <span style={{ color: '#000', fontStyle: 'normal' }}>Đã chặn</span>
             </Box>
-            <Box
-                onClick={ () => {
-                    handleIconClick('comments')
-                    navigate('/accounts/comments')
-                }}
-                sx={{
-                    cursor: 'pointer',
-                    width: '250px', height: '48px',
-                    display: 'flex', alignItems: 'center',
-                    flexDirection: 'row',
-                    marginLeft: '30px',
-                    marginBottom: '20px',
-                    backgroundColor: active === 'comments' ? 'rgba(51, 51, 51, 0.2)' : 'transparent',
-                    borderRadius: '12px'
-                }}
 
-            >
-                <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: 25, color: '#000', marginRight: '10px', marginLeft: '20px' }} />
-                <span style={{ color: '#000', fontStyle: 'normal' }}>Bình luận</span>
-            </Box>
-            <Box
-                onClick={ () => {
-                    handleIconClick('notifications')
-                    navigate('/accounts/notifications')
-                }}
-                sx={{
-                    cursor: 'pointer',
-                    width: '250px', height: '48px',
-                    display: 'flex', alignItems: 'center',
-                    flexDirection: 'row',
-                    marginLeft: '30px',
-                    marginBottom: '20px',
-                    backgroundColor: active === 'notifications' ? 'rgba(51, 51, 51, 0.2)' : 'transparent',
-                    borderRadius: '12px'
-                }}
-
-            >
-                <NotificationsOutlinedIcon sx={{ fontSize: 25, color: '#000', marginRight: '10px', marginLeft: '20px' }} />
-                <span style={{ color: '#000', fontStyle: 'normal' }}>Thông báo</span>
-            </Box>
             <Box
                 onClick={ () => {handleIconClick('change-pass')}}
                 sx={{

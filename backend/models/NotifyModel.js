@@ -17,13 +17,18 @@ const notifySchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: function () { return this.type === 'user'; }
+        required: true
     },
     postId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post',
         required: function () { return this.type === 'post'; }
     },
+    isViewed: {
+        type: Boolean,
+        required: true,
+        default: false,
+    }
 }, { timestamps: true });
 
 const Notify = mongoose.model('Notify', notifySchema);

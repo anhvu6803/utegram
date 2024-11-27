@@ -1,35 +1,44 @@
 const Notify = require('../models/NotifyModel');
 const HttpError = require('../models/http-error');
 
-const getHistorySearchByOwnerId = async (req, res, next) => {
+const getNotifyByOwnerId = async (req, res, next) => {
     const ownerId = req.params.oid;
 
     // let places;
-    let historysWithOwner;
+    let notifyWithOwner;
     try {
-        historysWithOwner = await HistorySearch.find({ owner: ownerId }) // Filter by ownerId
-            .sort({ createdAt: -1 }) // Sort by createdAt in descending order
-            .limit(5) // Limit the results to 5
+        notifyWithOwner = await Notify.find({ owner: ownerId })
+            .sort({ createdAt: -1 }) // Sắp xếp theo createdAt giảm dần
+            .limit(5)
             .populate({
-                path: 'userId',
-                select: 'username fullname avatar'
+                path: 'owner',
+                select: 'followings'
+            })
+            .populate({
+                path: 'userId', // Liên kết với userId
+                select: '_id avatar username', // Chỉ lấy các trường cần thiết
+            })
+            .populate({
+                path: 'postId', // Liên kết với postId nếu có
+                select: '_id url', // Chỉ lấy các trường cần thiết
             });
+
     } catch (err) {
         const error = new HttpError(
-            'Fetching historys failed, please try again later.',
+            'Fetching notifies failed, please try again later.',
             500
         );
         return next(error);
     }
 
     // if (!places || places.length === 0) {
-    if (!historysWithOwner || historysWithOwner.length === 0) {
+    if (!notifyWithOwner || notifyWithOwner.length === 0) {
         return next(
-            new HttpError('Could not find history for the provided user id.', 404)
+            new HttpError('Could not find notifies for the provided user id.', 404)
         );
     }
 
-    res.json({ history: historysWithOwner.map(history => history.toObject({ getters: true })) });
+    res.json({ notify: notifyWithOwner.map(notify => notify.toObject({ getters: true })) });
 }
 
 const createNotify = async (req, res, next) => {
@@ -42,41 +51,54 @@ const createNotify = async (req, res, next) => {
         userId,
         postId
     });
-
     try {
         let existingRecord;
         if (type === 'user') {
             existingRecord = await Notify.findOne({ userId });
         }
-        else {
-            existingRecord = await Notify.findOne({ postId });
-        }
 
         if (!existingRecord) {
-            // Chỉ lưu khi không có bản ghi nào tồn tại
             await createdNotify.save();
             res.status(201).json({ message: 'Notify created successfully' });
         } else {
-            res.status(400).json({ message: 'Notify already exists with the same userId or tag' });
+            res.status(400).json({ message: 'Notify already exists with the same userId' });
         }
     } catch (error) {
         res.status(500).json({ message: 'Failed to create Notify', error: error.message });
     }
 };
 
-const deleteHistorySearch = async (req, res, next) => {
-    const historyId = req.params.hid;
+const updateNotify = async (req, res, next) => {
+    const { isViewed } = req.body;
+    const notifyId = req.params.nid;
+  
+    let notify;
     try {
-        await HistorySearch.findByIdAndDelete(historyId);
-        res.status(201).json({ message: 'Deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error deleting history search', error: error.message });
-        console.error('Error deleting History Search');
+        notify = await Notify.findById(notifyId);
+    } catch (err) {
+      const error = new HttpError(
+        'Something went wrong, could not update notify.',
+        500
+      );
+      return next(error);
     }
+    notify.isViewed = isViewed;
+  
+    try {
+      await notify.save();
+    } catch (err) {
+      const error = new HttpError(
+        'Something went wrong, could not update notify.',
+        500
+      );
+      return next(error);
+    }
+  
+    res.status(200).json({ notify: notify.toObject({ getters: true }) });
 };
 
-exports.getHistorySearchByOwnerId = getHistorySearchByOwnerId;
+exports.getNotifyByOwnerId = getNotifyByOwnerId;
 exports.createNotify = createNotify;
-exports.deleteHistorySearch = deleteHistorySearch;
+exports.updateNotify = updateNotify;
 
 
