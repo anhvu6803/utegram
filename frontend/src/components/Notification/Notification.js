@@ -1,65 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './Notification.css';
-import NotiList from '../Notification/NotiList'; 
+import NotiList from '../Notification/NotiList';
 import CircleHeart from '../../assets/circleheart.jpg';
 import SuggestFollow from '../SuggestFollow/SuggestFollow';
 import { Avatar } from '@mui/material';
-const notifications = [
-    // {
-    //     username: 'JohnDoe',
-    //     avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-    //     action: 'liked your post.',
-    // },
-    // {
-    //     username: 'JaneSmith',
-    //     avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-    //     action: 'commented: "Great post!"',
-    // },
-    // // Thêm nhiều thông báo để kiểm tra
-    // {
-    //     username: 'AliceDoe',
-    //     avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-    //     action: 'shared your post.',
-    // },
-    // {
-    //     username: 'BobSmith',
-    //     avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-    //     action: 'started following you.',
-    // },
-];
+import { useHttpClient } from '../../shared/hooks/http-hook';
+import { AuthContext } from '../../shared/context/auth-context';
+import { Box, Divider } from '@mui/material';
 
-const friendSuggestions = [
-    {
-        username: 'Anh Vũ',
-        avatar: Avatar,
-    },
-    {
-        username: 'Nhật Nguyên',
-        avatar: Avatar,
-    },
-    {
-        username: 'nhatnguyen.hcmute',
-        avatar: Avatar,
-    }
-];
+const Notification = ({ notificationList }) => {
+    const { timeLoading, sendRequest } = useHttpClient();
+    const [loadedUsers, setLoadedUsers] = useState();
+    const [followedItems, setFollowedItems] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-const Notification = () => {
-    const [notificationList, setNotificationList] = useState(notifications);
+    const auth = useContext(AuthContext);
 
-    const handleClearNotifications = () => {
-        setNotificationList([]);
-    };
+    const userId = auth.userId;
+
+    useEffect(() => {
+        const fetchNotifies = async () => {
+            setIsLoading(true)
+
+            try {
+                const responseUsers = await sendRequest(`http://localhost:5000/api/users/morepost/${userId}`);
+
+                setLoadedUsers(responseUsers.users);
+
+                const responseUser = await sendRequest(`http://localhost:5000/api/auth/${userId}`);
+
+                const followItems = responseUsers.users.map((item) =>
+                    responseUser.user.followings.includes(item._id)
+                );
+
+                setFollowedItems(followItems);
+
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, timeLoading * 1000 + 1000);
+
+            } catch (err) {
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, timeLoading * 1000 + 1000);
+            }
+        };
+        fetchNotifies();
+
+    }, [sendRequest]);
+
+    console.log(followedItems)
 
     return (
         <div className="notification-container">
             <div className="notification-header">
                 <a className="title">Thông báo</a>
             </div>
-            <div className="notification-list">
+            <Box
+                sx={{
+                    width: '400px',
+                    maxheight: '100%',
+                    marginTop: '20px',
+                    overflow: 'auto',
+                    '&::-webkit-scrollbar': {
+                        display: 'none',  // Ẩn thanh cuộn trên Chrome/Safari
+                    },
+                    '-ms-overflow-style': 'none',  // Ẩn thanh cuộn trên IE/Edge
+                    'scrollbar-width': 'none',
+                }}
+            >
                 {notificationList.length > 0 ? (
-                    <>
-                        <NotiList notifications={notificationList} />
-                    </>
+
+                    <NotiList
+                        notifications={notificationList}
+                    />
+
                 ) : (
                     <div className="no-notifications">
                         <div className='no-noti'>
@@ -71,12 +86,36 @@ const Notification = () => {
                         </div>
                     </div>
                 )}
-                <div className="suggest-follow-container">
-                    <h4>Gợi ý kết bạn</h4>
-                    <SuggestFollow friendSuggestions={friendSuggestions} />
-                </div>
-            </div>
-        </div>
+            </Box>
+
+            <Divider />
+            <Box
+                sx={{
+                    width: '400px',
+                    maxheight: '100%',
+                    marginTop: '20px', marginLeft: '20px',
+                    overflow: 'auto',
+                    '&::-webkit-scrollbar': {
+                        display: 'none',  // Ẩn thanh cuộn trên Chrome/Safari
+                    },
+                    '-ms-overflow-style': 'none',  // Ẩn thanh cuộn trên IE/Edge
+                    'scrollbar-width': 'none',
+                }}
+            >
+                <span style={{
+                    fontSize: 18, fontWeight: 'bold',
+                }}>
+                    Gợi ý kết bạn
+                </span>
+                {loadedUsers && followedItems &&
+                    < SuggestFollow
+                        loadedUsers={loadedUsers}
+                        loadedFollows={followedItems}
+
+                    />
+                }
+            </Box>
+        </div >
     );
 };
 

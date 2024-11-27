@@ -1,5 +1,6 @@
 import './App.css';
 import React, { useState, useCallback, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,6 +10,7 @@ import {
 import io from 'socket.io-client';
 import Cookies from 'js-cookie'; // Import js-cookie
 import { jwtDecode } from 'jwt-decode'; // Correct import of jwt-decode
+import { useHttpClient } from './shared/hooks/http-hook';
 
 // Import Pages
 import PostWithTag from './pages/PostWithTag/PostWithTag';
@@ -23,27 +25,40 @@ import VideoPage from './pages/VideoPage/VideoPage';
 import UserManagement from './pages/Admin/UserManagement/UserManagement';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import EditAccount from './pages/SettingPages/EditAccount';
-import NotificationSetting from './pages/SettingPages/NotificationSeting';
 import BlockedAccount from './pages/SettingPages/BlockedAccount';
-import CommentSetting from './pages/SettingPages/CommentSetting';
 import PostManagement from './pages/Admin/PostManagement/PostManagement';
 import InputBornDay from './pages/SignUpPage/InputBornDay';
 import ConfirmCode from './pages/SignUpPage/ConfirmCode';
 import MessagePage from './pages/MessagePage/MessagePage';
 import { AuthContext } from './shared/context/auth-context';
 
+const Accounts = () => {
+  const { option } = useParams();
+
+  switch (option) {
+    case 'edit':
+      return <EditAccount />;
+
+    case 'blocked_accounts':
+      return <BlockedAccount />;
+
+    default:
+      return <div>Invalid Option</div>; // Handle unknown options
+  }
+};
+
 const App = () => {
   const [authState, setAuthState] = useState({
-    isLoggedIn: null, 
+    isLoggedIn: null,
     userId: null,
     username: null,
     email: null,
     fullname: null,
     avatar: null,
     isAdmin: false,
-    following: [], // Mới thêm vào
-    bookmark: [],  // Mới thêm vào
   });
+
+  const { timeLoading, sendRequest } = useHttpClient();
 
   const login = useCallback((token) => {
     if (token) {
@@ -55,14 +70,11 @@ const App = () => {
           username: decoded.username,
           email: decoded.email,
           fullname: decoded.fullname,
-          avatar: decoded.avatar,
           isAdmin: decoded.isAdmin,
-          following: decoded.following || [], // Giải mã thêm following
-          bookmark: decoded.bookmark || [],   // Giải mã thêm bookmark
         });
       } catch (error) {
         console.error('Error decoding token during login:', error);
-        logout(); 
+        logout();
       }
     }
   }, []);
@@ -76,8 +88,6 @@ const App = () => {
       fullname: null,
       avatar: null,
       isAdmin: false,
-      following: [], 
-      bookmark: [],
     });
     Cookies.remove('accessToken');
   }, []);
@@ -89,6 +99,19 @@ const App = () => {
     } else {
       setAuthState((prevState) => ({ ...prevState, isLoggedIn: false }));
     }
+    const fetchAuthor = async () => {
+      try {
+        const decoded = jwtDecode(token);
+        const responseUser = await sendRequest(`http://localhost:5000/api/auth/${decoded.userId}`);
+
+        setAuthState((prevState) => ({
+          ...prevState,
+          avatar: responseUser.user.avatar,
+        }));
+      } catch (err) {
+      }
+    };
+    fetchAuthor();
   }, [login]);
 
   if (authState.isLoggedIn === null) {
@@ -103,7 +126,7 @@ const App = () => {
         <Route path="/home" element={<HomePage />} />
         <Route path="/explore" element={<ExplorePage />} />
         <Route path="/post/:id" element={<DetailPost />} />
-        <Route path="/accounts/:option" element={<EditAccount />} />
+        <Route path='/accounts/:option' element={<Accounts />} />
         <Route path="/videos" element={<VideoPage />} />
         <Route path="/profile/:username" element={<ProfilePage />} />
         <Route path="/tag/:tagName" element={<PostWithTag />} />

@@ -162,7 +162,7 @@ const SearchForm = () => {
     return (
         <div className="search-container">
             <div className="search-box">
-                <Box sx={{ marginLeft: '20px', marginBottom: '30px', marginTop: '40px' }}>
+                <Box sx={{ marginLeft: '20px', marginBottom: '20px', marginTop: '20px' }}>
                     <a className='title' >
                         Tìm kiếm
                     </a>

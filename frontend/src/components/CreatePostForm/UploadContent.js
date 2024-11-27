@@ -371,7 +371,7 @@ export default function UploadContent({ closeModal }) {
 
     return (
         <div>
-            {isCancelUpload ?
+            {isCancelUpload && isLoading ?
                 <Box sx={{
                     width: '450px', bgcolor: 'background.paper',
                     marginTop: '100px', border: 1, borderColor: '#777777', borderRadius: 3,
@@ -435,7 +435,10 @@ export default function UploadContent({ closeModal }) {
                     />
                     <IconButton
                         onClick={() => {
-                            setCancelUpload(!isCancelUpload)
+                            isLoading ?
+                                setCancelUpload(!isCancelUpload)
+                                :
+                                closeModal()
                         }}
                         sx={{
                             position: 'absolute', left: '90%', marginTop: '30px',
@@ -608,8 +611,8 @@ export default function UploadContent({ closeModal }) {
                                                                     display: 'flex', flexDirection: 'row', alignItems: 'center',
                                                                     width: '299px', height: '50px', marginLeft: '10px'
                                                                 }}>
-                                                                    <Avatar src={avatar} sx={{ color: '#000', width: '30px', height: '30px', }} />
-                                                                    <span style={{ fontSize: 13, fontWeight: 'bold', marginLeft: '10px' }}>wasabi1234</span>
+                                                                    <Avatar src={auth.avatar || avatar} sx={{ color: '#000', width: '30px', height: '30px', }} />
+                                                                    <span style={{ fontSize: 13, fontWeight: 'bold', marginLeft: '10px' }}>{auth.username}</span>
                                                                 </Box>
                                                                 <Box sx={{
                                                                     display: 'flex', flexDirection: 'column',
@@ -622,7 +625,7 @@ export default function UploadContent({ closeModal }) {
                                                                         maxRows={12}
                                                                         value={inputValue}
                                                                         onChange={handleInputChange}
-                                                                        autoFocus={true}        
+                                                                        autoFocus={true}
                                                                         style={{
                                                                             height: '300px',
                                                                             textAlign: 'start',

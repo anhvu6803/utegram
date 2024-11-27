@@ -19,7 +19,8 @@ export default function SeeMore() {
         <Box sx={{ width: '300px', bgcolor: 'background.paper', marginTop: '100px', border: 1, borderColor: '#777777', borderRadius: 3, zIndex: 2000 }}>
             <ListItemButton
                 onClick={() => {
-                    navigate('/accounts/edit')
+                    navigate('/accounts/edit');
+                    window.location.reload();
                 }}
                 sx={{
                     width: '300px', height: '48px', justifyContent: 'center',
@@ -33,7 +34,10 @@ export default function SeeMore() {
                 <span style={{ color: '#000' }}>Cài đặt</span>
             </ListItemButton>
             <ListItemButton
-                onClick={() => { }}
+                onClick={() => { 
+                    navigate(`/profile/${auth?.username}`, { state: { tab: 'saved' } });
+                    window.location.reload();
+                }}
                 sx={{ width: '300px', height: '48px', justifyContent: 'center' }}
 
             >

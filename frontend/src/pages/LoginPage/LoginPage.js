@@ -6,7 +6,7 @@ import { AuthContext } from '../../shared/context/auth-context';
 import Cookies from 'js-cookie';
 
 const LoginPage = () => {
-  const auth = useContext(AuthContext); 
+  const auth = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -45,7 +45,7 @@ const LoginPage = () => {
         sameSite: 'Strict',
         expires: 1,
       });
-      auth.login(data.accessToken); 
+      auth.login(data.accessToken);
       navigate(data.user.isAdmin ? '/admin/users' : '/home');
     } catch (error) {
       setErrorMessage('Đã có lỗi xảy ra. Vui lòng thử lại.');

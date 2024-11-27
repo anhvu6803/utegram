@@ -36,7 +36,7 @@ const VideoPage = () => {
             setIsLoading(true)
 
             try {
-                const responsePosts = await sendRequest(`http://localhost:5000/api/posts/random/${userId}?page=${loadPageNumber}&&limit=9`);
+                const responsePosts = await sendRequest(`http://localhost:5000/api/posts/videoPosts/${userId}?page=${loadPageNumber}&&limit=9`);
 
                 setLoadedPosts(responsePosts);
                 setPageNumber(prevPage => prevPage + 1);
@@ -63,7 +63,7 @@ const VideoPage = () => {
         try {
             setIsFetching(true);
 
-            const responsePosts = await sendRequest(`http://localhost:5000/api/posts/random/${userId}?page=${loadPageNumber}&&limit=9`);
+            const responsePosts = await sendRequest(`http://localhost:5000/api/posts/videoPosts/${userId}?page=${loadPageNumber}&&limit=9`);
 
             if (responsePosts.length === 9) {
 
