@@ -64,3 +64,20 @@
 .option.active .option-text {
     font-weight: bold;
 }
+.sub-options {
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sub-option {
+    text-decoration: none;
+    color: #555;
+    margin: 5px 0;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.sub-option:hover, .sub-option.active {
+    color: #000;
+}

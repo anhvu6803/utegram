@@ -1,157 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './PostManagement.css';
 import AdminNavBar from '../../../components/AdminNavBar/AdminNavBar';
-import PostManagementTable from './PostManagementTable'; 
+import PostManagementTable from './PostManagementTable';
 import { TextField, Box, InputAdornment, IconButton, Popover, Typography, Badge } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search'; 
-import NotificationsIcon from '@mui/icons-material/Notifications'; 
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'; 
+import SearchIcon from '@mui/icons-material/Search';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const PostManagement = () => {
-    const [query, setQuery] = useState('');
-    const [sortBy, setSortBy] = useState(''); 
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [hasNotifications, setHasNotifications] = useState(true);
+  const [query, setQuery] = useState('');
+  const [sortBy, setSortBy] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [hasNotifications, setHasNotifications] = useState(true);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    // Sample user data
-    const posts = [
-    
-        { id: 1, type: 'image', username: 'nguyenvana', email: 'a@example.com', creationDate: '2023-10-01', hasReport: true },
-        { id: 2, type: 'image', username: 'tranthib', email: 'b@example.com', creationDate: '2023-10-02', hasReport: false },
-        { id: 3, type: 'image', username: 'levanc', email: 'c@example.com', creationDate: '2023-10-03', hasReport: true },
-        { id: 4, type: 'video', username: 'phamthid', email: 'd@example.com', creationDate: '2023-10-04', hasReport: false },
-        { id: 5, type: 'image', username: 'nguyenthiE', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
-        { id: 6, type: 'image', username: 'nhatnguye.hcmute', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
-        { id: 7, type: 'video', username: 'anhvu.wasabi', email: 'e@example.com', creationDate: '2023-10-05', hasReport: true },
- 
-    ];
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:5000/api/report/report-post');
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error('Lỗi khi lấy dữ liệu bài viết:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleSearch = (query) => {
-        console.log("Searching for:", query);
-    };
+  const handleSearch = (query) => {
+    console.log('Searching for:', query);
+  };
 
-    const handleSortChange = (value) => {
-        setSortBy(value);
-        console.log("Sorting by:", value);
-        setAnchorEl(null);
-    };
+  const handleSortChange = (value) => {
+    setSortBy(value);
+    console.log('Sorting by:', value);
+    setAnchorEl(null);
+  };
 
-    React.useEffect(() => {
-        handleSearch(query);
-    }, [query]);
+  useEffect(() => {
+    fetchPosts(); 
+  }, []);
 
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
+  useEffect(() => {
+    handleSearch(query);
+  }, [query]);
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-    const open = Boolean(anchorEl);
-    const id = open ? 'simple-popover' : undefined;
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-    const handleNotificationClick = () => {
-        setHasNotifications(false);
-        console.log("Notifications clicked");
-    };
+  const open = Boolean(anchorEl);
+  const id = open ? 'simple-popover' : undefined;
 
-    return (
-        <div>
-            <AdminNavBar page={'posts'}/>
-            <div className="user-container">
-                <div className="user-header">Xin chào, Admin</div>
-                <div className="user-message">Chúc một ngày tốt lành</div>
-                <div className="management-title">Quản lý bài viết</div>
-                <Box component="form" sx={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }} >
-                    <TextField
-                        variant="outlined"
-                        size="small"
-                        placeholder="Tìm kiếm người dùng..."
-                        onChange={(e) => setQuery(e.target.value)}
-                        sx={{ 
-                            flexGrow: 0, 
-                            width: '700px', 
-                            marginRight: '10px', 
-                            marginLeft: '80px',
-                            marginTop: '10px',
-                            bgcolor: '#fff', 
-                            borderRadius: '15px', 
-                            border: 'none', 
-                            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                            '&:hover': { border: 'none' },
-                            '&.Mui-focused': { border: 'none' },
-                        }} 
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon sx={{ color: 'black' }} /> 
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
+  const handleNotificationClick = () => {
+    setHasNotifications(false);
+    console.log('Notifications clicked');
+  };
 
-                    <Typography 
-                        variant="body2" 
-                        sx={{ 
-                            marginLeft: '100px', 
-                            marginTop: '10px', 
-                            cursor: 'pointer', 
-                            bgcolor: '#F5F5F5', 
-                            padding: '5px', 
-                            borderRadius: '5px',
-                            fontWeight: 'bold', 
-                            display: 'flex',
-                            fontSize: '14px', 
-                            alignItems: 'center'
-                        }} 
-                        onClick={handleClick}
-                    >
-                        Sắp xếp 
-                        <ArrowDropDownIcon sx={{ marginLeft: '5px' }} /> 
-                    </Typography>
-
-                    <Popover
-                        id={id}
-                        open={open}
-                        anchorEl={anchorEl}
-                        onClose={handleClose}
-                        anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'left',
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'left',
-                        }}
-                    >
-                        <Box sx={{ padding: '10px' }}>
-                            <Typography sx={{ cursor: 'pointer' }} onClick={() => handleSortChange('name')}>Tên</Typography>
-                            <Typography sx={{ cursor: 'pointer', marginTop: '5px' }} onClick={() => handleSortChange('date')}>Ngày</Typography>
-                            <Typography sx={{ cursor: 'pointer', marginTop: '5px' }} onClick={() => handleSortChange('status')}>Trạng thái</Typography>
-                        </Box>
-                    </Popover>
-
-                    <IconButton 
-                        sx={{ marginLeft: '10px', marginTop: '10px' }} 
-                        onClick={handleNotificationClick}
-                    >
-                        <Badge 
-                            variant="dot" 
-                            color="error" 
-                            invisible={!hasNotifications}
-                        >
-                            <NotificationsIcon sx={{ color: 'black' }} />
-                        </Badge>
-                    </IconButton>
-                </Box>
-                <div className='user-table'>
-                  <PostManagementTable posts={posts} />
-                </div>
-               
-            </div>
-        </div>
-    );
+  return (
+    <div>
+      <AdminNavBar page={'posts'} />
+      <div className="user-container">
+        <div className="user-header">Xin chào, Admin</div>
+        <div className="user-message">Chúc một ngày tốt lành</div>
+        <div className="management-title">Quản lý bài viết</div>
+        <Box component="form" sx={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+        </Box>
+        <PostManagementTable posts={posts} />
+      </div>
+    </div>
+  );
 };
 
 export default PostManagement;

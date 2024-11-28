@@ -1,57 +1,112 @@
 import React, { useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Paper, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import BorderColorIcon from '@mui/icons-material/BorderColor';
-import DeleteIcon from '@mui/icons-material/Delete';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    Modal,
+    Grid,
+    Typography,
+    Box,
+    IconButton,
+    Button,
+    Divider,
+} from '@mui/material';
 import { Link } from 'react-router-dom';
+import Cookies from 'js-cookie';
+import { toast } from 'react-toastify';
+import BlockIcon from '@mui/icons-material/Block';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import CloseIcon from '@mui/icons-material/Close';
 
-const UserManagementTable = ({ reports }) => {
+const UserManagementTable = ({ users }) => {
     const [open, setOpen] = useState(false);
-    const [selectedReport, setSelectedReport] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [localUsers, setLocalUsers] = useState(users);
+    const [processingReport, setProcessingReport] = useState(false);
 
-    // Function to handle banning a user using fetch
-    const handleBanUser = async (userId, fullname) => {
+    const toggleBanStatus = async (userId, currentStatus) => {
+        const endpoint = currentStatus ? `unban` : `ban`;
         try {
-            // Retrieve the token from localStorage
-            const token = localStorage.getItem('token'); 
-            
+            const token = Cookies.get('accessToken');
             if (!token) {
-                alert('You need to be logged in to perform this action');
+                toast.error('You are not logged in or the session has expired. Please log in again.');
                 return;
             }
-            console.log('Banning user:', token, userId, fullname);
 
-            // Perform the PATCH request using fetch to the correct API endpoint
-            const response = await fetch(`http://localhost:5000/api/users/ban/${userId}`, {
+            const response = await fetch(`http://localhost:5000/api/users/${endpoint}/${userId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,  // Add the token in the Authorization header
-                }
+                    token: `Bearer ${token}`,
+                },
             });
 
             if (response.ok) {
-                alert(`${fullname} has been banned successfully.`);
+                setLocalUsers((prevUsers) =>
+                    prevUsers.map((user) =>
+                        user._id === userId ? { ...user, banned: !currentStatus } : user
+                    )
+                );
+                toast.success(currentStatus ? 'User unbanned successfully.' : 'User banned successfully.');
             } else {
-                alert('Failed to ban the user. Please try again.');
+                toast.error('Failed to update user status.');
             }
         } catch (error) {
-            console.error('Error banning user:', error);
-            alert('Failed to ban the user due to a server error.');
+            console.error('Error updating user status:', error);
+            toast.error('An error occurred while updating the user status.');
         }
     };
 
-    const handleViewReport = (report) => {
-        if (report && report.reason) {
-            setSelectedReport(report);  
-        } else {
-            setSelectedReport({ ...report, reason: 'No reason available' });
-        }
+    const handleViewReport = (user) => {
+        if (processingReport) return;
+        setSelectedUser(user);
         setOpen(true);
     };
 
     const handleClose = () => {
-        setOpen(false);  
-        setSelectedReport(null);  
+        setOpen(false);
+        setSelectedUser(null);
+    };
+
+    const resolveReport = async (userId) => {
+        setProcessingReport(true);
+        try {
+            const token = Cookies.get('accessToken');
+            if (!token) {
+                toast.error('You are not logged in or the session has expired. Please log in again.');
+                setProcessingReport(false);
+                return;
+            }
+
+            const response = await fetch(`http://localhost:5000/api/report/resolve-report/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    token: `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                setLocalUsers((prevUsers) =>
+                    prevUsers.map((user) =>
+                        user._id === userId ? { ...user, isReport: false, reports: [] } : user
+                    )
+                );
+                toast.success('Report resolved and deleted successfully.');
+                handleClose();
+            } else {
+                toast.error('Failed to resolve the report.');
+            }
+        } catch (error) {
+            console.error('Error resolving report:', error);
+            toast.error('An error occurred while resolving the report.');
+        } finally {
+            setProcessingReport(false);
+        }
     };
 
     return (
@@ -69,111 +124,168 @@ const UserManagementTable = ({ reports }) => {
                             Email
                         </TableCell>
                         <TableCell sx={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
-                            Hành Động
+                            Ngày sinh
+                        </TableCell>
+                        <TableCell sx={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
+                            Thao tác
                         </TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {reports.map((report) => {
-                        const user = report.userId || {}; 
-                        const fullname = user.fullname || ''; 
-                        const username = user.username || '';
-                        const email = user.email || '';
-                        const userId = report.userId?._id; // Extracting userId from the report
-
-                        return (
-                            <TableRow key={report._id}> 
-                                <TableCell sx={{ fontFamily: 'Open Sans, sans-serif', textAlign: 'center' }}>
-                                    {fullname}
-                                </TableCell>
-                                <TableCell sx={{ fontFamily: 'Open Sans, sans-serif', textAlign: 'center' }}>
-                                    {username}
-                                </TableCell>
-                                <TableCell sx={{ fontFamily: 'Open Sans, sans-serif', textAlign: 'center' }}>
-                                    {email}
-                                </TableCell>
-                                <TableCell sx={{ textAlign: 'center' }}>
-                                    <Link to={`/profile/${username}`} style={{ textDecoration: 'none' }}>
-                                        <Button
-                                            variant="contained"
-                                            sx={{
-                                                bgcolor: '#0095F6',
+                    {localUsers.map((user) => (
+                        <TableRow key={user._id}>
+                            <TableCell>{user.fullname}</TableCell>
+                            <TableCell>{user.username}</TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>{user.bornDay}</TableCell>
+                            <TableCell>
+                                <Grid container spacing={2} justifyContent="center" alignItems="center">
+                                    <Grid item>
+                                        <button
+                                            style={{
+                                                backgroundColor: user.isReport ? '#0095F6' : '#B0BEC5',
                                                 color: 'white',
+                                                border: 'none',
+                                                padding: '8px 16px',
                                                 borderRadius: '8px',
-                                                height: '30px',
-                                                fontSize: '12px',
-                                                fontWeight: 'bold',
                                                 fontFamily: 'Open Sans, sans-serif',
-                                                '&:hover': {
-                                                    bgcolor: '#007BB8',
-                                                },
+                                                fontWeight: '600',
+                                                cursor: user.isReport && !processingReport ? 'pointer' : 'not-allowed',
                                             }}
+                                            onClick={() => handleViewReport(user)}
+                                            disabled={!user.isReport || processingReport}
                                         >
-                                            Xem Trang Cá Nhân
-                                        </Button>
-                                    </Link>
-                                    <Button
-                                        variant="text"
-                                        onClick={() => console.log(`Editing ${fullname}`)}
-                                        sx={{
-                                            marginLeft: '10px',
-                                            color: '#565D6D',
-                                            fontFamily: 'Open Sans, sans-serif'
-                                        }}
-                                    >
-                                        <BorderColorIcon />
-                                    </Button>
-                                    <Button
-                                        variant="text"
-                                        onClick={() => handleBanUser(userId, fullname)} // Ban user by passing userId from the report
-                                        sx={{
-                                            marginLeft: '10px',
-                                            color: 'red',
-                                            fontFamily: 'Open Sans, sans-serif'
-                                        }}
-                                    >
-                                        <DeleteIcon />
-                                    </Button>
-
-                                    <Button
-                                        variant="contained"
-                                        sx={{
-                                            bgcolor: '#0095F6',
-                                            color: 'white',
-                                            borderRadius: '8px',
-                                            marginLeft: '10px',
-                                            height: '30px',
-                                            minWidth: '120px',
-                                            maxWidth: '150px',
-                                            fontSize: '12px',
-                                            fontWeight: 'bold',
-                                            fontFamily: 'Open Sans, sans-serif',
-                                            '&:hover': {
-                                                bgcolor: '#007BB8',
-                                            },
-                                        }}
-                                        onClick={() => handleViewReport(report)}
-                                    >
-                                        Xem Report
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
+                                            Xem báo cáo
+                                        </button>
+                                    </Grid>
+                                    <Grid item>
+                                        <Link to={`/profile/${user.username}`} style={{ textDecoration: 'none' }}>
+                                            <button
+                                                style={{
+                                                    backgroundColor: '#0095F6',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '8px 16px',
+                                                    borderRadius: '8px',
+                                                    fontFamily: 'Open Sans, sans-serif',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                }}
+                                            >
+                                                Xem trang cá nhân
+                                            </button>
+                                        </Link>
+                                    </Grid>
+                                    <Grid item>
+                                        <button
+                                            style={{
+                                                backgroundColor: user.banned ? '#03E53B' : '#d32f2f',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '50%',
+                                                width: '40px',
+                                                height: '40px',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                cursor: 'pointer',
+                                            }}
+                                            onClick={() => toggleBanStatus(user._id, user.banned)}
+                                        >
+                                            {user.banned ? (
+                                                <AddCircleOutlineIcon sx={{ color: 'white', fontSize: 24 }} />
+                                            ) : (
+                                                <BlockIcon sx={{ color: 'white', fontSize: 24 }} />
+                                            )}
+                                        </button>
+                                    </Grid>
+                                </Grid>
+                            </TableCell>
+                        </TableRow>
+                    ))}
                 </TableBody>
             </Table>
 
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Lý do báo cáo</DialogTitle>
-                <DialogContent>
-                   <p>{selectedReport ? selectedReport.reason : ''}</p>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="primary">
-                        Đóng
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            {selectedUser && (
+                <Modal
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="view-report-modal-title"
+                    aria-describedby="view-report-modal-description"
+                >
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: 'auto',
+                            maxWidth: 400,
+                            bgcolor: 'background.paper',
+                            boxShadow: 24,
+                            borderRadius: 1,
+                            p: 2,
+                            maxHeight: '70vh',
+                            overflowY: 'auto',
+                            zIndex: 9999,
+                        }}
+                    >
+                        <Grid container justifyContent="space-between" alignItems="center">
+                            <Typography variant="h6" id="view-report-modal-title" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
+                                Báo cáo của {selectedUser.fullname}
+                            </Typography>
+                            <IconButton onClick={handleClose} color="primary" size="small">
+                                <CloseIcon />
+                            </IconButton>
+                        </Grid>
+                        <Divider sx={{ my: 1 }} />
+                        {selectedUser.reports.map((report, index) => {
+                            const formattedDate = report.createdAt.split('/').reverse().join('-');
+                            const reportDate = new Date(formattedDate);
+
+                            return (
+                                <Box key={index} sx={{ mb: 3 }}>
+                                    <Typography variant="body1">
+                                        <strong>Ngày:</strong>{' '}
+                                        {reportDate.toLocaleDateString('vi-VN', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                        })}
+                                    </Typography>
+                                    <Typography variant="body1">
+                                        <strong>Lý do:</strong> {report.reason}
+                                    </Typography>
+                                </Box>
+                            );
+                        })}
+
+                        <Grid container spacing={1} justifyContent="space-between" sx={{ mt: 1 }}>
+                            <Grid item xs={6}>
+                                <Button
+                                    onClick={handleClose}
+                                    variant="contained"
+                                    color="error"
+                                    sx={{ fontWeight: '600', width: '100%', backgroundColor: '#FF4D4D' }}
+                                >
+                                    Đóng
+                                </Button>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <Button
+                                    onClick={() => resolveReport(selectedUser._id)}
+                                    variant="contained"
+                                    color="primary"
+                                    sx={{ fontWeight: '600', width: '100%' }}
+                                    disabled={processingReport}
+                                >
+                                    Đã xử lý
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </Modal>
+            )}
         </TableContainer>
     );
 };

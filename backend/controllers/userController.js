@@ -157,23 +157,46 @@ exports.getFollowDataByUserId = async (req, res) => {
     }
 };
 exports.banUser = async (req, res) => {
-    const { userId } = req.params;
+    const { userId } = req.params; 
     try {
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
         if (user.banned) {
-            return res.status(400).json({ message: 'User is already banned' });
-        }
-        user.banned = true;
-        await user.save();
-        return res.status(200).json({ message: 'User has been banned successfully' });
+        return res.status(400).json({ message: "User is already banned" });
+      }
+  
+      user.banned = true;
+      await user.save();
+  
+      res.status(200).json({ message: "User has been banned successfully" });
     } catch (error) {
-        console.error('Error banning user:', error);
-        return res.status(500).json({ error: 'Server error' });
+      res.status(500).json({ message: "Server error", error: error.message });
     }
-};
+  };
+exports.unbanUser = async (req, res) => {
+    const {userId} = req.params;  
+  
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json("User not found");
+      }
+  
+      if (!user.banned) {
+        return res.status(400).json("User is not banned");
+      }
+  
+      user.banned = false;
+      await user.save();
+  
+      return res.status(200).json("User has been unbanned successfully");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json("Internal server error");
+    }
+  };
 exports.searchUser = async (req, res, next) => {
     const { query, userId } = req.query;
     if (!query || query.trim() === "") {

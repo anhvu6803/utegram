@@ -1,30 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import './UserManagement.css';
 import AdminNavBar from '../../../components/AdminNavBar/AdminNavBar';
-import UserManagementTable from './UserManagementTable'; 
+import UserManagementTable from './UserManagementTable';
 import { TextField, Box, InputAdornment, IconButton, Popover, Typography, Badge } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search'; 
-import NotificationsIcon from '@mui/icons-material/Notifications'; 
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'; 
+import SearchIcon from '@mui/icons-material/Search';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import _ from 'lodash'; 
 
 const UserManagement = () => {
     const [query, setQuery] = useState('');
     const [sortBy, setSortBy] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
     const [hasNotifications, setHasNotifications] = useState(true);
-    const [reports, setReports] = useState([]); // Initialize as an empty array
+    const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Fetch reports from the API
-    const fetchReports = async () => {
+    const fetchUsers = async () => {
         try {
             const response = await fetch('http://localhost:5000/api/report/report-user');
             if (!response.ok) {
                 throw new Error('Failed to fetch reports');
             }
-            const data = await response.json();
-            setReports(data || []); // Ensure the data is an array
+            const result = await response.json();
+            if (Array.isArray(result.data)) {
+                setUsers(result.data);
+                setFilteredUsers(result.data); 
+            } else {
+                throw new Error('Data is not an array');
+            }
             setLoading(false);
         } catch (err) {
             console.error('Error fetching reports:', err);
@@ -33,61 +39,41 @@ const UserManagement = () => {
         }
     };
 
-    // Call API on component mount
     useEffect(() => {
-        fetchReports();
+        fetchUsers();
     }, []);
-
-    // Search handler
-    const handleSearch = (query) => {
+    
+    const handleSearch = _.debounce((query) => {
         setQuery(query);
-    };
-
-    // Filter reports based on search query
-    const filteredReports = reports.filter((report) => {
-        const user = report.userId || {}; // Ensure userId exists
-        const fullname = user.fullname || '';
-        const username = user.username || '';
-        const email = user.email || '';
-
-
-        return (
-            fullname.toLowerCase().includes(query.toLowerCase()) ||
-            username.toLowerCase().includes(query.toLowerCase()) ||
-            email.toLowerCase().includes(query.toLowerCase())
+        const lowerQuery = query.toLowerCase();
+        const filtered = users.filter((user) =>
+            user.username?.toLowerCase().includes(lowerQuery)
         );
-    });
+        setFilteredUsers(filtered);
+    }, 300);
 
-    // Sorting handler
     const handleSortChange = (value) => {
         setSortBy(value);
         setAnchorEl(null);
 
-        const sortedReports = [...reports].sort((a, b) => {
-            const userA = a.userId || {};
-            const userB = b.userId || {};
-
+        const sortedUsers = [...filteredUsers].sort((a, b) => {
             if (value === 'name') {
-                return userA.fullname.localeCompare(userB.fullname); // Sorting by name
+                return a.fullname.localeCompare(b.fullname);
             } else if (value === 'date') {
-                // Sorting by reportedAt date (using _id as a proxy for creation date)
-                return new Date(b._id) - new Date(a._id); // Newer reports first
+                return new Date(b.createdAt) - new Date(a.createdAt);
             } else if (value === 'status') {
-                // Sorting by reason (status)
-                return a.reason.localeCompare(b.reason);
+                return a.reports.length - b.reports.length;
             }
             return 0;
         });
 
-        setReports(sortedReports);
+        setFilteredUsers(sortedUsers);
     };
 
-    // Handle popover click
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
 
-    // Close the popover
     const handleClose = () => {
         setAnchorEl(null);
     };
@@ -95,13 +81,11 @@ const UserManagement = () => {
     const open = Boolean(anchorEl);
     const id = open ? 'simple-popover' : undefined;
 
-    // Handle notification click
     const handleNotificationClick = () => {
         setHasNotifications(false);
-        console.log("Notifications clicked");
+        console.log('Notifications clicked');
     };
 
-    // Loading and error handling
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -117,54 +101,16 @@ const UserManagement = () => {
                 <div className="user-header">Xin chào, Admin</div>
                 <div className="user-message">Chúc một ngày tốt lành</div>
                 <div className="management-title">Quản lý người dùng</div>
-                <Box component="form" sx={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-                    <TextField
-                        variant="outlined"
-                        size="small"
-                        placeholder="Tìm kiếm người dùng..."
-                        onChange={(e) => handleSearch(e.target.value)}
-                        sx={{
-                            flexGrow: 0,
-                            width: '700px',
-                            marginRight: '10px',
-                            marginLeft: '80px',
-                            marginTop: '10px',
-                            bgcolor: '#fff',
-                            borderRadius: '15px',
-                            border: 'none',
-                            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                            '&:hover': { border: 'none' },
-                            '&.Mui-focused': { border: 'none' },
-                        }}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon sx={{ color: 'black' }} />
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-
-                    <Typography
-                        variant="body2"
-                        sx={{
-                            marginLeft: '100px',
-                            marginTop: '10px',
-                            cursor: 'pointer',
-                            bgcolor: '#F5F5F5',
-                            padding: '5px',
-                            borderRadius: '5px',
-                            fontWeight: 'bold',
-                            display: 'flex',
-                            fontSize: '14px',
-                            alignItems: 'center',
-                        }}
-                        onClick={handleClick}
-                    >
-                        Sắp xếp
-                        <ArrowDropDownIcon sx={{ marginLeft: '5px' }} />
-                    </Typography>
-
+                <Box
+                    component="form"
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: '20px',
+                        gap: 2,
+                        padding: '0 80px',
+                    }}
+                >
                     <Popover
                         id={id}
                         open={open}
@@ -191,17 +137,10 @@ const UserManagement = () => {
                             </Typography>
                         </Box>
                     </Popover>
-
-                    <IconButton sx={{ marginLeft: '10px', marginTop: '10px' }} onClick={handleNotificationClick}>
-                        <Badge variant="dot" color="error" invisible={!hasNotifications}>
-                            <NotificationsIcon sx={{ color: 'black' }} />
-                        </Badge>
-                    </IconButton>
                 </Box>
 
                 <div className="user-table">
-
-                    <UserManagementTable reports={filteredReports} />
+                    <UserManagementTable users={filteredUsers} />
                 </div>
             </div>
         </div>

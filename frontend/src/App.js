@@ -41,8 +41,8 @@ const App = () => {
     fullname: null,
     avatar: null,
     isAdmin: false,
-    following: [], // Mới thêm vào
-    bookmark: [],  // Mới thêm vào
+    following: [], 
+    bookmark: [],
   });
 
   const login = useCallback((token) => {
@@ -57,8 +57,8 @@ const App = () => {
           fullname: decoded.fullname,
           avatar: decoded.avatar,
           isAdmin: decoded.isAdmin,
-          following: decoded.following || [], // Giải mã thêm following
-          bookmark: decoded.bookmark || [],   // Giải mã thêm bookmark
+          following: decoded.following || [],
+          bookmark: decoded.bookmark || [],
         });
       } catch (error) {
         console.error('Error decoding token during login:', error);
@@ -98,22 +98,40 @@ const App = () => {
   let routes;
 
   if (authState.isLoggedIn) {
-    routes = (
-      <Routes>
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/explore" element={<ExplorePage />} />
-        <Route path="/post/:id" element={<DetailPost />} />
-        <Route path="/accounts/:option" element={<EditAccount />} />
-        <Route path="/videos" element={<VideoPage />} />
-        <Route path="/profile/:username" element={<ProfilePage />} />
-        <Route path="/tag/:tagName" element={<PostWithTag />} />
-        <Route path="/admin/users" element={<UserManagement />} />
-        <Route path="/admin/posts" element={<PostManagement />} />
-        <Route path="/messages/:username" element={<MessagePage />} />
-        <Route path="/messages" element={<MessagePage />} />
-        <Route path="*" element={<Navigate to="/home" replace />} />
-      </Routes>
-    );
+    if (authState.isAdmin) {
+      routes = (
+        <Routes>
+          <Route path="/admin/users" element={<UserManagement />} />
+          <Route path="/admin/posts" element={<PostManagement />} />
+          <Route path="*" element={<Navigate to="/admin/users" replace />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/post/:id" element={<DetailPost />} />
+          <Route path="/accounts/:option" element={<EditAccount />} />
+          <Route path="/videos" element={<VideoPage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
+          <Route path="/tag/:tagName" element={<PostWithTag />} />
+          <Route path="/messages/:username" element={<MessagePage />} />
+          <Route path="/messages" element={<MessagePage />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Routes>
+      );
+    } else {
+      routes = (
+        <Routes>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/post/:id" element={<DetailPost />} />
+          <Route path="/accounts/:option" element={<EditAccount />} />
+          <Route path="/videos" element={<VideoPage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
+          <Route path="/tag/:tagName" element={<PostWithTag />} />
+          <Route path="/messages/:username" element={<MessagePage />} />
+          <Route path="/messages" element={<MessagePage />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Routes>
+      );
+    }
   } else {
     routes = (
       <Routes>

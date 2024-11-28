@@ -1,5 +1,4 @@
 const express = require('express');
-const { isAdmin, isPostOwner } = require('../middleware/authMiddleware');
 
 const profileController = require('../controllers/profileController');
 

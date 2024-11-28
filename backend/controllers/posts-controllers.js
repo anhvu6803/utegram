@@ -419,12 +419,11 @@ const getVideoPostsByUsername = async (req, res, next) => {
   });
 };
 const getBookmarkedPostsByUsername = async (req, res, next) => {
-  const username = req.params.username;  // Get username from the URL parameter
+  const username = req.params.username; 
 
   let userWithBookmarks;
 
   try {
-    // Find the user by username
     userWithBookmarks = await User.findOne({ username: username }).populate({
       path: 'bookmarks',
       populate: {

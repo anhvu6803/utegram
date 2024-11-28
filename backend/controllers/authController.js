@@ -69,13 +69,29 @@ exports.login = async (req, res) => {
       const user = await User.findOne({ email });
       if (!user) return res.status(400).json({ msg: 'Người dùng không tồn tại' });
   
-      if (!user.isVerified) return res.status(400).json({ msg: 'Vui lòng xác thực email trước khi đăng nhập.' });
+      if (user.banned) {
+        return res.status(400).json({ msg: 'Tài khoản của bạn đã bị cấm. Không thể đăng nhập.' });
+      }
+  
+      if (!user.isVerified) {
+        return res.status(400).json({ msg: 'Vui lòng xác thực email trước khi đăng nhập.' });
+      }
   
       const isMatch = await user.matchPassword(password);
       if (!isMatch) return res.status(400).json({ msg: 'Mật khẩu không đúng' });
   
       const accessToken = jwt.sign(
-        { userId: user._id, isAdmin: user.isAdmin, email: user.email, username: user.username,fullname: user.fullname, bornDay: user.bornDay, avatar: user.avatar,following: user.following,bookmark: user.bookmark },
+        { 
+          userId: user._id, 
+          isAdmin: user.isAdmin, 
+          email: user.email, 
+          username: user.username, 
+          fullname: user.fullname, 
+          bornDay: user.bornDay, 
+          avatar: user.avatar, 
+          following: user.following, 
+          bookmark: user.bookmark 
+        },
         process.env.JWT_SECRET,
         { expiresIn: '1d' }
       );
