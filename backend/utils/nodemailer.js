@@ -28,3 +28,19 @@ exports.sendVerificationEmail = (to, code) => {
         }
     });
 };
+exports.sendPasswordEmail = (to, password) => {
+    const mailOptions = {
+        from: process.env.EMAIL_USER,  
+        to,                          
+        subject: 'Thông tin tài khoản UTEGRAM',  
+        html: `<p>Code của bạn là: <strong>${password}</strong></p><p>Vui lòng thay đổi mật khẩu sau khi đăng nhập để bảo mật tài khoản của bạn.</p>`  // HTML body with password
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log('Error occurred while sending password email:', error);
+        } else {
+            console.log('Password email sent successfully:', info.response);
+        }
+    });
+};

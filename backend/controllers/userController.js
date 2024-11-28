@@ -93,10 +93,10 @@ exports.getUserHasMorePosts = async (req, res) => {
     const userId = req.params.uid;
     try {
         const usersWithPostCounts = await User.aggregate([
-            { $addFields: { postCount: { $size: "$posts" } } }, // Add a post count field
-            { $match: { postCount: { $gt: 0 } } }, // Exclude specific user ID and filter by postCount > 1
-            { $sort: { postCount: -1 } }, // Sort users by post count in descending order
-            { $project: { avatar: 1, username: 1, fullname: 1, followings: 1 } } // Project relevant fields
+            { $addFields: { postCount: { $size: "$posts" } } }, 
+            { $match: { postCount: { $gt: 0 } } }, 
+            { $sort: { postCount: -1 } }, 
+            { $project: { avatar: 1, username: 1, fullname: 1, followings: 1 } } 
         ]);
 
         const filteredUsers = usersWithPostCounts.filter(user => !user._id.equals(userId));
@@ -107,7 +107,7 @@ exports.getUserHasMorePosts = async (req, res) => {
             filteredUsers.map(async (user) => {
                 const populatedUser = await User.findById(user._id).populate({
                     path: 'posts',
-                    options: { sort: { createdAt: -1 } } // Sort posts by date in descending order
+                    options: { sort: { createdAt: -1 } } 
                 });
 
                 postsList = postsList.concat(populatedUser.posts.map(post => post.toObject({ getters: true })));
