@@ -2,6 +2,7 @@ const express = require('express');
 const { check } = require('express-validator');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const authMiddleware = require('../middleware/authMiddleware');
 router.get('/', userController.getAllUsers);
 
 router.get('/:id', userController.getUserById);
@@ -18,13 +19,13 @@ router.get('/search/username', userController.searchUser);
 
 router.get('/follow/:userId', userController.getFollowDataByUserId);
 
-router.patch('/ban/:userId', userController.banUser);
-
 router.patch('/:uid',
     [
         check('bio').isLength({ max: 150 })
     ],
     userController.updateInformationUser
 );
+router.patch('/ban/:userId',authMiddleware.veriyTokenAndAdminAuth ,userController.banUser); 
+router.patch('/unban/:userId',authMiddleware.veriyTokenAndAdminAuth ,userController.unbanUser); 
 
 module.exports = router;

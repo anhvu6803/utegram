@@ -109,3 +109,77 @@ body {
 .signup-link:hover {
   text-decoration: underline;
 }
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  transform: scale(0.9);
+  animation: zoomIn 0.3s forwards;
+  position: relative; /* To position the close icon in the top-right corner */
+}
+
+/* Modal Header */
+.modal-content h2 {
+  font-size: 1.2rem; /* Reduced font size */
+  color: #333;
+  margin-bottom: 20px;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+/* Close Icon */
+.modal-content .close-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: color 0.3s ease;
+}
+
+.modal-content .close-icon:hover {
+  color: #0095f6;
+}
+
+/* Modal Close Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.9);
+  }
+  to {
+    transform: scale(1);
+  }
+}

@@ -8,6 +8,7 @@ const profileRoutes = require('./routes/profileRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const historySearchRoutes = require('./routes/historySearchRoutes');
+const adminRoutes = require('./routes/adminRoute');
 const notifyRoutes = require('./routes/notifyRoutes');
 
 const cors = require('cors');
@@ -22,7 +23,7 @@ app.use((req, res, next) => {
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
   );
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, PUT');
 
   next();
 });
@@ -31,6 +32,7 @@ app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true, 
 }));
+app.use('/api/admin', adminRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);

@@ -13,7 +13,12 @@ const reportPostSchema = new mongoose.Schema({
   reason: {
     type: String,
     required: true
-  }
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'resolved', 'rejected'], 
+    default: 'pending', 
+  },
 }, { timestamps: true });
 
 const ReportPost = mongoose.model('ReportPost', reportPostSchema);
