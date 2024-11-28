@@ -1,7 +1,8 @@
 const User = require('../models/UserModel');
 const jwt = require('jsonwebtoken');
-const { sendVerificationEmail } = require('../utils/nodemailer');
+const { sendVerificationEmail,sendPasswordEmail } = require('../utils/nodemailer');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const unverifiedUsers = {};
 
 const HttpError = require('../models/http-error');
@@ -122,6 +123,29 @@ exports.checkDuplicateUser = async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   };
+  exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'Email không tồn tại trong hệ thống.' });
+        }
+
+        const tempPassword = Math.random().toString(36).slice(-8);
+
+      
+        user.password = tempPassword;
+        await user.save();
+
+        await sendPasswordEmail(email, tempPassword);
+
+        res.status(200).json({ message: 'Mật khẩu tạm thời đã được gửi qua email của bạn.' });
+    } catch (err) {
+        console.error('Error in forgotPassword:', err);
+        res.status(500).json({ message: 'Có lỗi xảy ra. Vui lòng thử lại.' });
+    }
+};
   exports.getUser = async (req, res, next) => {
     const userId = req.params.pid;
 
