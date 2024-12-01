@@ -72,25 +72,27 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         e.preventDefault();
 
         try {
-            await sendRequest(
+            const response = await sendRequest(
                 `http://localhost:5000/api/posts/${post._id}/like`,
                 'PATCH',
                 JSON.stringify({ userId: auth.userId }),
                 { 'Content-Type': 'application/json' }
             );
 
-            await sendRequest(
-                `http://localhost:5000/api/notify`,
-                'POST',
-                JSON.stringify({
-                    type: "post",
-                    content: "đã thích bài viết của bạn",
-                    owner: author._id,
-                    userId: auth.userId,
-                    postId: post._id
-                }),
-                { 'Content-Type': 'application/json' }
-            );
+            if (response.message === 'Post liked' && author._id !== auth.userId) {
+                await sendRequest(
+                    `http://localhost:5000/api/notify`,
+                    'POST',
+                    JSON.stringify({
+                        type: "post",
+                        content: "đã thích bài viết của bạn",
+                        owner: author._id,
+                        userId: auth.userId,
+                        postId: post._id
+                    }),
+                    { 'Content-Type': 'application/json' }
+                );
+            }
             // Phát sự kiện qua Socket.IO
             socket.emit('likePost', post._id);
 
@@ -246,18 +248,21 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                     { 'Content-Type': 'application/json' }
                 );
 
-                await sendRequest(
-                    `http://localhost:5000/api/notify`,
-                    'POST',
-                    JSON.stringify({
-                        type: "post",
-                        content: `đã bình luận: "${textComment}"`,
-                        owner: author._id,
-                        userId: auth.userId,
-                        postId: post._id
-                    }),
-                    { 'Content-Type': 'application/json' }
-                );
+                if (author._id !== auth.userId) {
+
+                    await sendRequest(
+                        `http://localhost:5000/api/notify`,
+                        'POST',
+                        JSON.stringify({
+                            type: "post",
+                            content: `đã bình luận: "${textComment}"`,
+                            owner: author._id,
+                            userId: auth.userId,
+                            postId: post._id
+                        }),
+                        { 'Content-Type': 'application/json' }
+                    );
+                }
 
                 socket.emit('submitComment', responseData);
                 setTextCommnent('');
@@ -276,19 +281,20 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                     }),
                     { 'Content-Type': 'application/json' }
                 );
-
-                await sendRequest(
-                    `http://localhost:5000/api/notify`,
-                    'POST',
-                    JSON.stringify({
-                        type: "post",
-                        content: `đã phản hồi: "${textComment}"`,
-                        owner: parentCommentId,
-                        userId: auth.userId,
-                        postId: post._id
-                    }),
-                    { 'Content-Type': 'application/json' }
-                );
+                if (author._id !== auth.userId) {
+                    await sendRequest(
+                        `http://localhost:5000/api/notify`,
+                        'POST',
+                        JSON.stringify({
+                            type: "post",
+                            content: `đã phản hồi: "${textComment}"`,
+                            owner: parentCommentId,
+                            userId: auth.userId,
+                            postId: post._id
+                        }),
+                        { 'Content-Type': 'application/json' }
+                    );
+                }
 
                 socket.emit('submitReply', responseData);
                 setTextCommnent('');
@@ -309,25 +315,27 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
         event.preventDefault();
 
         try {
-            await sendRequest(
+            const response = await sendRequest(
                 `http://localhost:5000/api/comment/${listReliesComment[indexComment][indexReply]._id}/like`,
                 'PATCH',
                 JSON.stringify({ userId: auth.userId }),
                 { 'Content-Type': 'application/json' }
             );
 
-            await sendRequest(
-                `http://localhost:5000/api/notify`,
-                'POST',
-                JSON.stringify({
-                    type: "post",
-                    content: "đã thích bình luận của bạn",
-                    owner: listReliesComment[indexComment][indexReply]._id,
-                    userId: auth.userId,
-                    postId: post._id
-                }),
-                { 'Content-Type': 'application/json' }
-            );
+            if (response.message === 'Comment liked' && author._id !== auth.userId) {
+                await sendRequest(
+                    `http://localhost:5000/api/notify`,
+                    'POST',
+                    JSON.stringify({
+                        type: "post",
+                        content: "đã thích bình luận của bạn",
+                        owner: listReliesComment[indexComment][indexReply]._id,
+                        userId: auth.userId,
+                        postId: post._id
+                    }),
+                    { 'Content-Type': 'application/json' }
+                );
+            }
 
             socket.emit('likeComment', listReliesComment[indexComment][indexReply]._id);
         } catch (err) {
@@ -346,7 +354,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                 JSON.stringify({ userId: auth.userId }),
                 { 'Content-Type': 'application/json' }
             );
-            if (response.message === 'Comment liked') {
+            if (response.message === 'Comment liked' && author._id !== auth.userId) {
                 await sendRequest(
                     `http://localhost:5000/api/notify`,
                     'POST',
@@ -525,8 +533,6 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
 
     }, [post._id, sendRequest]);
 
-    console.log(bookmarked)
-
     return (
         <div>
             <Modal open={modalIsOpen} onClose={closeMoreModal} >
@@ -561,7 +567,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                         />
                     </IconButton>
                     {post.type === 'video' ?
-                        <Box border={1} borderColor="black" sx={{ width: '400px', height: '636px', padding: '0px' }} >
+                        <Box border={1} borderColor="#e7e7e7" sx={{ width: '400px', height: '636px', padding: '0px' }} >
                             <video controls autoPlay style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
                                 <source src={post.url[0]} type='video/mp4' />
                             </video>
@@ -570,7 +576,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                         <Box
                             display="flex"
                             border={1}
-                            borderColor="black"
+                            borderColor="#e7e7e7"
                             alignItems="center"
                             sx={{ width: '600px', height: '636px', padding: '0px', position: 'relative', display: 'inline-block' }}
                         >
@@ -637,7 +643,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                         </Box>
 
                     }
-                    <Box border={1} borderColor="black" sx={{ backgroundColor: 'white' }}>
+                    <Box border={1} borderColor="#e7e7e7" sx={{ backgroundColor: 'white' }}>
                         <ListItem sx={{ width: '100%', height: '60px', padding: '0px', borderBottom: 1, borderBottomColor: '#DBDBDB' }} >
                             <IconButton
                                 sx={{ width: '40px', height: '40px', marginLeft: '10px', cursor: 'pointer' }}

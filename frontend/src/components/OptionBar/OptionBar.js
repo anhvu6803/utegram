@@ -131,6 +131,7 @@ const Navbar = ({ pages }) => {
                         handleIconClick('search');
                         setIsCollapsed(true);
                         setIsSearchVisible(true);
+                        setIsMenuVisible(false);
                     }}
                     style={{ cursor: 'pointer' }}
                 >
@@ -173,6 +174,7 @@ const Navbar = ({ pages }) => {
                         handleIconClick('message');
                         setIsCollapsed(true);
                         setIsSearchVisible(false);
+                        setIsMenuVisible(false);
                     }}
                     style={{ cursor: 'pointer' }}
                 >
@@ -190,6 +192,7 @@ const Navbar = ({ pages }) => {
                         handleIconClick('notification');
                         setIsCollapsed(true);
                         setIsSearchVisible(false);
+                        setIsMenuVisible(false);
                     }}
                     style={{ cursor: 'pointer' }}
                 >
@@ -229,6 +232,7 @@ const Navbar = ({ pages }) => {
                     onClick={() => {
                         handleIconClick('create');
                         setIsOpenUploadPost(true);
+                        setIsMenuVisible(false);
                     }}
                     style={{ cursor: 'pointer' }}
                 >
@@ -267,7 +271,7 @@ const Navbar = ({ pages }) => {
                 {isMenuVisible && (
                     <Box
                         sx={{
-                            position: 'absolute', left: '85%', bottom: '15%',
+                            position: 'absolute', left: isCollapsed ? '250%' : '85%', bottom: '15%',
                             transform: 'translateX(-50%)', zIndex: 2000
                         }}
                     >

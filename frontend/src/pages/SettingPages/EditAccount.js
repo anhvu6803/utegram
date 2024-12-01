@@ -6,12 +6,14 @@ import NavbarSetting from '../../components/OptionSetting/OptionSetting';
 import avatar from '../../assets/user.png'
 import axios from 'axios';
 import { AuthContext } from '../../shared/context/auth-context';
-import FinishCreate from '../../components/CreatePostForm/FinishCreate';
+import FinishEdit from './FinishEdit';
 
 //// Material UI 
-import { Box, ListItemText, TextField, Modal } from '@mui/material';
+import { Box, ListItemText, TextField, Modal, IconButton } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Autocomplete from '@mui/material/Autocomplete';
+
+import ClearIcon from '@mui/icons-material/Clear';
 
 const EditAccount = () => {
     const { option } = useParams();
@@ -25,7 +27,7 @@ const EditAccount = () => {
     const [files, setFiles] = useState([]);
     const [fileUrls, setFileUrls] = useState();
     const [bioValue, setBioValue] = useState('');
-    const [genderValue, setGenderValue] = useState('');
+    const [genderValue, setGenderValue] = useState('Khác');
     const [isFinishCreate, setChangeFinishCreate] = useState(false);
     const [uploadPolicy, setUploadPolicy] = useState();
     const [isLoading, setLoading] = useState(false);
@@ -62,13 +64,12 @@ const EditAccount = () => {
         let url;
         let final_decision;
         setLoading(true);
-
-        const formData = new FormData();
-        formData.append('file', files[0]);
-        formData.append('upload_preset', uploadPreset); // Thay bằng upload preset của bạn
-        formData.append('cloud_name', cloudName); // Thay bằng cloud_name của bạn
-
         try {
+            const formData = new FormData();
+            formData.append('file', files[0]);
+            formData.append('upload_preset', uploadPreset); // Thay bằng upload preset của bạn
+            formData.append('cloud_name', cloudName); // Thay bằng cloud_name của bạn
+
             const res = await axios.post(
                 `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
                 formData
@@ -100,7 +101,7 @@ const EditAccount = () => {
 
         } catch (err) {
             setLoading(false)
-            console.error(err);
+            alert('Error posting data');
         }
 
         if (final_decision === 'OK') {
@@ -121,7 +122,7 @@ const EditAccount = () => {
                 setLoading(false);
             } catch (error) {
                 setLoading(false)
-                console.error('Error posting data', error);
+                alert('Error posting data');
             }
         }
 
@@ -147,13 +148,26 @@ const EditAccount = () => {
                 <Modal open={isOpenModal} onClose={closeModal} >
                     <Box
                         sx={{
-                            width: '500px', bgcolor: 'background.paper',
-                            height: '500px', border: 1, borderRadius: 3, borderColor: 'white',
-                            position: 'absolute', bottom: '20%', left: '50%',
+                            width: '500px', backgroundColor: 'white',
+                            height: '500px', borderRadius: '15px', borderColor: 'white',
+                            position: 'absolute', left: '50%', marginTop: '50px',
                             transform: 'translateX(-50%)',
                         }}
                     >
-                        <FinishCreate
+                        <IconButton
+                            onClick={() => {
+                                closeModal()
+                            }}
+                            sx={{
+                                position: 'absolute', left: '150%', 
+                                transform: 'translateX(-50%)',
+                            }}
+                        >
+                            <ClearIcon
+                                sx={{ color: 'white', fontSize: 25 }}
+                            />
+                        </IconButton>
+                        <FinishEdit
                             isLoading={isLoading}
                             uploadPolicy={uploadPolicy}
                         />
@@ -312,6 +326,7 @@ const EditAccount = () => {
                                         onChange={(event, newValue) => {
                                             setGenderValue(newValue); // Use newValue instead of event.target.value
                                         }}
+                                        defaultValue={'Khác'}
                                         options={['Nam', 'Nữ', 'Khác']}
                                         sx={{
                                             width: '100%', height: '50px',
@@ -326,21 +341,36 @@ const EditAccount = () => {
                                     Thông tin này sẽ không xuất hiện trên trang cá nhân công khai của bạn.
                                 </span>
                             </Box>
-                            <Box
-                                sx={{
-                                    backgroundColor: '#0095F6', borderRadius: 2, zIndex: 100,
-                                    width: '150px', height: '30px',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    marginLeft: '600px', marginTop: '20px', cursor: 'pointer'
-                                }}
-                                onClick={(event) => {
-                                    handleUpload(event)
-                                }}
-                            >
-                                <span style={{ fontSize: 12, fontWeight: 'bold', color: 'white' }}>
-                                    Gửi
-                                </span>
-                            </Box>
+                            {files?.length > 0 && genderValue?.length > 0 ?
+                                <Box
+                                    sx={{
+                                        backgroundColor: '#0095F6', borderRadius: 2, zIndex: 100,
+                                        width: '150px', height: '30px',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        marginLeft: '600px', marginTop: '20px', cursor: 'pointer'
+                                    }}
+                                    onClick={(event) => {
+                                        handleUpload(event)
+                                    }}
+                                >
+                                    <span style={{ fontSize: 12, fontWeight: 'bold', color: 'white' }}>
+                                        Gửi
+                                    </span>
+                                </Box>
+                                :
+                                <Box
+                                    sx={{
+                                        backgroundColor: '#53BDEB', borderRadius: 2, zIndex: 100,
+                                        width: '150px', height: '30px',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        marginLeft: '600px', marginTop: '20px',
+                                    }}
+                                >
+                                    <span style={{ fontSize: 12, fontWeight: 'bold', color: '#e7e7e7' }}>
+                                        Gửi
+                                    </span>
+                                </Box>
+                            }
                         </Box>
                     </Box>
                 </div>

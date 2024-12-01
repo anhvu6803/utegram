@@ -10,7 +10,7 @@ import { Box, ListItemText } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 
 
-const BlockedAccount = () => {
+const ChangePass = () => {
     const { option } = useParams();
 
     console.log(option);
@@ -36,10 +36,10 @@ const BlockedAccount = () => {
                         position: 'absolute', left: '550px'
                     }}>
                         <span style={{ fontSize: 24, fontWeight: 'bold', marginTop: '50px', marginLeft: '100px' }}>
-                            Tài khoản đã chặn
+                            Thay đổi mật khẩu
                         </span>
                         <span style={{ fontSize: 15, fontWeight: 'normal', marginTop: '20px', marginLeft: '100px', color: '#737373' }}>
-                            Bạn có thể chặn mọi người bất cứ lúc nào từ trang cá nhân của họ.
+                            Bạn có thể thay đổi mật khẩu của bạn.
                         </span>
                         <Box
                             sx={{
@@ -91,5 +91,5 @@ const BlockedAccount = () => {
     );
 }
 
-export default BlockedAccount;
+export default ChangePass;
 
