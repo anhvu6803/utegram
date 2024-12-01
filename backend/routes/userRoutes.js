@@ -21,7 +21,8 @@ router.get('/follow/:userId', userController.getFollowDataByUserId);
 
 router.patch('/:uid',
     [
-        check('bio').isLength({ max: 150 })
+        check('bio').isLength({ max: 150 }),
+        check('gender').isIn(['Nam', 'Nữ', 'Khác'])
     ],
     userController.updateInformationUser
 );

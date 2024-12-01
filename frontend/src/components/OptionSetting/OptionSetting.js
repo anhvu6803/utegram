@@ -30,7 +30,7 @@ const NavbarSetting = ({ option }) => {
                 Cài đặt
             </span>
             <Box
-                onClick={ () => {
+                onClick={() => {
                     handleIconClick('edit')
                     navigate('/accounts/edit')
                 }}
@@ -49,10 +49,11 @@ const NavbarSetting = ({ option }) => {
                 <AccountCircleOutlinedIcon sx={{ fontSize: 25, color: '#000', marginRight: '10px', marginLeft: '20px' }} />
                 <span style={{ color: '#000', fontStyle: 'normal' }}>Chỉnh sửa trang cá nhân</span>
             </Box>
+
             <Box
-                onClick={ () => {
-                    handleIconClick('blocked_accounts')
-                    navigate('/accounts/blocked_accounts')
+                onClick={() => {
+                    handleIconClick('change_pass')
+                    navigate('/accounts/change_pass')
                 }}
                 sx={{
                     cursor: 'pointer',
@@ -61,25 +62,7 @@ const NavbarSetting = ({ option }) => {
                     flexDirection: 'row',
                     marginLeft: '30px',
                     marginBottom: '20px',
-                    backgroundColor: active === 'blocked_accounts' ? 'rgba(51, 51, 51, 0.2)' : 'transparent',
-                    borderRadius: '12px'
-                }}
-
-            >
-                <BlockOutlinedIcon sx={{ fontSize: 25, color: '#000', marginRight: '10px', marginLeft: '20px' }} />
-                <span style={{ color: '#000', fontStyle: 'normal' }}>Đã chặn</span>
-            </Box>
-
-            <Box
-                onClick={ () => {handleIconClick('change-pass')}}
-                sx={{
-                    cursor: 'pointer',
-                    width: '250px', height: '48px',
-                    display: 'flex', alignItems: 'center',
-                    flexDirection: 'row',
-                    marginLeft: '30px',
-                    marginBottom: '20px',
-                    backgroundColor: active === 'change-pass' ? 'rgba(51, 51, 51, 0.2)' : 'transparent',
+                    backgroundColor: active === 'change_pass' ? 'rgba(51, 51, 51, 0.2)' : 'transparent',
                     borderRadius: '12px'
                 }}
 

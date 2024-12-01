@@ -25,7 +25,7 @@ import VideoPage from './pages/VideoPage/VideoPage';
 import UserManagement from './pages/Admin/UserManagement/UserManagement';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import EditAccount from './pages/SettingPages/EditAccount';
-import BlockedAccount from './pages/SettingPages/BlockedAccount';
+import ChangePass from './pages/SettingPages/ChangeAccount';
 import PostManagement from './pages/Admin/PostManagement/PostManagement';
 import InputBornDay from './pages/SignUpPage/InputBornDay';
 import ConfirmCode from './pages/SignUpPage/ConfirmCode';
@@ -39,9 +39,9 @@ const Accounts = () => {
     case 'edit':
       return <EditAccount />;
 
-    case 'blocked_accounts':
-      return <BlockedAccount />;
-
+    case 'change_pass':
+      return <ChangePass />;
+      
     default:
       return <div>Invalid Option</div>; // Handle unknown options
   }
@@ -134,7 +134,7 @@ const App = () => {
           <Route path="/home" element={<HomePage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/post/:id" element={<DetailPost />} />
-          <Route path="/accounts/:option" element={<EditAccount />} />
+          <Route path="/accounts/:option" element={<Accounts />} />
           <Route path="/videos" element={<VideoPage />} />
           <Route path="/profile/:username" element={<ProfilePage />} />
           <Route path="/tag/:tagName" element={<PostWithTag />} />
@@ -149,7 +149,7 @@ const App = () => {
           <Route path="/home" element={<HomePage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/post/:id" element={<DetailPost />} />
-          <Route path="/accounts/:option" element={<EditAccount />} />
+          <Route path="/accounts/:option" element={<Accounts />} />
           <Route path="/videos" element={<VideoPage />} />
           <Route path="/profile/:username" element={<ProfilePage />} />
           <Route path="/tag/:tagName" element={<PostWithTag />} />

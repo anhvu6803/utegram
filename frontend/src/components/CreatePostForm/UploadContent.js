@@ -253,7 +253,7 @@ export default function UploadContent({ closeModal }) {
     };
 
     // upload post
-    const [isLoading, setLoading] = useState(false);
+    const [isLoading, setLoading] = useState(true);
     const [underThirteen, setUnderThirteen] = useState('no');
     const [upEighteen, setUpEighteen] = useState('no');
 
@@ -263,6 +263,9 @@ export default function UploadContent({ closeModal }) {
 
     const handleChangeUnderThirteen = (event) => {
         setUnderThirteen(event.target.value);
+        if(underThirteen === 'yes'){
+            setUpEighteen('no');
+        }
     };
 
     const [uploadPolicy, setUploadPolicy] = useState();
@@ -368,6 +371,8 @@ export default function UploadContent({ closeModal }) {
             console.error('Error posting data', error);
         }
     };
+
+    console.log(isLoading)
 
     return (
         <div>
@@ -518,7 +523,7 @@ export default function UploadContent({ closeModal }) {
                                                 <div>
                                                     <Box sx={{ width: '800px', height: '449px', justifyContent: 'space-between' }} >
                                                         <Box display="flex" sx={{ width: '800px', height: '449px', justifyContent: 'space-between' }}>
-                                                            {files[0].type.startsWith('video') ?
+                                                            {files[0]?.type?.startsWith('video') ?
                                                                 <Box border={1} borderColor="black" sx={{ width: '300px', height: '449px', padding: '0px' }} >
                                                                     <video controls autoPlay style={{
                                                                         width: '500px', height: '449px', objectFit: 'cover', zIndex: 1,
@@ -556,7 +561,7 @@ export default function UploadContent({ closeModal }) {
                                                                             borderBottomLeftRadius: '12px',
                                                                         }}
                                                                     />
-                                                                    {item.length > 1 &&
+                                                                    {item?.length > 1 &&
                                                                         <Box
                                                                             sx={{
                                                                                 position: 'absolute', bottom: '1%', left: '50%',
@@ -564,7 +569,7 @@ export default function UploadContent({ closeModal }) {
                                                                             }}
                                                                         >
                                                                             <List>
-                                                                                {Array.from({ length: item.length }, (_, i) => (
+                                                                                {Array.from({ length: item?.length }, (_, i) => (
                                                                                     <ListItem key={i} sx={{ display: 'inline', width: '15px', height: '15px', padding: '2px' }}>
                                                                                         {index === i ?
                                                                                             <CircleIcon sx={{ color: 'white', fontSize: 8, zIndex: 1000, }} /> :
@@ -575,7 +580,7 @@ export default function UploadContent({ closeModal }) {
                                                                             </List>
                                                                         </Box>
                                                                     }
-                                                                    {(item.length > 1 && index < item.length - 1) &&
+                                                                    {(item?.length > 1 && index < item?.length - 1) &&
                                                                         <IconButton
                                                                             onClick={() => {
                                                                                 handleIndexImageIncrease()
@@ -611,7 +616,7 @@ export default function UploadContent({ closeModal }) {
                                                                     display: 'flex', flexDirection: 'row', alignItems: 'center',
                                                                     width: '299px', height: '50px', marginLeft: '10px'
                                                                 }}>
-                                                                    <Avatar src={auth.avatar || avatar} sx={{ color: '#000', width: '30px', height: '30px', }} />
+                                                                    <Avatar src={auth?.avatar || avatar} sx={{ color: '#000', width: '30px', height: '30px', }} />
                                                                     <span style={{ fontSize: 13, fontWeight: 'bold', marginLeft: '10px' }}>{auth.username}</span>
                                                                 </Box>
                                                                 <Box sx={{
@@ -671,7 +676,7 @@ export default function UploadContent({ closeModal }) {
                                                                                 overflow: 'auto'
                                                                             }}
                                                                         >
-                                                                            {filteredTags.map((tag, index) => (
+                                                                            {filteredTags?.map((tag, index) => (
                                                                                 <ListItem key={index} disablePadding>
                                                                                     <ListItemButton onClick={() => handleTagSelection(tag)}>
                                                                                         <ListItemText primary={tag} />
@@ -810,7 +815,7 @@ export default function UploadContent({ closeModal }) {
                                             height: '500px', border: 1, borderRadius: 3, borderColor: 'white'
                                         }}
                                     >
-                                        {fileUrls.length > 0 ?
+                                        {fileUrls?.length > 0 ?
                                             (
                                                 <Box display="flex" alignItems="center" justifyContent="center">
                                                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -845,7 +850,7 @@ export default function UploadContent({ closeModal }) {
                                                         </Box>
                                                         <Box display="flex" alignItems="center" justifyContent="center">
 
-                                                            {files[0].type.startsWith('image') ? (
+                                                            {files[0]?.type?.startsWith('image') ? (
                                                                 <div>
                                                                     <img
                                                                         src={itemDisplay || fileUrls[0]}
@@ -910,7 +915,7 @@ export default function UploadContent({ closeModal }) {
                                                                                     }}
                                                                                 >
 
-                                                                                    <ImageList cols={fileUrls.length} sx={{ width: '100%', height: '80px' }}>
+                                                                                    <ImageList cols={fileUrls?.length} sx={{ width: '100%', height: '80px' }}>
                                                                                         {fileUrls.map((url, index) => (
                                                                                             <div key={index}>
                                                                                                 <ImageListItem

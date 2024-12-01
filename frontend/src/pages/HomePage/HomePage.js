@@ -277,11 +277,11 @@ const HomePage = () => {
                                     />
                                 )}
 
-                                {loadedPosts.length > 1 && indexPostNext < loadedPosts.length - 1 &&
+                                {loadedPosts?.length > 1 && indexPostNext < loadedPosts?.length - 1 &&
                                     <IconButton
                                         onClick={(event) => {
                                             handleIncreseIndex(loadedPosts);
-                                            handleLoadPost(event, loadedPosts[indexPostNext]._id)
+                                            handleLoadPost(event, loadedPosts[indexPostNext]?._id)
                                         }}
                                         sx={{
                                             position: 'absolute', bottom: '50%', left: '93.5%',
@@ -302,7 +302,7 @@ const HomePage = () => {
                     </Modal>
 
                     <ImageList cols={2} sx={{ width: '620px', height: '100%', marginTop: '50px' }}>
-                        {loadedPosts.map((post, index) => (
+                        {loadedPosts?.map((post, index) => (
                             <ListItemButton
                                 sx={{
                                     width: '300px', height: '300px', padding: '0px', background:
@@ -317,7 +317,7 @@ const HomePage = () => {
                             >
                                 {status[index] === 'OK' ?
                                     <div>
-                                        {post.type === 'video' && post?.url.length > 0 ?
+                                        {post?.type === 'video' && post?.url.length > 0 ?
                                             <video
                                                 src={`${post?.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
                                                 style={{ width: '300px', height: '300px', objectFit: 'cover', }}
@@ -341,7 +341,7 @@ const HomePage = () => {
                                         style={{ width: '300px', height: '300px', objectFit: 'cover', }}
                                     />
                                 }
-                                <ImageListItemBar key={post.type}
+                                <ImageListItemBar key={post?.type}
                                     sx={{
                                         background:
                                             'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +

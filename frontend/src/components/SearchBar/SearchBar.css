@@ -7,8 +7,7 @@
     align-items: left;
     background-color: #fff;
     flex-direction: column;
-    border-right: 1px solid #777777;
-    border-left: 1px solid #777777;
+    border-right: 1px solid #DBDBDB;
     padding: 20px 0;
     z-index: 1000;
 }
@@ -20,7 +19,7 @@
     background-color: #fff;
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid #777777;
+    border-bottom: 1px solid #DBDBDB;
 }
 .title {
     display: flex;

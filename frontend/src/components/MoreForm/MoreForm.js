@@ -104,10 +104,10 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
         else if (item === 'Chỉnh sửa') {
             setChangeSetContent(!isSetContent);
         }
-        else if(item === 'Cài đặt') {
+        else if (item === 'Cài đặt') {
             navigate(`/accounts/edit`);
         }
-        else if(item === 'Đăng xuất') {
+        else if (item === 'Đăng xuất') {
             auth.logout();
         }
     };
@@ -187,10 +187,34 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
                 );
             }
             else if (type === 'post') {
-                await sendRequest(
-                    `http://localhost:5000/api/posts/${itemId}`,
-                    'DELETE'
-                );
+                for (let i = 0; i < post?.comments?.length; i++) {
+                    try {
+                        await sendRequest(
+                            `http://localhost:5000/api/report/comment/${post?.comments[i]}`,
+                            'DELETE',
+                        );
+                    } catch (err) { }
+
+                    try {
+                        await sendRequest(
+                            `http://localhost:5000/api/comment/comment/${post?.comments[i]}`,
+                            'DELETE',
+                        );
+                    } catch (err) { }
+                }
+                try {
+                    await sendRequest(
+                        `http://localhost:5000/api/notify/post/${itemId}`,
+                        'DELETE'
+                    );
+                } catch (err) { }
+                
+                try {
+                    await sendRequest(
+                        `http://localhost:5000/api/posts/${itemId}`,
+                        'DELETE'
+                    );
+                } catch (err) { }
                 navigate(`/profile/${author.username}`);
             }
             window.location.reload();
@@ -199,7 +223,7 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
         }
 
     }
-
+    console.log(post)
     let data, report, typeChange, username;
 
     if (type === 'post') {
@@ -301,10 +325,10 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
 
     const handleInputChange = (event) => {
         const value = event.target.value;
-        
-        if (value.length <= 2200) {   
-            setInputValue(value);          
-        } 
+
+        if (value.length <= 2200) {
+            setInputValue(value);
+        }
 
         const result = splitDescriptionAndHashtags(value)
         const lastestTag = result.des[inputCount]
@@ -515,7 +539,7 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
                                                             sx: {
                                                                 '& .MuiOutlinedInput-notchedOutline': {
                                                                     border: 'none', // Hide border of TextField
-                                                                },                     
+                                                                },
                                                             },
                                                         },
                                                     }}

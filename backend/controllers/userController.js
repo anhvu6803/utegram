@@ -58,7 +58,7 @@ exports.updateInformationUser = async (req, res, next) => {
         user = await User.findById(userId);
     } catch (err) {
         const error = new HttpError(
-            'Something went wrong, could not update user.',
+            'Something went wrong, could not find user.',
             500
         );
         return next(error);

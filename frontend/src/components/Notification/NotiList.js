@@ -82,6 +82,8 @@ const NotiList = ({ notifications }) => {
         catch (err) { }
     }
 
+    console.log(notifications)
+
     return (
         <List sx={{ width: '400px', height: '100%', marginTop: '10px' }}>
             {notifications.map((item, index) => (
@@ -127,12 +129,22 @@ const NotiList = ({ notifications }) => {
                             </span>
                         </Box>
                         {item?.type === 'post' ?
-                            <img
-                                srcSet={`${item?.postId?.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                src={`${item?.postId?.url[0]}?w=248&fit=crop&auto=format`}
-                                loading="lazy"
-                                style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '10px', marginRight: '10px' }}
-                            />
+                            <div>
+                                {item?.postId?.type === 'video' ?
+                                    <video
+                                        src={`${item?.postId?.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
+                                        style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '10px', marginRight: '10px' }}
+                                    />
+                                    :
+
+                                    <img
+                                        srcSet={`${item?.postId?.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                        src={`${item?.postId?.url[0]}?w=248&fit=crop&auto=format`}
+                                        loading="lazy"
+                                        style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '10px', marginRight: '10px' }}
+                                    />
+                                }
+                            </div>
                             :
                             <div key={reloadFollowed}>
                                 {reloadFollowed[index] ?
