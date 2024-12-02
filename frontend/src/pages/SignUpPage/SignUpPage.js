@@ -28,9 +28,6 @@ const SignupPage = () => {
     if (password.length < 8) {
       return "Mật khẩu phải chứa ít nhất 8 ký tự.";
     }
-    if (!/[A-Z]/.test(password)) {
-      return "Mật khẩu phải chứa ít nhất một chữ cái in hoa.";
-    }
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
       return "Mật khẩu phải chứa ít nhất một ký tự đặc biệt.";
     }

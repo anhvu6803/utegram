@@ -84,7 +84,7 @@ const InputBornDay = ({ onRegisterComplete, onBack }) => {
             </button>
           </form>
           <div className="back-text">
-            <Link onClick={onBack} className="back-link">Quay lại</Link>
+            <Link to='/signup' className="back-link">Quay lại</Link>
           </div>
         </div>
       </div>

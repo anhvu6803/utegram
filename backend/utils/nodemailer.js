@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
+const { setResetCode } = require('./resetCodeService');
 dotenv.config();
-
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -10,7 +10,6 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS,
     },
 });
-
 
 exports.sendVerificationEmail = (to, code) => {
     const mailOptions = {
@@ -22,25 +21,27 @@ exports.sendVerificationEmail = (to, code) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info.response);
+            console.error('Error sending verification email:', error);
+            return;
         }
+        console.log('Email sent: ' + info.response);
     });
 };
-exports.sendPasswordEmail = (to, password) => {
+
+exports.sendCodeResetPass = (to) => {
+    const code = setResetCode(to); 
     const mailOptions = {
-        from: process.env.EMAIL_USER,  
-        to,                          
-        subject: 'Thông tin tài khoản UTEGRAM',  
-        html: `<p>Code của bạn là: <strong>${password}</strong></p><p>Vui lòng thay đổi mật khẩu sau khi đăng nhập để bảo mật tài khoản của bạn.</p>`  // HTML body with password
+        from: process.env.EMAIL_USER,
+        to,
+        subject: 'Thông tin tài khoản UTEGRAM',
+        html: `<p>Mã để đặt lại mật khẩu của bạn là: <strong>${code}</strong></p><p>Mã này sẽ hết hạn sau 10 phút.</p>`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            console.log('Error occurred while sending password email:', error);
-        } else {
-            console.log('Password email sent successfully:', info.response);
+            console.error('Error occurred while sending password reset email:', error);
+            return;
         }
+        console.log('Sent successfully:', info.response);
     });
 };

@@ -1,6 +1,7 @@
 const User = require('../models/UserModel');
 const jwt = require('jsonwebtoken');
-const { sendVerificationEmail,sendPasswordEmail } = require('../utils/nodemailer');
+const { sendVerificationEmail,sendCodeResetPass } = require('../utils/nodemailer');
+const { verifyResetCode } = require('../utils/resetCodeService');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const unverifiedUsers = {};
@@ -123,27 +124,43 @@ exports.checkDuplicateUser = async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   };
-  exports.forgotPassword = async (req, res) => {
+  exports.forgotPassword =  async (req, res) => {
     const { email } = req.body;
+  
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: 'Email không tồn tại trong hệ thống!' });
+      }
+      sendCodeResetPass(email); 
+      res.status(200).json({ message: 'Mã đặt lại mật khẩu đã được gửi đến email của bạn.' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Có lỗi xảy ra khi gửi email. Vui lòng thử lại!' });
+    }
+  };
+  exports.resetPassword = async (req, res) => {
+    const { email, code, password } = req.body;
+
+    if (!email || !code || !password) {
+        return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin!' });
+    }
+    const isCodeValid = verifyResetCode(email, code);
+    if (!isCodeValid) {
+        return res.status(400).json({ message: 'Mã xác nhận không hợp lệ hoặc đã hết hạn!' });
+    }
 
     try {
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(404).json({ message: 'Email không tồn tại trong hệ thống.' });
+            return res.status(404).json({ message: 'Không tìm thấy người dùng với email này!' });
         }
-
-        const tempPassword = Math.random().toString(36).slice(-8);
-
-      
-        user.password = tempPassword;
+        user.password = password;
         await user.save();
-
-        await sendPasswordEmail(email, tempPassword);
-
-        res.status(200).json({ message: 'Mật khẩu tạm thời đã được gửi qua email của bạn.' });
-    } catch (err) {
-        console.error('Error in forgotPassword:', err);
-        res.status(500).json({ message: 'Có lỗi xảy ra. Vui lòng thử lại.' });
+        res.status(200).json({ message: 'Đặt lại mật khẩu thành công!' });
+    } catch (error) {
+        console.error('Lỗi khi đặt lại mật khẩu:', error);
+        res.status(500).json({ message: 'Đã xảy ra lỗi! Vui lòng thử lại.' });
     }
 };
   exports.getUser = async (req, res, next) => {

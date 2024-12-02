@@ -161,14 +161,14 @@ const checkImagePost = async (req, res, next) => {
 
   const { image, publicId } = req.body
 
-  form.append('url_image', image);  // Replace with the image URL you want to analyze
-  form.append('API_KEY', 'R5UKlPg9CDbT3P7Oy8tFtxgP3rKuyBE7');  // Replace with your actual API key
+  form.append('url_image', image);  
+  form.append('API_KEY', 'R5UKlPg9CDbT3P7Oy8tFtxgP3rKuyBE7'); 
   form.append('task', 'porn_moderation,drug_moderation,gore_moderation');
 
 
   try {
     const response = await axios.post(picpurifyUrl, form, {
-      headers: form.getHeaders()  // Ensure the headers for form-data are set correctly
+      headers: form.getHeaders()  
     });
 
     if (response.data.final_decision === 'KO') {
