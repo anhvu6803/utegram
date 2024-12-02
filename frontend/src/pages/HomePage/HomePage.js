@@ -31,9 +31,6 @@ const HomePage = () => {
     const auth = useContext(AuthContext);
 
     const userId = auth.userId;
-    const following = auth.following;
-
-    console.log(following)
 
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
@@ -46,7 +43,7 @@ const HomePage = () => {
             setIsLoading(true)
 
             try {
-                const responseUsers = await sendRequest(`http://localhost:5000/api/users/morepost/${userId}`);
+                const responseUsers = await sendRequest(`http://localhost:5000/api/users/morepost/${userId}?age=${auth.age}`);
 
                 setLoadedUsers(responseUsers.users);
                 setLoadedPosts(responseUsers.posts);

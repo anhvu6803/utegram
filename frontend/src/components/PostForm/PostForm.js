@@ -566,10 +566,10 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                             sx={{ color: 'white', fontSize: 25 }}
                         />
                     </IconButton>
-                    {post.type === 'video' ?
+                    {post?.url[0]?.includes('video') ?
                         <Box border={1} borderColor="#e7e7e7" sx={{ width: '400px', height: '636px', padding: '0px' }} >
                             <video controls autoPlay style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
-                                <source src={post.url[0]} type='video/mp4' />
+                                <source src={post?.url[0]} type='video/mp4' />
                             </video>
                         </Box>
                         :
@@ -598,13 +598,13 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                 </IconButton>
                             }
                             <img
-                                srcSet={`${post.url[index]}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                src={`${post.url[index]}?w=248&fit=crop&auto=format`}
+                                srcSet={`${post?.url[index]}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                src={`${post?.url[index]}?w=248&fit=crop&auto=format`}
                                 loading="lazy"
 
                                 style={{ width: '600px', height: '634.5px', objectFit: 'cover', zIndex: 1 }}
                             />
-                            {post.url.length > 1 &&
+                            {post?.url?.length > 1 &&
                                 <Box
                                     sx={{
                                         position: 'absolute', bottom: '1%', left: '50%',
@@ -612,7 +612,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                     }}
                                 >
                                     <List>
-                                        {Array.from({ length: post.url.length }, (_, i) => (
+                                        {Array.from({ length: post?.url?.length }, (_, i) => (
                                             <ListItem key={i} sx={{ display: 'inline', width: '15px', height: '15px', padding: '2px' }}>
                                                 {index === i ?
                                                     <CircleIcon sx={{ color: 'white', fontSize: 8, zIndex: 1000, }} /> :
@@ -623,7 +623,7 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
                                     </List>
                                 </Box>
                             }
-                            {post.url.length > 1 && index < post.url.length - 1 &&
+                            {post?.url?.length > 1 && index < post?.url?.length - 1 &&
                                 <IconButton
                                     onClick={() => {
                                         handleIndexImageIncrease()

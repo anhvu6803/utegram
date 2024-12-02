@@ -1,4 +1,5 @@
 const User = require('../models/UserModel');
+const moment = require('moment')
 
 exports.getUserProfile = async (req, res) => {
   try {
@@ -19,6 +20,7 @@ exports.getUserProfile = async (req, res) => {
       followers: user.followers.length,
       following: user.followings.length,
       posts: user.posts.length,
+      bornDay: moment(user.bornDay).format('DD/MM/YYYY')
     });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });

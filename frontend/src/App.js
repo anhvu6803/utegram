@@ -32,6 +32,20 @@ import ConfirmCode from './pages/SignUpPage/ConfirmCode';
 import MessagePage from './pages/MessagePage/MessagePage';
 import { AuthContext } from './shared/context/auth-context';
 
+function calculateYearDifference(mongoDate) {
+  const givenDate = new Date(mongoDate);
+  const currentDate = new Date();
+
+  // Lấy năm từ ngày được cung cấp và ngày hiện tại
+  const givenYear = givenDate.getFullYear();
+  const currentYear = currentDate.getFullYear();
+
+  // Tính sự chênh lệch giữa hai năm
+  const yearDifference = currentYear - givenYear;
+
+  return yearDifference;
+}
+
 const Accounts = () => {
   const { option } = useParams();
 
@@ -56,8 +70,7 @@ const App = () => {
     fullname: null,
     avatar: null,
     isAdmin: false,
-    following: [], 
-    bookmark: [],
+    age: null,
   });
 
   const { timeLoading, sendRequest } = useHttpClient();
@@ -66,6 +79,7 @@ const App = () => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
+        console.log(calculateYearDifference(decoded.bornDay))
         setAuthState({
           isLoggedIn: true,
           userId: decoded.userId,
@@ -73,8 +87,7 @@ const App = () => {
           email: decoded.email,
           fullname: decoded.fullname,
           isAdmin: decoded.isAdmin,
-          following: decoded.following || [],
-          bookmark: decoded.bookmark || [],
+          age: calculateYearDifference(decoded.bornDay),
         });
       } catch (error) {
         console.error('Error decoding token during login:', error);
@@ -92,6 +105,7 @@ const App = () => {
       fullname: null,
       avatar: null,
       isAdmin: false,
+      age: null,
     });
     Cookies.remove('accessToken');
   }, []);

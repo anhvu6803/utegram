@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import OptionBar from '../../components/OptionBar/OptionBar';
 import PostForm from '../../components/PostForm/PostForm';
 import { useHttpClient } from '../../shared/hooks/http-hook';
+import { AuthContext } from '../../shared/context/auth-context';
 
 //// Material UI 
 import { Box } from '@mui/material';
@@ -17,6 +18,8 @@ import SlideshowIcon from '@mui/icons-material/Slideshow';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 
 const DetailPost = () => {
+    const auth = useContext(AuthContext);
+
     const { id } = useParams();
     const [loadedPost, setLoadedPost] = useState();
     const [loadedUser, setLoadedUser] = useState();
@@ -32,7 +35,7 @@ const DetailPost = () => {
             setIsLoading(true)
 
             try {
-                const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}`);
+                const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}?age=${auth.age}&&authorId=${auth.userId}`);
 
                 setLoadedPost(responsePost.post);
 
@@ -40,7 +43,7 @@ const DetailPost = () => {
 
                 setLoadedUser(responseUser.user);
 
-                const responsePosts = await sendRequest(`http://localhost:5000/api/posts/user/${responsePost.post.author}`);
+                const responsePosts = await sendRequest(`http://localhost:5000/api/posts/user/${responsePost.post.author}?age=${auth.age}`);
 
                 setLoadedPosts(responsePosts.posts);
 
@@ -149,14 +152,14 @@ const DetailPost = () => {
                                         }}
 
                                     >
-                                        {item.type === 'video' ?
+                                        {item?.url[0]?.includes('video') ?
                                             <video
-                                                src={`${item.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
+                                                src={`${item?.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
                                                 style={{ width: '330px', height: '330px', objectFit: 'cover' }}
                                             /> :
                                             <img
-                                                srcSet={`${item.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                                src={`${item.url[0]}?w=248&fit=crop&auto=format`}
+                                                srcSet={`${item?.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                                src={`${item?.url[0]}?w=248&fit=crop&auto=format`}
                                                 loading="lazy"
                                                 style={{ width: '330px', height: '330px', objectFit: 'cover' }}
                                             />

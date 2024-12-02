@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useHttpClient } from '../../../shared/hooks/http-hook';
 import PostForm from '../../PostForm/PostForm';
 import './ProfileBookmark.css';
+import { AuthContext } from '../../../shared/context/auth-context';
 
 // Material UI
 import ImageList from '@mui/material/ImageList';
@@ -21,6 +22,8 @@ import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import BookmarkAddOutlinedIcon from '@mui/icons-material/BookmarkAddOutlined';
 
 const ProfileBookmark = () => {
+    const auth = useContext(AuthContext);
+
     const { username } = useParams(); // Lấy username từ URL
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +35,7 @@ const ProfileBookmark = () => {
         const fetchBookmarks = async () => {
             setIsLoading(true);
             try {
-                const response = await sendRequest(`http://localhost:5000/api/posts/bookmark/${username}`);
+                const response = await sendRequest(`http://localhost:5000/api/posts/bookmark/${username}?age=${auth.age}&&author=${auth.username}`);
                 setLoadedBookmarks(response.posts);
                 setTimeout(() => {
                     setIsLoading(false);
@@ -86,7 +89,7 @@ const ProfileBookmark = () => {
         setListComment([]);
         setListReliesComment([]);
         try {
-            const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}`);
+            const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}?age=${auth.age}&&authorId=${auth.userId}`);
             setLoadedPost(responsePost.post);
 
             const responseUser = await sendRequest(`http://localhost:5000/api/auth/${responsePost.post.author}`);

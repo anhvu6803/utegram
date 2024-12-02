@@ -6,14 +6,20 @@ import NavbarSetting from '../../components/OptionSetting/OptionSetting';
 import avatar from '../../assets/user.png'
 
 //// Material UI 
-import { Box, ListItemText } from '@mui/material';
+import { Box, TextField } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 
 
 const ChangePass = () => {
     const { option } = useParams();
+    const [bioValue, setBioValue] = useState('');
 
-    console.log(option);
+    const handleBioChangeValue = (event) => {
+        const value = event.target.value
+        if (value.length <= 150) {
+            setBioValue(value);
+        }
+    }
 
     return (
         <Box sx={{ background: '#fff' }}>
@@ -38,14 +44,55 @@ const ChangePass = () => {
                         <span style={{ fontSize: 24, fontWeight: 'bold', marginTop: '50px', marginLeft: '100px' }}>
                             Thay đổi mật khẩu
                         </span>
-                        <span style={{ fontSize: 15, fontWeight: 'normal', marginTop: '20px', marginLeft: '100px', color: '#737373' }}>
-                            Bạn có thể thay đổi mật khẩu của bạn.
+                        <span style={{
+                            fontSize: 15, fontWeight: 'normal', 
+                            marginTop: '20px', marginLeft: '100px', 
+                            color: '#737373', width: '650px'
+                        }}>
+                            Mật khẩu của bạn phải có tối thiểu 6 ký tự,
+                            đồng thời bao gồm cả chữ số, chữ cái và ký tự đặc biệt (!$@%)
                         </span>
                         <Box
                             sx={{
-                                width: '450px', height: '100px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                flexDirection: 'row',
+                                width: '650px', height: '70px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                marginLeft: '100px',
+                                marginTop: '50px',
+                                backgroundColor: 'transparent',
+                                borderRadius: '15px'
+                            }}
+
+                        >
+                            <Box sx={{
+                                display: 'flex', flexDirection: 'column',
+                                height: '70px', border: 1, width: '650px',
+                                borderRadius: '15px', borderColor: '#e5e5e5'
+                            }}>
+                                <TextField
+                                    id="outlined-password-input"
+                                    placeholder="Mật khẩu hiện tại"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    slotProps={{
+                                        input: {
+                                            sx: {
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    border: 'none', // Hide border of TextField
+                                                },
+                                                height: '70px',
+                                                overflow: 'auto',
+                                            },
+                                        }
+                                    }}
+                                />
+                            </Box>
+                        </Box>
+                        <Box
+                            sx={{
+                                width: '650px', height: '70px',
+                                display: 'flex',
+                                flexDirection: 'column',
                                 marginLeft: '100px',
                                 marginTop: '30px',
                                 backgroundColor: 'transparent',
@@ -53,35 +100,65 @@ const ChangePass = () => {
                             }}
 
                         >
-                            <div style={{
-                                display: 'flex',
-                                width: '100px', height: '100px',
-                                flexDirection: 'row',
-                                alignItems: 'center',
+                            <Box sx={{
+                                display: 'flex', flexDirection: 'column',
+                                height: '70px', border: 1, width: '650px',
+                                borderRadius: '15px', borderColor: '#e5e5e5'
                             }}>
-                                <Avatar src={avatar} sx={{ color: 'black', width: '45px', height: '45px' }} />
-                                <ListItemText
-                                    sx={{ width: '100px' }}
-                                    style={{ display: 'block' }}
-                                    primary='Wasabi1234'
-                                    secondary='wasabi123'
-                                    primaryTypographyProps={{ style: { fontSize: 14, fontWeight: 'bold' } }}
-                                    secondaryTypographyProps={{ style: { fontSize: 13 } }} />
-                            </div>
-                            <Box
-                                sx={{
-                                    backgroundColor: 'rgba(51, 51, 51, 0.1)', borderRadius: 2, zIndex: 100,
-                                    width: '70px', height: '30px',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    marginRight: '20px',
-                                }}
-                                onClick={() => {
+                                <TextField
+                                    id="outlined-password-input"
+                                    placeholder="Mật khẩu mới"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    slotProps={{
+                                        input: {
+                                            sx: {
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    border: 'none', // Hide border of TextField
+                                                },
+                                                height: '70px',
+                                                overflow: 'auto',
+                                            },
+                                        }
+                                    }}
+                                />
+                            </Box>
+                        </Box>
+                        <Box
+                            sx={{
+                                width: '650px', height: '70px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                marginLeft: '100px',
+                                marginTop: '30px',
+                                marginBottom: '20px',
+                                backgroundColor: 'transparent',
+                                borderRadius: '15px'
+                            }}
 
-                                }}
-                            >
-                                <span style={{ fontSize: 12, fontWeight: 'bold', color: 'black' }}>
-                                    Bỏ chặn
-                                </span>
+                        >
+                            <Box sx={{
+                                display: 'flex', flexDirection: 'column',
+                                height: '70px', border: 1, width: '650px',
+                                borderRadius: '15px', borderColor: '#e5e5e5'
+                            }}>
+                                <TextField
+                                    id="outlined-password-input"
+                                    placeholder="Nhập lại mật khẩu mới"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    slotProps={{
+                                        input: {
+                                            sx: {
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    border: 'none', // Hide border of TextField
+                                                },
+                                                height: '70px',
+                                                overflow: 'auto',
+                                            },
+                                        }
+                                    }}
+                                />
                             </Box>
                         </Box>
                     </Box>
