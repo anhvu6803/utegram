@@ -91,12 +91,15 @@ exports.getAllUsersExcept = async (req, res) => {
 };
 exports.getUserHasMorePosts = async (req, res) => {
     const userId = req.params.uid;
+
+    const { age } = req.query;
+
     try {
         const usersWithPostCounts = await User.aggregate([
-            { $addFields: { postCount: { $size: "$posts" } } }, 
-            { $match: { postCount: { $gt: 0 } } }, 
-            { $sort: { postCount: -1 } }, 
-            { $project: { avatar: 1, username: 1, fullname: 1, followings: 1 } } 
+            { $addFields: { postCount: { $size: "$posts" } } },
+            { $match: { postCount: { $gt: 0 } } },
+            { $sort: { postCount: -1 } },
+            { $project: { avatar: 1, username: 1, fullname: 1, followings: 1 } }
         ]);
 
         const filteredUsers = usersWithPostCounts.filter(user => !user._id.equals(userId));
@@ -107,10 +110,20 @@ exports.getUserHasMorePosts = async (req, res) => {
             filteredUsers.map(async (user) => {
                 const populatedUser = await User.findById(user._id).populate({
                     path: 'posts',
-                    options: { sort: { createdAt: -1 } } 
+                    options: { sort: { createdAt: -1 } }
                 });
 
-                postsList = postsList.concat(populatedUser.posts.map(post => post.toObject({ getters: true })));
+                if (age < 18) {
+                    postsList = postsList.concat(
+                        populatedUser.posts
+                            .filter(post => post.upeighteen !== "yes")
+                            .map(post => post.toObject({ getters: true }))
+                    );
+                } else {
+                    postsList = postsList.concat(
+                        populatedUser.posts.map(post => post.toObject({ getters: true }))
+                    );
+                }
             })
         );
 
@@ -157,46 +170,46 @@ exports.getFollowDataByUserId = async (req, res) => {
     }
 };
 exports.banUser = async (req, res) => {
-    const { userId } = req.params; 
+    const { userId } = req.params;
     try {
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
         if (user.banned) {
-        return res.status(400).json({ message: "User is already banned" });
-      }
-  
-      user.banned = true;
-      await user.save();
-  
-      res.status(200).json({ message: "User has been banned successfully" });
+            return res.status(400).json({ message: "User is already banned" });
+        }
+
+        user.banned = true;
+        await user.save();
+
+        res.status(200).json({ message: "User has been banned successfully" });
     } catch (error) {
-      res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
-  };
+};
 exports.unbanUser = async (req, res) => {
-    const {userId} = req.params;  
-  
+    const { userId } = req.params;
+
     try {
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).json("User not found");
-      }
-  
-      if (!user.banned) {
-        return res.status(400).json("User is not banned");
-      }
-  
-      user.banned = false;
-      await user.save();
-  
-      return res.status(200).json("User has been unbanned successfully");
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json("User not found");
+        }
+
+        if (!user.banned) {
+            return res.status(400).json("User is not banned");
+        }
+
+        user.banned = false;
+        await user.save();
+
+        return res.status(200).json("User has been unbanned successfully");
     } catch (err) {
-      console.error(err);
-      return res.status(500).json("Internal server error");
+        console.error(err);
+        return res.status(500).json("Internal server error");
     }
-  };
+};
 exports.searchUser = async (req, res, next) => {
     const { query, userId } = req.query;
     if (!query || query.trim() === "") {

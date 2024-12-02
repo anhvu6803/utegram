@@ -21,9 +21,21 @@ cloudinary.config({
 const getPostById = async (req, res, next) => {
   const postId = req.params.pid;
 
+  const { age, authorId } = req.query;
+
   let post;
   try {
     post = await Post.findById(postId);
+
+    post = post.toObject({ getters: true }); // Chuyển đổi Mongoose Document thành Object thuần
+    console.log(authorId.includes(post.author))
+    if (age < 18 && post.upeighteen === 'yes' && !authorId?.includes(post?.author)) {
+      console.log(authorId + '+' + post.author)
+      post.url = [
+        "https://res.cloudinary.com/dbmynlh3f/image/upload/v1733123869/Hidden%20Image/i9vh1gxlpocu0ctpmm5a.png",
+      ];
+    }
+
   } catch (err) {
     const error = new HttpError(
       'Something went wrong, could not find a post.',
@@ -40,11 +52,13 @@ const getPostById = async (req, res, next) => {
     return next(error);
   }
 
-  res.json({ post: post.toObject({ getters: true }) });
+  res.json({ post: post });
 };
 
 const getPostsByUserId = async (req, res, next) => {
   const userId = req.params.uid;
+
+  const { age } = req.query;
 
   // let places;
   let userWithPosts;
@@ -68,7 +82,21 @@ const getPostsByUserId = async (req, res, next) => {
     );
   }
 
-  res.json({ posts: userWithPosts.posts.map(post => post.toObject({ getters: true })) });
+  const updatedUserWithPosts = [];
+  const userWithPostsObject = userWithPosts.posts.map(post => post.toObject({ getters: true }));
+
+  for (const post of userWithPostsObject) {
+    if (age < 18 && post.upeighteen === 'yes') {
+
+      post.url = [
+        "https://res.cloudinary.com/dbmynlh3f/image/upload/v1733123869/Hidden%20Image/i9vh1gxlpocu0ctpmm5a.png",
+      ];
+    }
+
+    updatedUserWithPosts.push(post)
+  }
+
+  res.json({ posts: updatedUserWithPosts });
 };
 
 const getUsersByPostId = async (req, res, next) => {
@@ -363,6 +391,9 @@ const likePost = async (req, res, next) => {
 };
 const getImagePostsByUsername = async (req, res, next) => {
   const username = req.params.username;
+
+  const { age, author } = req.query;
+
   let user;
   let posts;
 
@@ -384,12 +415,26 @@ const getImagePostsByUsername = async (req, res, next) => {
     return next(new HttpError('No image posts found for the given user username.', 404));
   }
 
-  res.json({
-    posts: posts.map(post => post.toObject({ getters: true }))
-  });
+  const updatedUserWithPosts = [];
+  const userWithPostsObject = posts.map(post => post.toObject({ getters: true }));
+
+  for (const post of userWithPostsObject) {
+    if (age < 18 && post.upeighteen === 'yes' && username !== author) {
+
+      post.url = [
+        "https://res.cloudinary.com/dbmynlh3f/image/upload/v1733123869/Hidden%20Image/i9vh1gxlpocu0ctpmm5a.png",
+      ];
+    }
+
+    updatedUserWithPosts.push(post)
+  }
+
+  res.json({ posts: updatedUserWithPosts });
 };
 const getVideoPostsByUsername = async (req, res, next) => {
   const username = req.params.username;  // Get username from the URL parameter
+
+  const { age, author } = req.query;
 
   let user;
   let posts;
@@ -414,12 +459,25 @@ const getVideoPostsByUsername = async (req, res, next) => {
     return next(new HttpError('No video posts found for the given user username.', 404));
   }
 
-  res.json({
-    posts: posts.map(post => post.toObject({ getters: true }))
-  });
+  const updatedUserWithPosts = [];
+  const userWithPostsObject = posts.map(post => post.toObject({ getters: true }));
+
+  for (const post of userWithPostsObject) {
+    if (age < 18 && post.upeighteen === 'yes' && username !== author) {
+
+      post.url = [
+        "https://res.cloudinary.com/dbmynlh3f/image/upload/v1733123869/Hidden%20Image/i9vh1gxlpocu0ctpmm5a.png",
+      ];
+    }
+
+    updatedUserWithPosts.push(post)
+  }
+
+  res.json({ posts: updatedUserWithPosts });
 };
 const getBookmarkedPostsByUsername = async (req, res, next) => {
-  const username = req.params.username; 
+  const username = req.params.username;
+  const { age, author } = req.query;
 
   let userWithBookmarks;
 
@@ -440,9 +498,21 @@ const getBookmarkedPostsByUsername = async (req, res, next) => {
     return next(error);
   }
 
-  res.json({
-    posts: userWithBookmarks.bookmarks.map(post => post.toObject({ getters: true }))
-  });
+  const updatedUserWithPosts = [];
+  const userWithPostsObject = userWithBookmarks.bookmarks.map(post => post.toObject({ getters: true }));
+
+  for (const post of userWithPostsObject) {
+    if (age < 18 && post.upeighteen === 'yes' && username !== author) {
+
+      post.url = [
+        "https://res.cloudinary.com/dbmynlh3f/image/upload/v1733123869/Hidden%20Image/i9vh1gxlpocu0ctpmm5a.png",
+      ];
+    }
+
+    updatedUserWithPosts.push(post)
+  }
+
+  res.json({ posts: updatedUserWithPosts });
 };
 
 const bookmarkPost = async (req, res, next) => {

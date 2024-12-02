@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PostForm from '../../PostForm/PostForm';
 import { useHttpClient } from '../../../shared/hooks/http-hook';
+import { AuthContext } from '../../../shared/context/auth-context';
 
 // Material UI
 import ImageList from '@mui/material/ImageList';
@@ -22,6 +23,8 @@ import NoPhotographyOutlinedIcon from '@mui/icons-material/NoPhotographyOutlined
 import './ProfilePost.css';
 
 const ProfilePost = () => {
+    const auth = useContext(AuthContext);
+
     const { username } = useParams();
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +38,7 @@ const ProfilePost = () => {
 
             try {
 
-                const responsePosts = await sendRequest(`http://localhost:5000/api/posts/image/${username}`);
+                const responsePosts = await sendRequest(`http://localhost:5000/api/posts/image/${username}?age=${auth.age}&&author=${auth.username}`);
                 setLoadedPosts(responsePosts.posts);
 
                 setTimeout(() => {
@@ -90,7 +93,7 @@ const ProfilePost = () => {
         setListComment([]);
         setListReliesComment([]);
         try {
-            const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}`);
+            const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}?age=${auth.age}&&authorId=${auth.userId}`);
             setLoadedPost(responsePost.post);
 
             const responseUser = await sendRequest(`http://localhost:5000/api/auth/${responsePost.post.author}`);

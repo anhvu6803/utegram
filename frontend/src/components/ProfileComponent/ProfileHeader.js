@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import './ProfileHeader.css';
-import profilePic from '../../assets/avatar_default.jpg';
+import profilePic from '../../assets/user.png';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import { AuthContext } from '../../shared/context/auth-context';
@@ -167,7 +167,7 @@ const ProfileHeader = () => {
     <div className="profile-header">
       <div className="profile-info">
         <img
-          src={profile.avatar || profilePic}
+          src={profile?.avatar || profilePic}
           alt="Profile"
           className="profile-picture"
           onClick={() => navigate(`/profile/${username}`)}
@@ -177,8 +177,9 @@ const ProfileHeader = () => {
         <div className="profile-stats">
           <div className="profile-name">
             <h2 onClick={() => navigate(`/profile/${username}`)} style={{ cursor: 'pointer' }}>
-              {profile.username || username}
+              {profile?.username || username}
             </h2>
+
             {isUserProfile ? (
               <button
                 className="edit-profile-btn"
@@ -224,6 +225,9 @@ const ProfileHeader = () => {
               </>
             )}
           </div>
+
+          <span style={{ color: 'black', marginBottom: '20px' }}>{'Ngày sinh: ' + profile?.bornDay}</span>
+
           <div className="profile-meta">
             <span style={{ marginRight: '30px' }}>
               <strong>{formatNumber(profile.posts)}</strong> bài viết

@@ -82,8 +82,6 @@ const Navbar = ({ pages }) => {
 
     }, [sendRequest]);
 
-    console.log(isRemindNotify.includes(true))
-
     return (
         <div>
             <Modal

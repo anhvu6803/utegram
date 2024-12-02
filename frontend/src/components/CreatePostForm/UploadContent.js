@@ -263,7 +263,7 @@ export default function UploadContent({ closeModal }) {
 
     const handleChangeUnderThirteen = (event) => {
         setUnderThirteen(event.target.value);
-        if(underThirteen === 'yes'){
+        if (underThirteen === 'yes') {
             setUpEighteen('no');
         }
     };
@@ -687,117 +687,121 @@ export default function UploadContent({ closeModal }) {
                                                                     </Box>
                                                                 )}
                                                                 <Divider />
-                                                                <Box sx={{
-                                                                    display: 'flex', flexDirection: 'row', alignItems: 'center',
-                                                                    width: '299px', height: '90px', marginLeft: '10px', justifyContent: 'space-between'
-                                                                }}>
-                                                                    <span style={{ fontSize: 16, fontWeight: isAdvanceSetting ? 'bold' : 'normal', marginLeft: '10px' }}>Cài đặt nâng cao</span>
-                                                                    <IconButton
-                                                                        onClick={() => { handleToggle() }}
-                                                                        sx={{ marginRight: '20px' }}
-                                                                    >
-                                                                        {isAdvanceSetting ? <ArrowDropUpIcon sx={{ fontSize: 20, color: 'black' }} /> : <ArrowDropDownIcon sx={{ fontSize: 20, color: 'black' }} />}
-                                                                    </IconButton>
-                                                                </Box>
-                                                                <div ref={collapseRef}>
-                                                                    <Collapse in={isAdvanceSetting} timeout="auto" unmountOnExit>
-                                                                        <Box
-                                                                            sx={{
-                                                                                width: '299px', height: 'fit-content',
-                                                                                display: 'flex',
-                                                                                flexDirection: 'column',
-                                                                                marginTop: '10px',
-                                                                                backgroundColor: 'transparent',
-                                                                                marginLeft: '20px'
-                                                                            }}
-
-                                                                        >
-                                                                            <span style={{ fontSize: 16, fontWeight: 'normal', marginBottom: '20px' }}>
-                                                                                Đối tượng người xem
-                                                                            </span>
-                                                                            <FormControl>
-                                                                                <RadioGroup
-                                                                                    aria-labelledby="demo-radio-buttons-group-label"
-                                                                                    value={underThirteen}
-                                                                                    onChange={handleChangeUnderThirteen}
-                                                                                    defaultValue={'no'}
-                                                                                >
-                                                                                    <FormControlLabel label="Có, nội dung này dành cho trẻ em" control={
-                                                                                        <Radio
-                                                                                            sx={{
-                                                                                                color: '#000',
-                                                                                                '&.Mui-checked': {
-                                                                                                    color: '#000',
-                                                                                                },
-                                                                                            }}
-                                                                                        />}
-                                                                                        value="yes" sx={{ marginBottom: '10px', width: '280px' }} />
-                                                                                    <FormControlLabel label="Không, nội dung này không dành cho trẻ em"
-                                                                                        control={
-                                                                                            <Radio
-                                                                                                sx={{
-                                                                                                    color: '#000',
-                                                                                                    '&.Mui-checked': {
-                                                                                                        color: '#000',
-                                                                                                    },
-                                                                                                }}
-                                                                                            />}
-                                                                                        value="no" sx={{ marginBottom: '10px', width: '280px' }} />
-                                                                                </RadioGroup>
-                                                                            </FormControl>
-                                                                            <Divider />
-                                                                        </Box>
-                                                                        {underThirteen === 'no' &&
-                                                                            <Box
-                                                                                sx={{
-                                                                                    width: '299px', height: 'fit-content',
-                                                                                    display: 'flex',
-                                                                                    flexDirection: 'column',
-                                                                                    marginTop: '10px',
-                                                                                    backgroundColor: 'transparent',
-                                                                                    marginLeft: '20px'
-                                                                                }}
-
+                                                                {auth?.age > 13 &&
+                                                                    <div>
+                                                                        <Box sx={{
+                                                                            display: 'flex', flexDirection: 'row', alignItems: 'center',
+                                                                            width: '299px', height: '90px', marginLeft: '10px', justifyContent: 'space-between'
+                                                                        }}>
+                                                                            <span style={{ fontSize: 16, fontWeight: isAdvanceSetting ? 'bold' : 'normal', marginLeft: '10px' }}>Cài đặt nâng cao</span>
+                                                                            <IconButton
+                                                                                onClick={() => { handleToggle() }}
+                                                                                sx={{ marginRight: '20px' }}
                                                                             >
-                                                                                <span style={{ fontSize: 16, fontWeight: 'normal', marginBottom: '20px' }}>
-                                                                                    Giới hạn độ tuổi
-                                                                                </span>
-                                                                                <FormControl>
-                                                                                    <RadioGroup
-                                                                                        aria-labelledby="demo-radio-buttons-group-label"
-                                                                                        value={upEighteen}
-                                                                                        onChange={handleChangeUpEighteen}
-                                                                                        defaultValue={'no'}
+                                                                                {isAdvanceSetting ? <ArrowDropUpIcon sx={{ fontSize: 20, color: 'black' }} /> : <ArrowDropDownIcon sx={{ fontSize: 20, color: 'black' }} />}
+                                                                            </IconButton>
+                                                                        </Box>
+                                                                        <div ref={collapseRef}>
+                                                                            <Collapse in={isAdvanceSetting} timeout="auto" unmountOnExit>
+                                                                                <Box
+                                                                                    sx={{
+                                                                                        width: '299px', height: 'fit-content',
+                                                                                        display: 'flex',
+                                                                                        flexDirection: 'column',
+                                                                                        marginTop: '10px',
+                                                                                        backgroundColor: 'transparent',
+                                                                                        marginLeft: '20px'
+                                                                                    }}
+
+                                                                                >
+                                                                                    <span style={{ fontSize: 16, fontWeight: 'normal', marginBottom: '20px' }}>
+                                                                                        Đối tượng người xem
+                                                                                    </span>
+                                                                                    <FormControl>
+                                                                                        <RadioGroup
+                                                                                            aria-labelledby="demo-radio-buttons-group-label"
+                                                                                            value={underThirteen}
+                                                                                            onChange={handleChangeUnderThirteen}
+                                                                                            defaultValue={'no'}
+                                                                                        >
+                                                                                            <FormControlLabel label="Có, nội dung này dành cho trẻ em" control={
+                                                                                                <Radio
+                                                                                                    sx={{
+                                                                                                        color: '#000',
+                                                                                                        '&.Mui-checked': {
+                                                                                                            color: '#000',
+                                                                                                        },
+                                                                                                    }}
+                                                                                                />}
+                                                                                                value="yes" sx={{ marginBottom: '10px', width: '280px' }} />
+                                                                                            <FormControlLabel label="Không, nội dung này không dành cho trẻ em"
+                                                                                                control={
+                                                                                                    <Radio
+                                                                                                        sx={{
+                                                                                                            color: '#000',
+                                                                                                            '&.Mui-checked': {
+                                                                                                                color: '#000',
+                                                                                                            },
+                                                                                                        }}
+                                                                                                    />}
+                                                                                                value="no" sx={{ marginBottom: '10px', width: '280px' }} />
+                                                                                        </RadioGroup>
+                                                                                    </FormControl>
+                                                                                    <Divider />
+                                                                                </Box>
+                                                                                {underThirteen === 'no' && auth.age >= 18 &&
+                                                                                    <Box
+                                                                                        sx={{
+                                                                                            width: '299px', height: 'fit-content',
+                                                                                            display: 'flex',
+                                                                                            flexDirection: 'column',
+                                                                                            marginTop: '10px',
+                                                                                            backgroundColor: 'transparent',
+                                                                                            marginLeft: '20px'
+                                                                                        }}
 
                                                                                     >
-                                                                                        <FormControlLabel label="Có, giới hạn video của tôi ở những người xem trên 18 tuổi"
-                                                                                            control={
-                                                                                                <Radio
-                                                                                                    sx={{
-                                                                                                        color: '#000',
-                                                                                                        '&.Mui-checked': {
-                                                                                                            color: '#000',
-                                                                                                        },
-                                                                                                    }}
-                                                                                                />}
-                                                                                            value="yes" sx={{ marginBottom: '10px', width: '280px' }} />
-                                                                                        <FormControlLabel label="Không, không giới hạn video của tôi ở những người xem trên 18 tuổi"
-                                                                                            control={
-                                                                                                <Radio
-                                                                                                    sx={{
-                                                                                                        color: '#000',
-                                                                                                        '&.Mui-checked': {
-                                                                                                            color: '#000',
-                                                                                                        },
-                                                                                                    }}
-                                                                                                />}
-                                                                                            value="no" sx={{ marginBottom: '10px', width: '280px' }} />
-                                                                                    </RadioGroup>
-                                                                                </FormControl>
-                                                                            </Box>
-                                                                        }
-                                                                    </Collapse>
-                                                                </div>
+                                                                                        <span style={{ fontSize: 16, fontWeight: 'normal', marginBottom: '20px' }}>
+                                                                                            Giới hạn độ tuổi
+                                                                                        </span>
+                                                                                        <FormControl>
+                                                                                            <RadioGroup
+                                                                                                aria-labelledby="demo-radio-buttons-group-label"
+                                                                                                value={upEighteen}
+                                                                                                onChange={handleChangeUpEighteen}
+                                                                                                defaultValue={'no'}
+
+                                                                                            >
+                                                                                                <FormControlLabel label="Có, giới hạn video của tôi ở những người xem trên 18 tuổi"
+                                                                                                    control={
+                                                                                                        <Radio
+                                                                                                            sx={{
+                                                                                                                color: '#000',
+                                                                                                                '&.Mui-checked': {
+                                                                                                                    color: '#000',
+                                                                                                                },
+                                                                                                            }}
+                                                                                                        />}
+                                                                                                    value="yes" sx={{ marginBottom: '10px', width: '280px' }} />
+                                                                                                <FormControlLabel label="Không, không giới hạn video của tôi ở những người xem trên 18 tuổi"
+                                                                                                    control={
+                                                                                                        <Radio
+                                                                                                            sx={{
+                                                                                                                color: '#000',
+                                                                                                                '&.Mui-checked': {
+                                                                                                                    color: '#000',
+                                                                                                                },
+                                                                                                            }}
+                                                                                                        />}
+                                                                                                    value="no" sx={{ marginBottom: '10px', width: '280px' }} />
+                                                                                            </RadioGroup>
+                                                                                        </FormControl>
+                                                                                    </Box>
+                                                                                }
+                                                                            </Collapse>
+                                                                        </div>
+                                                                    </div>
+                                                                }
                                                             </Box>
                                                         </Box>
 

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PostForm from '../../PostForm/PostForm';
 import { useHttpClient } from '../../../shared/hooks/http-hook';
+import { AuthContext } from '../../../shared/context/auth-context';
 
 // Material UI
 import ImageList from '@mui/material/ImageList';
@@ -23,6 +24,8 @@ import VideocamOffOutlinedIcon from '@mui/icons-material/VideocamOffOutlined';
 import './ProfileVideo.css';
 
 const ProfileVideo = () => {
+    const auth = useContext(AuthContext);
+
     const { username } = useParams();
     const { timeLoading, sendRequest } = useHttpClient();
     const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +38,7 @@ const ProfileVideo = () => {
             setIsLoading(true);
 
             try {
-                const responsePosts = await sendRequest(`http://localhost:5000/api/posts/video/${username}`);
+                const responsePosts = await sendRequest(`http://localhost:5000/api/posts/video/${username}?age=${auth.age}&&author=${auth.username}`);
                 setLoadedPosts(responsePosts.posts);
 
                 setTimeout(() => {
@@ -90,7 +93,7 @@ const ProfileVideo = () => {
         setListComment([]);
         setListReliesComment([]);
         try {
-            const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}`);
+            const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}?age=${auth.age}&&authorId=${auth.userId}`);
             setLoadedPost(responsePost.post);
 
             const responseUser = await sendRequest(`http://localhost:5000/api/auth/${responsePost.post.author}`);
@@ -124,6 +127,8 @@ const ProfileVideo = () => {
 
     const closeModal = () => setIsOpen(false);
 
+    console.log(loadedPosts);
+
     return (
         <Box>
             {isLoading ? (
@@ -147,7 +152,7 @@ const ProfileVideo = () => {
                     marginLeft: '550px',
                     flexDirection: 'column'
                 }}>
-                    {loadedPosts.length === 0 ? (
+                    {loadedPosts?.length === 0 ? (
                         <Box sx={{ textAlign: 'center', marginTop: '50px' }}>
                             <VideocamOffOutlinedIcon
                                 sx={{
@@ -165,7 +170,7 @@ const ProfileVideo = () => {
                             cols={3}
                             sx={{ width: '920px', height: '100%', marginTop: '50px', marginBottom: '10px' }}
                         >
-                            {loadedPosts.map((post, index) => (
+                            {loadedPosts?.map((post, index) => (
                                 <ListItemButton
                                     sx={{
                                         width: '300px', height: '300px', padding: '0px', position: 'relative',
@@ -175,11 +180,19 @@ const ProfileVideo = () => {
                                         handleLoadPost(event, post._id)
                                     }}
                                 >
-                                    <video
-                                        src={post.url[0]}
-                                        alt={post.caption}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
+                                    {post?.url[0]?.includes('video') ?
+                                        <video
+                                            src={post?.url[0]}
+                                            alt={post?.caption}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                        :
+                                        <img
+                                            src={post?.url[0]}
+                                            alt={post?.caption}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    }
                                     <ImageListItemBar
                                         actionIcon={
                                             <SlideshowIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
