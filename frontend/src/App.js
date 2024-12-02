@@ -30,6 +30,7 @@ import PostManagement from './pages/Admin/PostManagement/PostManagement';
 import InputBornDay from './pages/SignUpPage/InputBornDay';
 import ConfirmCode from './pages/SignUpPage/ConfirmCode';
 import MessagePage from './pages/MessagePage/MessagePage';
+import SetNewPasswordPage from './pages/ResetPassPage/SetNewPasswordPage';
 import { AuthContext } from './shared/context/auth-context';
 
 function calculateYearDifference(mongoDate) {
@@ -179,6 +180,7 @@ const App = () => {
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/resetpass" element={<ResetPassPage />} />
+        <Route path="/setnewpassword" element={<SetNewPasswordPage />} />
         <Route path="/logged" element={<LoggedPage />} />
         <Route path="/input-born" element={<InputBornDay />} />
         <Route path="/confirm-code" element={<ConfirmCode />} />
