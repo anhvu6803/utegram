@@ -30,6 +30,7 @@ import PostManagement from './pages/Admin/PostManagement/PostManagement';
 import InputBornDay from './pages/SignUpPage/InputBornDay';
 import ConfirmCode from './pages/SignUpPage/ConfirmCode';
 import MessagePage from './pages/MessagePage/MessagePage';
+import CommentManagement from './pages/Admin/PostManagement/CommentManagement';
 import SetNewPasswordPage from './pages/ResetPassPage/SetNewPasswordPage';
 import { AuthContext } from './shared/context/auth-context';
 
@@ -145,6 +146,7 @@ const App = () => {
         <Routes>
           <Route path="/admin/users" element={<UserManagement />} />
           <Route path="/admin/posts" element={<PostManagement />} />
+          <Route path="/admin/comments" element={<CommentManagement />} />
           <Route path="*" element={<Navigate to="/admin/users" replace />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/explore" element={<ExplorePage />} />

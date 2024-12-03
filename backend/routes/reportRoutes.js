@@ -9,6 +9,7 @@ router.post('/comment', reportControllers.createReportComment);
 router.post('/user', reportControllers.createReportUser);
 router.get('/report-user', reportControllers.ListReport);
 router.get('/report-post', reportControllers.ListPostReport);
+router.get('/report-comment', reportControllers.ListCommentReport);
 router.delete('/resolve-report/:userId', reportControllers.deleteReportUser);
 router.get('/comment/:cid', reportControllers.getReportCommentById);
 router.get('/post/:pid', reportControllers.getReportPostById);

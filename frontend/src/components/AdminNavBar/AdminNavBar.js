@@ -5,10 +5,9 @@ import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlin
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import ArticleIcon from '@mui/icons-material/Article';
-import PersonIcon from '@mui/icons-material/Person';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import ImageIcon from '@mui/icons-material/Image';
 import CommentIcon from '@mui/icons-material/Comment';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import HomeIcon from '@mui/icons-material/Home';
 
 const AdminOptionBar = ({ page }) => {
     const [active, setActive] = useState(page);
@@ -21,6 +20,10 @@ const AdminOptionBar = ({ page }) => {
         <div className="admin-optionbar">
             <h2 className="admin-title">UTEGRAM</h2>
             <div className="options-container">
+                {/* Home option */}
+                
+
+                {/* Users option */}
                 <div className="option-group">
                     <a
                         href="/admin/users"
@@ -36,10 +39,10 @@ const AdminOptionBar = ({ page }) => {
                     </a>
                 </div>
 
-              
+                {/* Posts option */}
                 <div className="option-group">
                     <a
-                     
+                        href="/admin/posts"
                         className={`option ${active === 'posts' ? 'active' : ''}`}
                         onClick={() => handleOptionClick('posts')}
                     >
@@ -50,19 +53,32 @@ const AdminOptionBar = ({ page }) => {
                         )}
                         <span className="option-text">Bài viết</span>
                     </a>
-                    {active === 'posts' && (
-                        <div className="sub-options">
-                            <a
-                                href="/admin/posts"
-                                className={`sub-option ${active === 'manage-posts' ? 'active' : ''}`}
-                                onClick={() => handleOptionClick('manage-posts')}
-                            >
-                                <ImageIcon sx={{ fontSize: 18, marginRight: '5px' }} />
-                                Quản lý bài viết
-                            </a>
-                           
-                        </div>
-                    )}
+                </div>
+
+     
+                <div className="option-group">
+                    <a
+                        href="/admin/comments"
+                        className={`option ${active === 'comments' ? 'active' : ''}`}
+                        onClick={() => handleOptionClick('comments')}
+                    >
+                        <CommentIcon sx={{ color: '#000', fontSize: 24 }} />
+                        <span className="option-text">Quản lý comments</span>
+                    </a>
+                </div>
+                <div className="option-group">
+                    <a
+                        href="/home"
+                        className={`option ${active === 'home' ? 'active' : ''}`}
+                        onClick={() => handleOptionClick('home')}
+                    >
+                        {active === 'home' ? (
+                            <HomeIcon sx={{ color: '#000', fontSize: 24 }} />
+                        ) : (
+                            <HomeOutlinedIcon sx={{ color: '#000', fontSize: 24 }} />
+                        )}
+                        <span className="option-text">Đi đến trang chủ</span>
+                    </a>
                 </div>
             </div>
         </div>

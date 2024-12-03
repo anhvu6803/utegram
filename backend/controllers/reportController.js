@@ -82,6 +82,12 @@ const createReportUser = async (req, res, next) => {
 const ListReport = async (req, res) => {
     try {
         const users = await User.aggregate([
+            // Exclude users with username 'Admin'
+            {
+                $match: {
+                    username: { $ne: 'Admin' }
+                },
+            },
             {
                 $lookup: {
                     from: 'reportusers',
@@ -185,10 +191,14 @@ const ListPostReport = async (req, res) => {
         const reportMap = {};
 
         reports.forEach((report) => {
-            if (!reportMap[report.postId._id]) {
-                reportMap[report.postId._id] = [];
+            if (report.postId && report.postId._id) {
+                if (!reportMap[report.postId._id]) {
+                    reportMap[report.postId._id] = [];
+                }
+                reportMap[report.postId._id].push(report);
+            } else {
+                console.warn(`Report with missing or invalid postId: ${report._id}`);
             }
-            reportMap[report.postId._id].push(report);
         });
 
         const postsWithReports = posts
@@ -209,6 +219,8 @@ const ListPostReport = async (req, res) => {
                     latestReportTime,
                 };
             })
+            // Chỉ giữ lại bài viết có report
+            .filter((post) => post.reportCount > 0)
             .sort((a, b) => {
                 if (b.latestReportTime && a.latestReportTime) {
                     return b.latestReportTime - a.latestReportTime;
@@ -224,7 +236,6 @@ const ListPostReport = async (req, res) => {
         res.status(500).json({ error: 'Đã xảy ra lỗi khi lấy danh sách bài viết.' });
     }
 };
-
 const deleteReportUser = async (req, res) => {
     const { userId } = req.params;
     try {
@@ -241,7 +252,76 @@ const deleteReportUser = async (req, res) => {
         return res.status(500).json({ message: 'An error occurred while deleting the reports' });
     }
 };
-
+const ListCommentReport = async (req, res) => {
+    try {
+      const reports = await ReportComment.find()
+        .populate({
+          path: 'commentId',
+          select: 'text', 
+          populate: {
+            path: 'author post',
+            select: 'username fullname email _id caption', 
+          },
+        })
+        .populate('senderId', 'username fullname email') 
+        .sort({ createdAt: -1 })
+        .lean(); 
+  
+      if (!reports.length) {
+        return res.status(404).json({ message: 'No reported comments found.' });
+      }
+  
+      const groupedReports = reports.reduce((acc, report) => {
+        // Check if commentId exists
+        if (!report.commentId) {
+          return acc; // Skip this report if no commentId is present
+        }
+  
+        const commentId = report.commentId._id;
+  
+        if (!acc[commentId]) {
+          acc[commentId] = {
+            commentId: commentId,
+            commentText: report.commentId.text,
+            author: report.commentId.author ? {
+              id: report.commentId.author._id,
+              username: report.commentId.author.username,
+              fullname: report.commentId.author.fullname,
+              email: report.commentId.author.email,
+            } : null,
+            post: report.commentId.post ? {
+              id: report.commentId.post._id,
+              caption: report.commentId.post.caption,
+            } : null,
+            reports: [],
+          };
+        }
+  
+        const existingReason = acc[commentId].reports.find(r => r.reason === report.reason);
+        if (!existingReason) {
+          acc[commentId].reports.push({
+            reason: report.reason,
+            reporter: {
+              id: report.senderId._id,
+              username: report.senderId.username,
+              fullname: report.senderId.fullname,
+              email: report.senderId.email,
+            },
+            reportedAt: report.createdAt,
+          });
+        }
+  
+        return acc;
+      }, {});
+  
+      const response = Object.values(groupedReports);
+      res.status(200).json(response);
+    } catch (error) {
+      console.error('Error fetching reported comments:', error);
+      res.status(500).json({ message: 'Something went wrong.' });
+    }
+  };
+  
 const getReportCommentById = async (req, res, next) => {
     const commentId = req.params.cid;
 
@@ -351,6 +431,7 @@ exports.createReportUser = createReportUser;
 exports.createReportComment = createReportComment;
 exports.ListReport = ListReport;
 exports.ListPostReport = ListPostReport;
+exports.ListCommentReport = ListCommentReport;
 exports.deleteReportUser = deleteReportUser;
 exports.getReportCommentById = getReportCommentById;
 exports.getReportPostById = getReportPostById;
