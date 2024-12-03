@@ -71,7 +71,7 @@ const PostManagement = () => {
         <div className="management-title">Quản lý bài viết</div>
         <Box component="form" sx={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
         </Box>
-        <PostManagementTable posts={posts} />
+        <PostManagementTable posts={posts} fetchPosts={fetchPosts} />
       </div>
     </div>
   );

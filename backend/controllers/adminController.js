@@ -1,6 +1,9 @@
 const User = require('../models/UserModel');
 const Post = require('../models/PostModel');
 const ReportPost = require('../models/ReportPostModel');
+const ReportComment = require('../models/ReportCommentModel');
+const Notify = require('../models/NotifyModel');
+const Comment = require('../models/CommentModel');
 const banUser = async (req, res) => {
   const { userId } = req.params; 
   try {
@@ -82,4 +85,77 @@ const resolve =  async (req, res) => {
     res.status(500).json({ message: 'Failed to resolve post' });
   }
 };
-module.exports = { banUser, updatePostByAdmin, resolve };
+const deleteComment = async (req, res) => {
+  const { commentId } = req.params;
+
+  try {
+    await ReportComment.deleteMany({ commentId });
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Bình luận không tồn tại.' });
+    }
+
+    await Notify.deleteMany({ postId: comment.post, type: 'post' }); 
+    await Notify.deleteMany({ owner: comment.owner }); 
+
+    await Post.updateOne(
+      { _id: comment.post },
+      { $pull: { comments: commentId } }
+    );
+
+    await Comment.deleteMany({ _id: { $in: comment.replies } });
+
+    await Comment.findByIdAndDelete(commentId);
+
+    res.status(200).json({ message: 'Bình luận và các dữ liệu liên quan đã được xóa thành công.' });
+  } catch (error) {
+    console.error('Lỗi khi xóa bình luận:', error);
+    res.status(500).json({ message: 'Có lỗi xảy ra khi xóa bình luận.' });
+  }
+};
+const deletePost = async (req, res) => {
+  const { postId } = req.params;
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Bài viết không tồn tại.' });
+    }
+
+    const comments = post.comments;
+    if (comments && comments.length > 0) {
+      await Promise.all(comments.map(async (commentId) => {
+        await ReportComment.deleteMany({ commentId });
+
+        await Comment.findByIdAndDelete(commentId);
+
+        const comment = await Comment.findById(commentId);
+        if (comment && comment.replies && comment.replies.length > 0) {
+          await Comment.deleteMany({ _id: { $in: comment.replies } });
+        }
+      }));
+    }
+
+    await ReportPost.deleteMany({ postId });
+
+    await Notify.deleteMany({ postId });
+
+    await User.updateMany(
+      { posts: postId },
+      { $pull: { posts: postId } }
+    );
+
+    await User.updateMany(
+      { bookmarks: postId },
+      { $pull: { bookmarks: postId } }
+    );
+
+    await Post.findByIdAndDelete(postId);
+
+    res.status(200).json({ message: 'Bài viết và các dữ liệu liên quan đã được xóa thành công.' });
+  } catch (error) {
+    console.error('Lỗi khi xóa bài viết:', error);
+    res.status(500).json({ message: 'Có lỗi xảy ra khi xóa bài viết.' });
+  }
+};
+module.exports = { banUser, updatePostByAdmin, resolve, deleteComment, deletePost };
