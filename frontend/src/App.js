@@ -25,7 +25,7 @@ import VideoPage from './pages/VideoPage/VideoPage';
 import UserManagement from './pages/Admin/UserManagement/UserManagement';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import EditAccount from './pages/SettingPages/EditAccount';
-import ChangePass from './pages/SettingPages/ChangeAccount';
+import ChangePass from './pages/SettingPages/ChangePass';
 import PostManagement from './pages/Admin/PostManagement/PostManagement';
 import InputBornDay from './pages/SignUpPage/InputBornDay';
 import ConfirmCode from './pages/SignUpPage/ConfirmCode';

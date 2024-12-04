@@ -10,7 +10,7 @@ router.get('/:pid', postControllers.getPostById);
 router.get('/user/:uid', postControllers.getPostsByUserId);
 router.get('/like/:pid', postControllers.getUsersByPostId);
 router.get('/comment/:pid', postControllers.getCommentsByPostId);
-
+router.get('/followings/:uid', postControllers.getPostsByUserFollowing);
 router.post('/',
   [
     check('caption').isLength({ max: 2200 })

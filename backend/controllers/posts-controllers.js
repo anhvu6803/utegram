@@ -28,9 +28,8 @@ const getPostById = async (req, res, next) => {
     post = await Post.findById(postId);
 
     post = post.toObject({ getters: true }); // Chuyển đổi Mongoose Document thành Object thuần
-    console.log(authorId.includes(post.author))
+
     if (age < 18 && post.upeighteen === 'yes' && !authorId?.includes(post?.author)) {
-      console.log(authorId + '+' + post.author)
       post.url = [
         "https://res.cloudinary.com/dbmynlh3f/image/upload/v1733123869/Hidden%20Image/i9vh1gxlpocu0ctpmm5a.png",
       ];
@@ -154,6 +153,67 @@ const getCommentsByPostId = async (req, res, next) => {
   res.json({ comments: postWithComments.comments.map(comment => comment.toObject({ getters: true })) });
 };
 
+const getPostsByUserFollowing = async (req, res, next) => {
+  const userId = req.params.uid;
+
+  const { age } = req.query;
+  // let places;
+  let followings;
+  try {
+    followings = await User.findById(userId).populate({
+      path: 'followings',
+    });
+  } catch (err) {
+    const error = new HttpError(
+      'Fetching user failed, please try again later.',
+      500
+    );
+    return next(error);
+  }
+
+  // if (!places || places.length === 0) {
+  if (!followings || followings.followings.length === 0) {
+    return next(
+      new HttpError('Could not find posts for the provided user id.', 404)
+    );
+  }
+
+  let postsOfFollowing = [];
+
+  try {
+    for (const following of followings.followings) {
+      const posts = await User.findById(following._id).populate({
+        path: 'posts',
+        populate: {
+          path: 'author', // Đây là trường liên kết tới following
+          select: 'username avatar fullname', // Chọn các trường bạn muốn từ following
+        },
+      })
+      for (const post of posts.posts) {
+        if (age < 13 && post.underthirteen === 'yes') {
+          postsOfFollowing.push(post);
+        }
+        else if (age >= 18 && post.upeighteen === 'yes') {
+          postsOfFollowing.push(post);
+        }
+        else if (age >= 13 && age < 18 &&
+          post.underthirteen === 'no' && post.upeighteen === 'no') {
+          postsOfFollowing.push(post);
+        }
+      }
+    }
+
+  } catch (err) {
+    const error = new HttpError(
+      'Fetching posts failed, please try again later.',
+      500
+    );
+    return next(error);
+  }
+
+  res.json({ posts: postsOfFollowing.map(post => post.toObject({ getters: true })) });
+};
+
 const checkImagePost = async (req, res, next) => {
   const picpurifyUrl = 'https://www.picpurify.com/analyse/1.1';
 
@@ -161,14 +221,14 @@ const checkImagePost = async (req, res, next) => {
 
   const { image, publicId } = req.body
 
-  form.append('url_image', image);  
-  form.append('API_KEY', 'R5UKlPg9CDbT3P7Oy8tFtxgP3rKuyBE7'); 
+  form.append('url_image', image);
+  form.append('API_KEY', 'R5UKlPg9CDbT3P7Oy8tFtxgP3rKuyBE7');
   form.append('task', 'porn_moderation,drug_moderation,gore_moderation');
 
 
   try {
     const response = await axios.post(picpurifyUrl, form, {
-      headers: form.getHeaders()  
+      headers: form.getHeaders()
     });
 
     if (response.data.final_decision === 'KO') {
@@ -609,6 +669,7 @@ exports.getPostById = getPostById;
 exports.getPostsByUserId = getPostsByUserId;
 exports.getUsersByPostId = getUsersByPostId;
 exports.getCommentsByPostId = getCommentsByPostId;
+exports.getPostsByUserFollowing = getPostsByUserFollowing;
 exports.checkImagePost = checkImagePost;
 exports.checkVideoPost = checkVideoPost;
 exports.createPost = createPost;
