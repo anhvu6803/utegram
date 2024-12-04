@@ -41,55 +41,12 @@ function splitDescriptionAndHashtags(input) {
     return { des, hashtags };
 }
 
-const tagSuggestions = [
-    '#love', '#instagood', '#photooftheday', '#fashion', '#beautiful',
-    '#happy', '#cute', '#tbt', '#followme', '#picoftheday',
-    '#instadaily', '#instamood', '#igers', '#nature', '#like4like',
-    '#travel', '#repost', '#style', '#summer', '#art',
-    '#photography', '#instapic', '#friends', '#fun', '#food',
-    '#fitness', '#family', '#music', '#life', '#motivation',
-    '#inspiration', '#followforfollow', '#makeup', '#model', '#dog',
-    '#cat', '#beauty', '#happybirthday', '#blackandwhite',
-    '#selfie', '#sun', '#sky', '#smile', '#photographer',
-    '#landscape', '#fashionblogger', '#vintage', '#wedding', '#naturelovers',
-    '#colors', '#happyplace', '#adventure', '#outdoors', '#styleinspo',
-    '#lifestyle', '#foodie', '#sea', '#beach', '#swimming',
-    '#loveit', '#travelphotography', '#streetphotography', '#city', '#urban',
-    '#party', '#summerfun', '#weekend', '#goodvibes', '#explore',
-    '#wanderlust', '#adventuretime', '#chill', '#photogram', '#capture',
-    '#instacool', '#bestoftheday', '#amazing', '#instafood', '#cooking',
-    '#yummy', '#delicious', '#vegan', '#breakfast', '#dinner',
-    '#lunch', '#dessert', '#foodphotography', '#healthy', '#foodstagram',
-    '#snack', '#sweet', '#chocolate', '#tasty', '#fresh',
-    '#garden', '#flowers', '#spring', '#autumn', '#winter',
-    '#holidays', '#celebrate', '#familytime', '#home', '#interior',
-    '#decor', '#inspo', '#design', '#artwork', '#draw',
-    '#sketch', '#illustration', '#artist', '#creativity', '#photo',
-    '#workout', '#gym', '#exercise', '#run', '#yoga',
-    '#health', '#selflove', '#mentalhealth', '#wellness', '#motivationmonday',
-    '#transformationtuesday', '#humpday', '#thursdaythoughts', '#fridayfeeling',
-    '#saturdaynight', '#sundayfunday', '#funny', '#memes', '#comedy',
-    '#quotes', '#wisdom', '#positivity', '#mindfulness', '#mindset',
-    '#happiness', '#success', '#goals', '#dreams', '#inspirationdaily',
-    '#empowerment', '#women', '#mensfashion', '#womensfashion', '#fashionstyle',
-    '#ootd', '#fashionista', '#streetstyle', '#trendy', '#gorgeous',
-    '#swag', '#lovequotes', '#relationshipgoals', '#friendship', '#bond',
-    '#childhood', '#pets', '#kitten', '#puppy', '#animal',
-    '#wildlife', '#naturephotography', '#landscapelovers', '#travelblogger', '#roadtrip',
-    '#exploring', '#discover', '#vacation', '#wanderer', '#backpacking',
-    '#local', '#culture', '#history', '#heritage', '#artgallery',
-    '#museums', '#exhibitions', '#theatre', '#concert', '#musicfestival',
-    '#performingarts', '#live', '#band', '#singer', '#musician',
-    '#instamusic', '#guitar', '#piano', '#drums', '#bandlife',
-    '#tour', '#newmusic', '#album', '#rock', '#pop',
-    '#jazz', '#classical', '#hiphop', '#rap', '#musiclover'
-];
-
 export default function SelectedListItem({ closeModal, author, type, itemId, user, commentId, post }) {
     const auth = useContext(AuthContext);
 
     const { timeLoading, error, sendRequest, clearError } = useHttpClient();
 
+    const tagSuggestions = auth.tags;
     const [isReport, setReport] = useState(false);
     const [isSuccessReport, setSuccessReport] = useState(false);
     const [isConfirmDelete, setConfirmDelete] = useState(false);
@@ -223,7 +180,6 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
         }
 
     }
-    console.log(post)
     let data, report, typeChange;
 
     if (type === 'post') {
@@ -275,7 +231,7 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
         e.preventDefault();
         try {
             const result = splitDescriptionAndHashtags(inputValue);
-
+            
             await sendRequest(
                 `http://localhost:5000/api/posts/${post._id}`,
                 'PATCH',
@@ -287,6 +243,16 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
                 }),
                 { 'Content-Type': 'application/json' }
             );
+
+            await fetch('http://localhost:5000/api/tag', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    tags: result.hashtags,
+                })
+            });
             closeModal();
             setChangeSetContent(false);
             setInputCount(0);
@@ -329,10 +295,16 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
         }
 
         const result = splitDescriptionAndHashtags(value)
-        const lastestTag = result.des[inputCount]
 
+        const inputCount = result.des.length;
+        let lastestTag;
+        if (inputCount > 0) {
+            lastestTag = result.des[inputCount - 1]
+        }
+        console.log(result.des)
         // Check if '#' was typed and show suggestions
         if (lastestTag.startsWith('#')) {
+            console.log(lastestTag)
             const searchTerm = value.split('#').pop(); // Get the tag part after '#'
             const matchedTags = tagSuggestions.filter((tag) =>
                 tag.toLowerCase().includes(searchTerm.toLowerCase())
@@ -343,7 +315,6 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
                 setShowSuggestions(true);
             }
             else if (matchedTags.length <= 0) {
-
                 setShowSuggestions(false);
             }
         } else {
@@ -357,13 +328,6 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
         setInputValue(newInput);
         setShowSuggestions(false);  // Close the suggestions after selection
     };
-
-    const handleKeyDown = (event) => {
-        if (event.key === ' ') {
-            setInputCount((prevCount) => prevCount + 1);
-        }
-    };
-
 
     return (
         <div>
@@ -520,7 +484,6 @@ export default function SelectedListItem({ closeModal, author, type, itemId, use
                                                     value={inputValue}
                                                     onChange={handleInputChange}
                                                     autoFocus={true}
-                                                    onKeyDown={handleKeyDown}
                                                     style={{
                                                         height: '300px',
                                                         textAlign: 'start',

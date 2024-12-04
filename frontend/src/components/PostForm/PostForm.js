@@ -183,7 +183,8 @@ const PostForm = ({ closeModal, post, author, listComments, listReplies }) => {
     const [itemId, setItemId] = useState(postId);
     const [itemAuthor, setItemAuthor] = useState(author);
 
-    const captionSplit = post.caption.split(' ');
+    const captionSplit = post.caption.split(/[\s\n]+/);
+    console.log(captionSplit)
 
     //Commnent section
 

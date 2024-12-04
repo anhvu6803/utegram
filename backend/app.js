@@ -1,4 +1,4 @@
-const {server, app} = require('./socket/socket')
+const { server, app } = require('./socket/socket')
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/posts-routes');
@@ -10,10 +10,10 @@ const reportRoutes = require('./routes/reportRoutes');
 const historySearchRoutes = require('./routes/historySearchRoutes');
 const adminRoutes = require('./routes/adminRoute');
 const notifyRoutes = require('./routes/notifyRoutes');
+const tagRoutes = require('./routes/hastagRoute');
 
 const cors = require('cors');
 const mongoose = require('mongoose');
-
 
 app.use(bodyParser.json());
 
@@ -30,7 +30,7 @@ app.use((req, res, next) => {
 
 app.use(cors({
   origin: 'http://localhost:3000',
-  credentials: true, 
+  credentials: true,
 }));
 app.use('/api/admin', adminRoutes);
 app.use('/api/profile', profileRoutes);
@@ -42,6 +42,7 @@ app.use('/api/comment', commentRoutes);
 app.use('/api/report', reportRoutes);
 app.use('/api/historySearch', historySearchRoutes);
 app.use('/api/notify', notifyRoutes);
+app.use('/api/tag', tagRoutes);
 
 app.use((req, res, next) => {
   const error = new HttpError('Could not find this route.', 404);

@@ -57,7 +57,7 @@ const Accounts = () => {
 
     case 'change_pass':
       return <ChangePass />;
-      
+
     default:
       return <div>Invalid Option</div>; // Handle unknown options
   }
@@ -73,6 +73,7 @@ const App = () => {
     avatar: null,
     isAdmin: false,
     age: null,
+    tags: []
   });
 
   const { timeLoading, sendRequest } = useHttpClient();
@@ -108,6 +109,7 @@ const App = () => {
       avatar: null,
       isAdmin: false,
       age: null,
+      tags: []
     });
     Cookies.remove('accessToken');
   }, []);
@@ -124,15 +126,18 @@ const App = () => {
         const decoded = jwtDecode(token);
         const responseUser = await sendRequest(`http://localhost:5000/api/auth/${decoded.userId}`);
 
+        const response = await sendRequest(`http://localhost:5000/api/tag`);
+
         setAuthState((prevState) => ({
           ...prevState,
           avatar: responseUser.user.avatar,
+          tags: response.tags
         }));
       } catch (err) {
       }
     };
     fetchAuthor();
-  }, [login]);
+  }, [login, sendRequest]);
 
   if (authState.isLoggedIn === null) {
     return;

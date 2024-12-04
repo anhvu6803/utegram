@@ -332,14 +332,14 @@ const HomePage = () => {
                                     }}
                                 >
                                     <strong style={{ fontWeight: 'bold', marginRight: '10px' }}>{post?.author?.username}</strong>
-                                    {Array.from({ length: post?.caption?.split(' ').length }, (_, i) => (
+                                    {Array.from({ length: post?.caption?.split(/[\s\n]+/).length }, (_, i) => (
                                         <span>
-                                            {post?.caption?.split(' ')[i].startsWith('#') ?
-                                                <Link to={`/tag/${post?.caption?.split(' ')[i].replace('#', '')}`} style={{ textDecoration: 'none', color: '#00376B' }} >
-                                                    {post?.caption?.split(' ')[i] + ' '}
+                                            {post?.caption?.split(/[\s\n]+/)[i].startsWith('#') ?
+                                                <Link to={`/tag/${post?.caption?.split(/[\s\n]+/)[i].replace('#', '')}`} style={{ textDecoration: 'none', color: '#00376B' }} >
+                                                    {post?.caption?.split(/[\s\n]+/)[i] + ' '}
                                                 </Link>
                                                 :
-                                                <span>{post?.caption?.split(' ')[i] + ' '}</span>
+                                                <span>{post?.caption?.split(/[\s\n]+/)[i] + ' '}</span>
                                             }
                                         </span>
                                     ))}

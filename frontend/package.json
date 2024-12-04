@@ -17,6 +17,7 @@
     "axios": "^1.7.7",
     "cloudinary-video-player": "^2.1.0",
     "form-data": "^4.0.1",
+    "fs": "^0.0.1-security",
     "install": "^0.13.0",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
