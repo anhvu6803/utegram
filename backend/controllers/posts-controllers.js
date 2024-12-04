@@ -155,10 +155,11 @@ const getCommentsByPostId = async (req, res, next) => {
 
 const getPostsByUserFollowing = async (req, res, next) => {
   const userId = req.params.uid;
-
   const { age } = req.query;
-  // let places;
+
   let followings;
+
+  // Fetch the followings of the user
   try {
     followings = await User.findById(userId).populate({
       path: 'followings',
@@ -171,7 +172,7 @@ const getPostsByUserFollowing = async (req, res, next) => {
     return next(error);
   }
 
-  // if (!places || places.length === 0) {
+  // Check if the user has any followings
   if (!followings || followings.followings.length === 0) {
     return next(
       new HttpError('Could not find posts for the provided user id.', 404)
@@ -182,27 +183,34 @@ const getPostsByUserFollowing = async (req, res, next) => {
 
   try {
     for (const following of followings.followings) {
-      const posts = await User.findById(following._id).populate({
+      // Fetch the posts of each following user
+      const userWithPosts = await User.findById(following._id).populate({
         path: 'posts',
         populate: {
-          path: 'author', // Đây là trường liên kết tới following
-          select: 'username avatar fullname', // Chọn các trường bạn muốn từ following
+          path: 'author', // Populate the author details
+          select: 'username avatar fullname', // Select specific fields
         },
-      })
-      for (const post of posts.posts) {
-        if (age < 13 && post.underthirteen === 'yes') {
+      });
+
+      for (const post of userWithPosts.posts) {
+        // Logic for filtering posts based on user's age
+        if (age >= 18) {
+          // Users aged 18 or older can see all posts
           postsOfFollowing.push(post);
-        }
-        else if (age >= 18 && post.upeighteen === 'yes') {
+        } else if (age < 13 && post.underthirteen === 'yes') {
+          // Users under 13 can only see posts marked for under 13
           postsOfFollowing.push(post);
-        }
-        else if (age >= 13 && age < 18 &&
-          post.underthirteen === 'no' && post.upeighteen === 'no') {
+        } else if (
+          age >= 13 &&
+          age < 18 &&
+          post.underthirteen === 'no' &&
+          post.upeighteen === 'no'
+        ) {
+          // Users aged between 13 and 17 can see posts not marked for under 13 or 18+
           postsOfFollowing.push(post);
         }
       }
     }
-
   } catch (err) {
     const error = new HttpError(
       'Fetching posts failed, please try again later.',
@@ -211,8 +219,12 @@ const getPostsByUserFollowing = async (req, res, next) => {
     return next(error);
   }
 
-  res.json({ posts: postsOfFollowing.map(post => post.toObject({ getters: true })) });
+  // Respond with the filtered posts
+  res.json({
+    posts: postsOfFollowing.map(post => post.toObject({ getters: true })),
+  });
 };
+
 
 const checkImagePost = async (req, res, next) => {
   const picpurifyUrl = 'https://www.picpurify.com/analyse/1.1';
