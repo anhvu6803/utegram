@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom';
 import CropOriginalIcon from '@mui/icons-material/CropOriginal';
 import SmartDisplayIcon from '@mui/icons-material/SmartDisplay';
 import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
+import BlockIcon from '@mui/icons-material/Block'; // Import BlockIcon for "ban" symbol
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 
@@ -130,7 +130,7 @@ const PostManagementTable = ({ posts, fetchPosts }) => {
       }
 
       toast.success('Bài viết đã được xóa thành công!');
-      fetchPosts();  // Refresh posts list after deletion
+      fetchPosts(); // Refresh posts list after deletion
     } catch (error) {
       console.error('Lỗi khi xóa bài viết:', error);
       toast.error(error.message || 'Đã xảy ra lỗi khi xóa bài viết.');
@@ -228,13 +228,13 @@ const PostManagementTable = ({ posts, fetchPosts }) => {
                         />
                       )}
                       <IconButton
-                        onClick={() => handleDeletePost(post._id)}  // Add delete post functionality here
+                        onClick={() => handleDeletePost(post._id)} // Add delete post functionality here
                         sx={{
                           marginLeft: '10px',
                           color: 'red',
                         }}
                       >
-                        <CloseIcon sx={{ fontSize: 30 }} />
+                        <BlockIcon sx={{ fontSize: 30 }} /> {/* Replaced CloseIcon with BlockIcon */}
                       </IconButton>
                       {loading && (
                         <CircularProgress size={24} sx={{ position: 'absolute', right: 10, top: 10 }} />
