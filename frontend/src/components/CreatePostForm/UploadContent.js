@@ -47,57 +47,14 @@ function splitDescriptionAndHashtags(input) {
     return { des, hashtags };
 }
 
-const tagSuggestions = [
-    '#love', '#instagood', '#photooftheday', '#fashion', '#beautiful',
-    '#happy', '#cute', '#tbt', '#followme', '#picoftheday',
-    '#instadaily', '#instamood', '#igers', '#nature', '#like4like',
-    '#travel', '#repost', '#style', '#summer', '#art',
-    '#photography', '#instapic', '#friends', '#fun', '#food',
-    '#fitness', '#family', '#music', '#life', '#motivation',
-    '#inspiration', '#followforfollow', '#makeup', '#model', '#dog',
-    '#cat', '#beauty', '#happybirthday', '#blackandwhite',
-    '#selfie', '#sun', '#sky', '#smile', '#photographer',
-    '#landscape', '#fashionblogger', '#vintage', '#wedding', '#naturelovers',
-    '#colors', '#happyplace', '#adventure', '#outdoors', '#styleinspo',
-    '#lifestyle', '#foodie', '#sea', '#beach', '#swimming',
-    '#loveit', '#travelphotography', '#streetphotography', '#city', '#urban',
-    '#party', '#summerfun', '#weekend', '#goodvibes', '#explore',
-    '#wanderlust', '#adventuretime', '#chill', '#photogram', '#capture',
-    '#instacool', '#bestoftheday', '#amazing', '#instafood', '#cooking',
-    '#yummy', '#delicious', '#vegan', '#breakfast', '#dinner',
-    '#lunch', '#dessert', '#foodphotography', '#healthy', '#foodstagram',
-    '#snack', '#sweet', '#chocolate', '#tasty', '#fresh',
-    '#garden', '#flowers', '#spring', '#autumn', '#winter',
-    '#holidays', '#celebrate', '#familytime', '#home', '#interior',
-    '#decor', '#inspo', '#design', '#artwork', '#draw',
-    '#sketch', '#illustration', '#artist', '#creativity', '#photo',
-    '#workout', '#gym', '#exercise', '#run', '#yoga',
-    '#health', '#selflove', '#mentalhealth', '#wellness', '#motivationmonday',
-    '#transformationtuesday', '#humpday', '#thursdaythoughts', '#fridayfeeling',
-    '#saturdaynight', '#sundayfunday', '#funny', '#memes', '#comedy',
-    '#quotes', '#wisdom', '#positivity', '#mindfulness', '#mindset',
-    '#happiness', '#success', '#goals', '#dreams', '#inspirationdaily',
-    '#empowerment', '#women', '#mensfashion', '#womensfashion', '#fashionstyle',
-    '#ootd', '#fashionista', '#streetstyle', '#trendy', '#gorgeous',
-    '#swag', '#lovequotes', '#relationshipgoals', '#friendship', '#bond',
-    '#childhood', '#pets', '#kitten', '#puppy', '#animal',
-    '#wildlife', '#naturephotography', '#landscapelovers', '#travelblogger', '#roadtrip',
-    '#exploring', '#discover', '#vacation', '#wanderer', '#backpacking',
-    '#local', '#culture', '#history', '#heritage', '#artgallery',
-    '#museums', '#exhibitions', '#theatre', '#concert', '#musicfestival',
-    '#performingarts', '#live', '#band', '#singer', '#musician',
-    '#instamusic', '#guitar', '#piano', '#drums', '#bandlife',
-    '#tour', '#newmusic', '#album', '#rock', '#pop',
-    '#jazz', '#classical', '#hiphop', '#rap', '#musiclover'
-];
-
-
 export default function UploadContent({ closeModal }) {
     const auth = useContext(AuthContext);
     // Replace with your own cloud name
     const cloudName = "dbmynlh3f";
 
     const uploadPreset = "iezes36w";
+
+    const tagSuggestions = auth.tags;
 
     const fileInputRef = useRef(null);
     const [files, setFiles] = useState([]);
@@ -350,7 +307,16 @@ export default function UploadContent({ closeModal }) {
                 });
 
                 const responseData = await response.json();
-                console.log(responseData);
+
+                await fetch('http://localhost:5000/api/tag', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tags: result.hashtags,
+                    })
+                });
                 setLoading(false);
             } catch (error) {
                 console.error('Error posting data', error);
