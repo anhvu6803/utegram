@@ -1,0 +1,32 @@
+.comment-container {
+    margin-left: 250px;
+    height: 100vh;
+    background-color: #f5f5f5;
+  }
+  
+  .comment-header {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    color: #000000;
+    margin-top: 20px;
+    margin-left: 80px;
+  }
+  
+  .comment-message {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    color: #757575;
+    margin-bottom: 20px;
+    margin-left: 80px;
+  }
+  
+  .management-title {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    color: #0095f6;
+    margin-top: 20px;
+    margin-left: 80px;
+  }
+  

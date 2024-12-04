@@ -1,5 +1,7 @@
 const User = require('../models/UserModel');
+const Message = require('../models/MessageModel');
 const HttpError = require('../models/http-error');
+const mongoose = require('mongoose');
 const { validationResult } = require('express-validator');
 
 exports.getAllUsers = async (req, res) => {
@@ -123,6 +125,46 @@ exports.checkUsernameExists = async (req, res, next) => {
     } catch (err) {
         res.status(500).json({ message: 'Fetching username failed, please try again' });
     }
+};
+exports.getUsersInteractedWith = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const user = await User.findById(userId).select('followings');
+        
+        if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+        }
+    
+        const messages = await Message.find({
+          $or: [{ senderId: userId }, { recipientId: userId }]
+        });
+    
+        const messageUserIds = [
+          ...new Set(
+            messages
+              .map((message) => message.senderId)
+              .concat(messages.map((message) => message.recipientId))
+              .filter((id) => id !== userId) 
+          ),
+        ];
+    
+        const allUserIds = [
+          ...new Set([
+            ...messageUserIds,
+            ...user.followings.map((following) => following.toString()), 
+          ]),
+        ];
+    
+        const users = await User.find({
+          _id: { $in: allUserIds },
+        });
+    
+        res.status(200).json(users);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+      }
 };
 exports.getFollowDataByUserId = async (req, res) => {
     const { userId } = req.params;
