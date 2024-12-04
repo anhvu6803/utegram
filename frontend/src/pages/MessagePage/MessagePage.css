@@ -54,10 +54,6 @@
     margin-right: 8px;
 }
 
-.contact-info {
-    display: flex;
-    flex-direction: column;
-}
 
 .contact-name {
     font-weight: bold;
@@ -185,3 +181,18 @@
     margin-top: 2px;
     /* Spacing above the username */
 }
+.contact-info {
+    position: relative; /* Needed to position the unread dot */
+  }
+  
+  .unread-dot {
+    position: absolute;
+    top: 5px; /* Adjust position from top of the contact's avatar */
+    right: 5px; /* Adjust position from right of the contact's avatar */
+    width: 8px;
+    height: 8px;
+    background-color: #34b74b; /* Green color */
+    border-radius: 50%;
+    border: 2px solid white; /* Optional: creates a border around the dot */
+    display: inline-block; /* Ensures it behaves like a block element */
+  }

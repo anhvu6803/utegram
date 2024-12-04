@@ -19,6 +19,8 @@ router.get('/search/username', userController.searchUser);
 
 router.get('/follow/:userId', userController.getFollowDataByUserId);
 
+router.get('/contacts/:userId', userController.getUsersInteractedWith);
+
 router.patch('/:uid',
     [
         check('bio').isLength({ max: 150 }),
