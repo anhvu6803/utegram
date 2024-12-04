@@ -104,32 +104,8 @@ exports.getUserHasMorePosts = async (req, res) => {
 
         const filteredUsers = usersWithPostCounts.filter(user => !user._id.equals(userId));
 
-        let postsList = [];
-
-        await Promise.all(
-            filteredUsers.map(async (user) => {
-                const populatedUser = await User.findById(user._id).populate({
-                    path: 'posts',
-                    options: { sort: { createdAt: -1 } }
-                });
-
-                if (age < 18) {
-                    postsList = postsList.concat(
-                        populatedUser.posts
-                            .filter(post => post.upeighteen !== "yes")
-                            .map(post => post.toObject({ getters: true }))
-                    );
-                } else {
-                    postsList = postsList.concat(
-                        populatedUser.posts.map(post => post.toObject({ getters: true }))
-                    );
-                }
-            })
-        );
-
         res.status(200).json({
             users: filteredUsers,
-            posts: postsList
         });
     } catch (err) {
         res.status(500).json({ message: err.message });

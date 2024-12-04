@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import './HomePage.css';
 import OptionBar from '../../components/OptionBar/OptionBar';
 import avatar from '../../assets/user.png';
 import failLoadImage from '../../assets/picture-loading-failed-1-512.png';
@@ -16,7 +15,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
-import { Modal, Box } from '@mui/material';
+import { Modal, Box, Divider } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -46,9 +45,11 @@ const HomePage = () => {
                 const responseUsers = await sendRequest(`http://localhost:5000/api/users/morepost/${userId}?age=${auth.age}`);
 
                 setLoadedUsers(responseUsers.users);
-                setLoadedPosts(responseUsers.posts);
 
-                responseUsers.posts.map(async (item) => {
+                const responsePosts = await sendRequest(`http://localhost:5000/api/posts/followings/${userId}?age=${auth.age}`);
+                setLoadedPosts(responsePosts.posts);
+
+                responsePosts.posts.map(async (item) => {
                     await checkUrl(item.url);
                 })
 
@@ -82,7 +83,7 @@ const HomePage = () => {
         event.preventDefault();
 
         try {
-            
+
             await sendRequest(
                 `http://localhost:5000/api/profile/follow/${loadedUsers[index]._id}`,
                 'PATCH',
@@ -147,7 +148,7 @@ const HomePage = () => {
         setListComment([]);
         setListReliesComment([]);
         try {
-            const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}`);
+            const responsePost = await sendRequest(`http://localhost:5000/api/posts/${id}?age=${auth.age}&&authorId=${auth.userId}`);
 
             setLoadedPost(responsePost.post);
 
@@ -205,9 +206,6 @@ const HomePage = () => {
     return (
         <Box sx={{ position: 'absolute', top: 0 }}>
             <OptionBar pages={'home'} />
-            <div className='appname'>
-                Bài viết gợi ý
-            </div>
             {isLoading ?
                 <LoadingButton
                     loading={isLoading}
@@ -298,67 +296,117 @@ const HomePage = () => {
                         }
                     </Modal>
 
-                    <ImageList cols={2} sx={{ width: '620px', height: '100%', marginTop: '50px' }}>
+                    <ImageList cols={1} sx={{ width: '620px', height: '100%', marginTop: '50px' }}>
                         {loadedPosts?.map((post, index) => (
-                            <ListItemButton
-                                sx={{
-                                    width: '300px', height: '300px', padding: '0px', background:
-                                        'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
-                                        'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)'
-                                }}
-                                onClick={(event) => {
-                                    openModal(index)
-                                    handleLoadPost(event, post._id)
-                                }}
-
-                            >
-                                {status[index] === 'OK' ?
-                                    <div>
-                                        {post?.type === 'video' && post?.url.length > 0 ?
-                                            <video
-                                                src={`${post?.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
-                                                style={{ width: '300px', height: '300px', objectFit: 'cover', }}
-                                            />
-
-                                            :
-                                            <img
-                                                srcSet={`${post?.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                                src={`${post?.url[0]}?w=248&fit=crop&auto=format`}
-                                                loading="lazy"
-                                                style={{ width: '300px', height: '300px', objectFit: 'cover', }}
-                                            />
-
+                            <div>
+                                <Box sx={{
+                                    display: 'flex', flexDirection: 'row',
+                                    alignItems: 'center', marginTop: '10px'
+                                }}>
+                                    <IconButton
+                                        sx={{ width: '40px', height: '40px' }}
+                                        href={`/profile/${post?.author?.username}`}
+                                    >
+                                        <Avatar src={post?.author?.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                    </IconButton>
+                                    <ListItemText
+                                        sx={{ width: '150px' }}
+                                        style={{ display: 'block' }}
+                                        primary={
+                                            <Link to={`/profile/${post?.author?.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                {post?.author?.username}
+                                            </Link>
                                         }
-                                    </div>
-                                    :
-                                    <img
-                                        srcSet={`${failLoadImage}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                        src={`${failLoadImage}?w=248&fit=crop&auto=format`}
-                                        loading="lazy"
-                                        style={{ width: '300px', height: '300px', objectFit: 'cover', }}
-                                    />
-                                }
-                                <ImageListItemBar key={post?.type}
+                                        secondary={`${post?.author?.fullname}`}
+                                        primaryTypographyProps={{ style: { fontSize: 13 } }}
+                                        secondaryTypographyProps={{ style: { fontSize: 11 } }} />
+                                </Box>
+                                <span
+                                    style={{
+                                        fontSize: 13,
+                                        width: '500px', marginTop: '10px', marginBottom: '10px',
+                                        display: 'block', // Đảm bảo phần tử chiếm toàn bộ chiều rộng
+                                        whiteSpace: 'normal', // Cho phép ngắt dòng
+                                        wordWrap: 'break-word', // Ngắt khi cần
+                                        overflowWrap: 'break-word', // Ngắt từ dài không có khoảng trắng
+                                    }}
+                                >
+                                    <strong style={{ fontWeight: 'bold', marginRight: '10px' }}>{post?.author?.username}</strong>
+                                    {Array.from({ length: post?.caption?.split(' ').length }, (_, i) => (
+                                        <span>
+                                            {post?.caption?.split(' ')[i].startsWith('#') ?
+                                                <Link to={`/tag/${post?.caption?.split(' ')[i].replace('#', '')}`} style={{ textDecoration: 'none', color: '#00376B' }} >
+                                                    {post?.caption?.split(' ')[i] + ' '}
+                                                </Link>
+                                                :
+                                                <span>{post?.caption?.split(' ')[i] + ' '}</span>
+                                            }
+                                        </span>
+                                    ))}
+                                </span>
+                                <ListItemButton
                                     sx={{
+                                        width: '500px', height: '500px', padding: '0px',
+                                        marginTop: '10px',
                                         background:
                                             'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
-                                            'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                                            'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)'
                                     }}
-                                    position="top"
-                                    actionIcon={
-                                        post.type === 'video' ? (
-                                            <SlideshowIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
-                                        ) : (post.type === 'image' && post.url.length > 1 ? (
-                                            <PhotoLibraryIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
-                                        ) : [])
+                                    onClick={(event) => {
+                                        openModal(index)
+                                        handleLoadPost(event, post._id)
+                                    }}
+
+                                >
+                                    {status[index] === 'OK' ?
+                                        <div>
+                                            {post?.type === 'video' && post?.url.length > 0 ?
+                                                <video
+                                                    src={`${post?.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
+                                                    style={{ width: '500px', height: '500px', objectFit: 'cover', }}
+                                                />
+
+                                                :
+                                                <img
+                                                    srcSet={`${post?.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                                    src={`${post?.url[0]}?w=248&fit=crop&auto=format`}
+                                                    loading="lazy"
+                                                    style={{ width: '500px', height: '500px', objectFit: 'cover', }}
+                                                />
+
+                                            }
+                                        </div>
+                                        :
+                                        <img
+                                            srcSet={`${failLoadImage}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                            src={`${failLoadImage}?w=248&fit=crop&auto=format`}
+                                            loading="lazy"
+                                            style={{ width: '500px', height: '500px', objectFit: 'cover', }}
+                                        />
                                     }
-                                    actionPosition="right"
-                                />
-                            </ListItemButton>
+                                    <ImageListItemBar key={post?.type}
+                                        sx={{
+                                            background:
+                                                'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
+                                                'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                                        }}
+                                        position="top"
+                                        actionIcon={
+                                            post.type === 'video' ? (
+                                                <SlideshowIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
+                                            ) : (post.type === 'image' && post.url.length > 1 ? (
+                                                <PhotoLibraryIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
+                                            ) : [])
+                                        }
+                                        actionPosition="right"
+                                    />
+                                </ListItemButton>
+                                <Divider sx={{ color: '#efefef', width: '500px', marginTop: '30px' }} />
+                            </div>
                         ))}
 
                     </ImageList>
-                    <List sx={{ width: '300px', height: '100%', marginLeft: '100px', marginTop: '30px' }}>
+                    <List sx={{ width: '300px', height: '100%', marginLeft: '50px', marginTop: '30px' }}>
                         <ListItemText
                             primary='Gợi ý cho bạn'
                             primaryTypographyProps={{ style: { fontSize: 13, fontWeight: 'bold' } }} />
