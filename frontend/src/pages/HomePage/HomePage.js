@@ -18,13 +18,14 @@ import ImageListItemBar from '@mui/material/ImageListItemBar';
 import { Modal, Box, Divider } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import CircularProgress from '@mui/material/CircularProgress';
+import { ListItemButton } from '@mui/material';
 
 // Material icon
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-import { ListItemButton } from '@mui/material';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const HomePage = () => {
     const auth = useContext(AuthContext);
@@ -35,6 +36,7 @@ const HomePage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [loadedUsers, setLoadedUsers] = useState();
     const [loadedPosts, setLoadedPosts] = useState();
+    const [loadedRecommentPosts, setLoadedRecommentPosts] = useState();
     const [followedItems, setFollowedItems] = useState([]);
 
     useEffect(() => {
@@ -45,6 +47,7 @@ const HomePage = () => {
                 const responseUsers = await sendRequest(`http://localhost:5000/api/users/morepost/${userId}?age=${auth.age}`);
 
                 setLoadedUsers(responseUsers.users);
+                setLoadedRecommentPosts(responseUsers.posts);
 
                 const responsePosts = await sendRequest(`http://localhost:5000/api/posts/followings/${userId}?age=${auth.age}`);
                 setLoadedPosts(responsePosts.posts);
@@ -220,238 +223,378 @@ const HomePage = () => {
                 >
                 </LoadingButton>
                 :
-                <Box sx={{
-                    width: '1000px',
-                    height: '100%',
-                    display: 'flex',
-                    marginLeft: '400px'
-                }}>
-                    <Modal open={modalIsOpen} onClose={closeModal} >
-                        {isLoadingPost ?
-                            <LoadingButton
-                                loading={isLoadingPost}
-                                loadingPosition="center"
-                                sx={{ height: '500px', marginLeft: '800px', marginTop: '100px' }}
-                                loadingIndicator={
-                                    <CircularProgress
-                                        size={500} // Set the size of the loading indicator
-                                        sx={{ color: '#f09433' }} // Optional: change color to match your design
-                                    />
-                                }
-                            >
-                            </LoadingButton>
-                            :
-                            <Box sx={{ marginTop: '35px' }}>
-                                {indexPostNext > 0 &&
-                                    <IconButton
-                                        onClick={(event) => {
-                                            handleDecreseIndex(loadedPosts);
-                                            handleLoadPost(event, loadedPosts[indexPostNext]._id)
-                                        }}
-                                        sx={{
-                                            position: 'absolute', bottom: '50%', left: '6.5%',
-                                            transform: 'translateX(-50%)',
-                                        }}
-                                    >
-                                        <ArrowCircleLeftIcon
-                                            sx={{
-                                                color: 'white',
-                                                fontSize: 40,
-                                                zIndex: 1000,
-                                            }}
+                <div>
+                    <Box sx={{
+                        width: '1000px',
+                        height: '100%',
+                        display: 'flex',
+                        marginLeft: '400px', flexDirection: 'row'
+                    }}>
+                        <Modal open={modalIsOpen} onClose={closeModal} >
+                            {isLoadingPost ?
+                                <LoadingButton
+                                    loading={isLoadingPost}
+                                    loadingPosition="center"
+                                    sx={{ height: '500px', marginLeft: '800px', marginTop: '100px' }}
+                                    loadingIndicator={
+                                        <CircularProgress
+                                            size={500} // Set the size of the loading indicator
+                                            sx={{ color: '#f09433' }} // Optional: change color to match your design
                                         />
-                                    </IconButton>
-                                }
-                                {(
-                                    loadedPost && loadedUser && <PostForm
-                                        post={loadedPost}
-                                        author={loadedUser}
-                                        listComments={listComments}
-                                        listReplies={listReliesComment}
-                                        closeModal={closeModal}
-                                    />
-                                )}
-
-                                {loadedPosts?.length > 1 && indexPostNext < loadedPosts?.length - 1 &&
-                                    <IconButton
-                                        onClick={(event) => {
-                                            handleIncreseIndex(loadedPosts);
-                                            handleLoadPost(event, loadedPosts[indexPostNext]?._id)
-                                        }}
-                                        sx={{
-                                            position: 'absolute', bottom: '50%', left: '93.5%',
-                                            transform: 'translateX(-50%)',
-                                        }}
-                                    >
-                                        <ArrowCircleRightIcon
-                                            sx={{
-                                                color: 'white',
-                                                fontSize: 40,
-                                                zIndex: 1000,
+                                    }
+                                >
+                                </LoadingButton>
+                                :
+                                <Box sx={{ marginTop: '35px' }}>
+                                    {indexPostNext > 0 &&
+                                        <IconButton
+                                            onClick={(event) => {
+                                                handleDecreseIndex(loadedPosts);
+                                                handleLoadPost(event, loadedPosts[indexPostNext]._id)
                                             }}
+                                            sx={{
+                                                position: 'absolute', bottom: '50%', left: '6.5%',
+                                                transform: 'translateX(-50%)',
+                                            }}
+                                        >
+                                            <ArrowCircleLeftIcon
+                                                sx={{
+                                                    color: 'white',
+                                                    fontSize: 40,
+                                                    zIndex: 1000,
+                                                }}
+                                            />
+                                        </IconButton>
+                                    }
+                                    {(
+                                        loadedPost && loadedUser && <PostForm
+                                            post={loadedPost}
+                                            author={loadedUser}
+                                            listComments={listComments}
+                                            listReplies={listReliesComment}
+                                            closeModal={closeModal}
                                         />
-                                    </IconButton>
-                                }
-                            </Box>
-                        }
-                    </Modal>
+                                    )}
 
-                    <ImageList cols={1} sx={{ width: '620px', height: '100%', marginTop: '50px' }}>
-                        {loadedPosts?.map((post, index) => (
-                            <div>
+                                    {loadedPosts?.length > 1 && indexPostNext < loadedPosts?.length - 1 &&
+                                        <IconButton
+                                            onClick={(event) => {
+                                                handleIncreseIndex(loadedPosts);
+                                                handleLoadPost(event, loadedPosts[indexPostNext]?._id)
+                                            }}
+                                            sx={{
+                                                position: 'absolute', bottom: '50%', left: '93.5%',
+                                                transform: 'translateX(-50%)',
+                                            }}
+                                        >
+                                            <ArrowCircleRightIcon
+                                                sx={{
+                                                    color: 'white',
+                                                    fontSize: 40,
+                                                    zIndex: 1000,
+                                                }}
+                                            />
+                                        </IconButton>
+                                    }
+                                </Box>
+                            }
+                        </Modal>
+
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                        }}>
+                            {loadedPosts?.length > 0 ?
+                                <ImageList cols={1} sx={{ width: '620px', height: 'fit_content', marginTop: '50px' }}>
+                                    {loadedPosts?.map((post, index) => (
+                                        <div>
+                                            <Box sx={{
+                                                display: 'flex', flexDirection: 'row',
+                                                alignItems: 'center', marginTop: '10px'
+                                            }}>
+                                                <IconButton
+                                                    sx={{ width: '40px', height: '40px' }}
+                                                    href={`/profile/${post?.author?.username}`}
+                                                >
+                                                    <Avatar src={post?.author?.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                                </IconButton>
+                                                <ListItemText
+                                                    sx={{ width: '150px' }}
+                                                    style={{ display: 'block' }}
+                                                    primary={
+                                                        <Link to={`/profile/${post?.author?.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                            {post?.author?.username}
+                                                        </Link>
+                                                    }
+                                                    secondary={`${post?.author?.fullname}`}
+                                                    primaryTypographyProps={{ style: { fontSize: 13 } }}
+                                                    secondaryTypographyProps={{ style: { fontSize: 11 } }} />
+                                            </Box>
+                                            <span
+                                                style={{
+                                                    fontSize: 13,
+                                                    width: '500px', marginTop: '10px', marginBottom: '10px',
+                                                    display: 'block', // Đảm bảo phần tử chiếm toàn bộ chiều rộng
+                                                    whiteSpace: 'normal', // Cho phép ngắt dòng
+                                                    wordWrap: 'break-word', // Ngắt khi cần
+                                                    overflowWrap: 'break-word', // Ngắt từ dài không có khoảng trắng
+                                                }}
+                                            >
+                                                <strong style={{ fontWeight: 'bold', marginRight: '10px' }}>{post?.author?.username}</strong>
+                                                {Array.from({ length: post?.caption?.split(/[\s\n]+/).length }, (_, i) => (
+                                                    <span>
+                                                        {post?.caption?.split(/[\s\n]+/)[i].startsWith('#') ?
+                                                            <Link to={`/tag/${post?.caption?.split(/[\s\n]+/)[i].replace('#', '')}`} style={{ textDecoration: 'none', color: '#00376B' }} >
+                                                                {post?.caption?.split(/[\s\n]+/)[i] + ' '}
+                                                            </Link>
+                                                            :
+                                                            <span>{post?.caption?.split(/[\s\n]+/)[i] + ' '}</span>
+                                                        }
+                                                    </span>
+                                                ))}
+                                            </span>
+                                            <ListItemButton
+                                                sx={{
+                                                    width: '500px', height: '500px', padding: '0px',
+                                                    marginTop: '10px',
+                                                    background:
+                                                        'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
+                                                        'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)'
+                                                }}
+                                                onClick={(event) => {
+                                                    openModal(index)
+                                                    handleLoadPost(event, post._id)
+                                                }}
+
+                                            >
+                                                {status[index] === 'OK' ?
+                                                    <div>
+                                                        {post?.type === 'video' && post?.url.length > 0 ?
+                                                            <video
+                                                                src={`${post?.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
+                                                                style={{ width: '500px', height: '500px', objectFit: 'cover', }}
+                                                            />
+
+                                                            :
+                                                            <img
+                                                                srcSet={`${post?.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                                                src={`${post?.url[0]}?w=248&fit=crop&auto=format`}
+                                                                loading="lazy"
+                                                                style={{ width: '500px', height: '500px', objectFit: 'cover', }}
+                                                            />
+
+                                                        }
+                                                    </div>
+                                                    :
+                                                    <img
+                                                        srcSet={`${failLoadImage}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                                        src={`${failLoadImage}?w=248&fit=crop&auto=format`}
+                                                        loading="lazy"
+                                                        style={{ width: '500px', height: '500px', objectFit: 'cover', }}
+                                                    />
+                                                }
+                                                <ImageListItemBar key={post?.type}
+                                                    sx={{
+                                                        background:
+                                                            'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
+                                                            'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                                                    }}
+                                                    position="top"
+                                                    actionIcon={
+                                                        post.type === 'video' ? (
+                                                            <SlideshowIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
+                                                        ) : (post.type === 'image' && post.url.length > 1 ? (
+                                                            <PhotoLibraryIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
+                                                        ) : [])
+                                                    }
+                                                    actionPosition="right"
+                                                />
+                                            </ListItemButton>
+                                            <Divider sx={{ color: '#efefef', width: '500px', marginTop: '30px' }} />
+                                        </div>
+                                    ))}
+
+                                </ImageList>
+                                :
                                 <Box sx={{
-                                    display: 'flex', flexDirection: 'row',
-                                    alignItems: 'center', marginTop: '10px'
+                                    width: '620px', marginTop: '80px',
+                                    display: 'flex', flexDirection: 'column',
+                                    alignItems: 'center',
                                 }}>
+                                    <CheckCircleOutlineIcon sx={{ fontSize: 150, color: '#f09433' }} />
+                                    <span style={{ fontSize: 22, fontWeight: 'normal', marginTop: '10px' }}>
+                                        Bạn đã xem hết rồi
+                                    </span>
+                                    <span style={{ fontSize: 15, fontWeight: 'normal', marginTop: '10px', color: '#737373' }}>
+                                        Bạn đã xem hết các bài viết mới của 1 tuần qua.
+                                    </span>
+                                    <Divider sx={{ color: '#efefef', width: '620px', marginTop: '30px' }} />
+                                </Box>
+                            }
+
+                            <span style={{ fontSize: 24, color: 'black', fontWeight: 'bold', marginTop: '30px' }}>
+                                Bài viết gợi ý
+                            </span>
+
+                            <ImageList cols={1} sx={{ width: '620px', height: 'fit_content', marginTop: '50px' }}>
+                                {loadedRecommentPosts?.map((post, index) => (
+                                    <div>
+                                        <Box sx={{
+                                            display: 'flex', flexDirection: 'row',
+                                            alignItems: 'center', marginTop: '10px'
+                                        }}>
+                                            <IconButton
+                                                sx={{ width: '40px', height: '40px' }}
+                                                href={`/profile/${post?.author?.username}`}
+                                            >
+                                                <Avatar src={post?.author?.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                            </IconButton>
+                                            <ListItemText
+                                                sx={{ width: '150px' }}
+                                                style={{ display: 'block' }}
+                                                primary={
+                                                    <Link to={`/profile/${post?.author?.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                        {post?.author?.username}
+                                                    </Link>
+                                                }
+                                                secondary={`${post?.author?.fullname}`}
+                                                primaryTypographyProps={{ style: { fontSize: 13 } }}
+                                                secondaryTypographyProps={{ style: { fontSize: 11 } }} />
+                                        </Box>
+                                        <span
+                                            style={{
+                                                fontSize: 13,
+                                                width: '500px', marginTop: '10px', marginBottom: '10px',
+                                                display: 'block', // Đảm bảo phần tử chiếm toàn bộ chiều rộng
+                                                whiteSpace: 'normal', // Cho phép ngắt dòng
+                                                wordWrap: 'break-word', // Ngắt khi cần
+                                                overflowWrap: 'break-word', // Ngắt từ dài không có khoảng trắng
+                                            }}
+                                        >
+                                            <strong style={{ fontWeight: 'bold', marginRight: '10px' }}>{post?.author?.username}</strong>
+                                            {Array.from({ length: post?.caption?.split(/[\s\n]+/).length }, (_, i) => (
+                                                <span>
+                                                    {post?.caption?.split(/[\s\n]+/)[i].startsWith('#') ?
+                                                        <Link to={`/tag/${post?.caption?.split(/[\s\n]+/)[i].replace('#', '')}`} style={{ textDecoration: 'none', color: '#00376B' }} >
+                                                            {post?.caption?.split(/[\s\n]+/)[i] + ' '}
+                                                        </Link>
+                                                        :
+                                                        <span>{post?.caption?.split(/[\s\n]+/)[i] + ' '}</span>
+                                                    }
+                                                </span>
+                                            ))}
+                                        </span>
+                                        <ListItemButton
+                                            sx={{
+                                                width: '500px', height: '500px', padding: '0px',
+                                                marginTop: '10px',
+                                                background:
+                                                    'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
+                                                    'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)'
+                                            }}
+                                            onClick={(event) => {
+                                                openModal(index)
+                                                handleLoadPost(event, post._id)
+                                            }}
+
+                                        >
+                                            {status[index] === 'OK' ?
+                                                <div>
+                                                    {post?.type === 'video' && post?.url.length > 0 ?
+                                                        <video
+                                                            src={`${post?.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
+                                                            style={{ width: '500px', height: '500px', objectFit: 'cover', }}
+                                                        />
+
+                                                        :
+                                                        <img
+                                                            srcSet={`${post?.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                                            src={`${post?.url[0]}?w=248&fit=crop&auto=format`}
+                                                            loading="lazy"
+                                                            style={{ width: '500px', height: '500px', objectFit: 'cover', }}
+                                                        />
+
+                                                    }
+                                                </div>
+                                                :
+                                                <img
+                                                    srcSet={`${failLoadImage}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                                    src={`${failLoadImage}?w=248&fit=crop&auto=format`}
+                                                    loading="lazy"
+                                                    style={{ width: '500px', height: '500px', objectFit: 'cover', }}
+                                                />
+                                            }
+                                            <ImageListItemBar key={post?.type}
+                                                sx={{
+                                                    background:
+                                                        'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
+                                                        'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                                                }}
+                                                position="top"
+                                                actionIcon={
+                                                    post.type === 'video' ? (
+                                                        <SlideshowIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
+                                                    ) : (post.type === 'image' && post.url.length > 1 ? (
+                                                        <PhotoLibraryIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
+                                                    ) : [])
+                                                }
+                                                actionPosition="right"
+                                            />
+                                        </ListItemButton>
+                                        <Divider sx={{ color: '#efefef', width: '500px', marginTop: '30px' }} />
+                                    </div>
+                                ))}
+
+                            </ImageList>
+                        </Box>
+
+                        <List sx={{ width: '300px', height: '100%', marginLeft: '50px', marginTop: '30px' }}>
+                            <ListItemText
+                                primary='Gợi ý cho bạn'
+                                primaryTypographyProps={{ style: { fontSize: 13, fontWeight: 'bold' } }} />
+                            {loadedUsers?.map((item, index) => (
+                                <ListItem>
                                     <IconButton
                                         sx={{ width: '40px', height: '40px' }}
-                                        href={`/profile/${post?.author?.username}`}
+                                        href={`/profile/${item?.username}`}
                                     >
-                                        <Avatar src={post?.author?.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
+                                        <Avatar src={item?.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
                                     </IconButton>
                                     <ListItemText
                                         sx={{ width: '150px' }}
                                         style={{ display: 'block' }}
                                         primary={
-                                            <Link to={`/profile/${post?.author?.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                {post?.author?.username}
+                                            <Link to={`/profile/${item?.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                {item?.username}
                                             </Link>
                                         }
-                                        secondary={`${post?.author?.fullname}`}
+                                        secondary={`${item?.fullname}`}
                                         primaryTypographyProps={{ style: { fontSize: 13 } }}
                                         secondaryTypographyProps={{ style: { fontSize: 11 } }} />
-                                </Box>
-                                <span
-                                    style={{
-                                        fontSize: 13,
-                                        width: '500px', marginTop: '10px', marginBottom: '10px',
-                                        display: 'block', // Đảm bảo phần tử chiếm toàn bộ chiều rộng
-                                        whiteSpace: 'normal', // Cho phép ngắt dòng
-                                        wordWrap: 'break-word', // Ngắt khi cần
-                                        overflowWrap: 'break-word', // Ngắt từ dài không có khoảng trắng
-                                    }}
-                                >
-                                    <strong style={{ fontWeight: 'bold', marginRight: '10px' }}>{post?.author?.username}</strong>
-                                    {Array.from({ length: post?.caption?.split(/[\s\n]+/).length }, (_, i) => (
-                                        <span>
-                                            {post?.caption?.split(/[\s\n]+/)[i].startsWith('#') ?
-                                                <Link to={`/tag/${post?.caption?.split(/[\s\n]+/)[i].replace('#', '')}`} style={{ textDecoration: 'none', color: '#00376B' }} >
-                                                    {post?.caption?.split(/[\s\n]+/)[i] + ' '}
-                                                </Link>
-                                                :
-                                                <span>{post?.caption?.split(/[\s\n]+/)[i] + ' '}</span>
-                                            }
-                                        </span>
-                                    ))}
-                                </span>
-                                <ListItemButton
-                                    sx={{
-                                        width: '500px', height: '500px', padding: '0px',
-                                        marginTop: '10px',
-                                        background:
-                                            'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
-                                            'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)'
-                                    }}
-                                    onClick={(event) => {
-                                        openModal(index)
-                                        handleLoadPost(event, post._id)
-                                    }}
-
-                                >
-                                    {status[index] === 'OK' ?
-                                        <div>
-                                            {post?.type === 'video' && post?.url.length > 0 ?
-                                                <video
-                                                    src={`${post?.url[0] + '#t=5'}?w=248&fit=crop&auto=format`}
-                                                    style={{ width: '500px', height: '500px', objectFit: 'cover', }}
-                                                />
-
-                                                :
-                                                <img
-                                                    srcSet={`${post?.url[0]}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                                    src={`${post?.url[0]}?w=248&fit=crop&auto=format`}
-                                                    loading="lazy"
-                                                    style={{ width: '500px', height: '500px', objectFit: 'cover', }}
-                                                />
-
-                                            }
-                                        </div>
-                                        :
-                                        <img
-                                            srcSet={`${failLoadImage}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                            src={`${failLoadImage}?w=248&fit=crop&auto=format`}
-                                            loading="lazy"
-                                            style={{ width: '500px', height: '500px', objectFit: 'cover', }}
-                                        />
-                                    }
-                                    <ImageListItemBar key={post?.type}
+                                    <ListItemText
+                                        onClick={(event) => handleFollowedClick(event, index)}
+                                        primary={followedItems[index] ? 'Đã theo dõi' : 'Theo dõi'}
+                                        primaryTypographyProps={{ style: { fontSize: 11, fontWeight: 'bold', textAlign: 'center', } }}
                                         sx={{
-                                            background:
-                                                'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
-                                                'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                                            marginLeft: 'auto',
+                                            color: followedItems[index] ? '#000' : '#0095F6', // Initial text color
+                                            cursor: 'pointer',
+                                            transition: 'color 0.2s', // Transition for color change
+                                            '&:hover': {
+                                                color: followedItems[index] ? '#E9E9E9' : '#007bbd', // Light gray for hover on "Đã theo dõi", darker blue for "Theo dõi"
+                                            },
+                                            '&:active': {
+                                                color: followedItems[index] ? '#D3D3D3' : '#005a9e', // Darker gray for active on "Đã theo dõi", darker blue for active on "Theo dõi"
+                                            },
                                         }}
-                                        position="top"
-                                        actionIcon={
-                                            post.type === 'video' ? (
-                                                <SlideshowIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
-                                            ) : (post.type === 'image' && post.url.length > 1 ? (
-                                                <PhotoLibraryIcon sx={{ color: 'white', marginTop: '10px', marginRight: '10px' }} />
-                                            ) : [])
-                                        }
-                                        actionPosition="right"
                                     />
-                                </ListItemButton>
-                                <Divider sx={{ color: '#efefef', width: '500px', marginTop: '30px' }} />
-                            </div>
-                        ))}
+                                </ListItem>
+                            ))}
+                        </List>
 
-                    </ImageList>
-                    <List sx={{ width: '300px', height: '100%', marginLeft: '50px', marginTop: '30px' }}>
-                        <ListItemText
-                            primary='Gợi ý cho bạn'
-                            primaryTypographyProps={{ style: { fontSize: 13, fontWeight: 'bold' } }} />
-                        {loadedUsers?.map((item, index) => (
-                            <ListItem>
-                                <IconButton
-                                    sx={{ width: '40px', height: '40px' }}
-                                    href={`/profile/${item?.username}`}
-                                >
-                                    <Avatar src={item?.avatar || avatar} sx={{ color: '#000', width: '40px', height: '40px' }} />
-                                </IconButton>
-                                <ListItemText
-                                    sx={{ width: '150px' }}
-                                    style={{ display: 'block' }}
-                                    primary={
-                                        <Link to={`/profile/${item?.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                            {item?.username}
-                                        </Link>
-                                    }
-                                    secondary={`${item?.fullname}`}
-                                    primaryTypographyProps={{ style: { fontSize: 13 } }}
-                                    secondaryTypographyProps={{ style: { fontSize: 11 } }} />
-                                <ListItemText
-                                    onClick={(event) => handleFollowedClick(event, index)}
-                                    primary={followedItems[index] ? 'Đã theo dõi' : 'Theo dõi'}
-                                    primaryTypographyProps={{ style: { fontSize: 11, fontWeight: 'bold', textAlign: 'center', } }}
-                                    sx={{
-                                        marginLeft: 'auto',
-                                        color: followedItems[index] ? '#000' : '#0095F6', // Initial text color
-                                        cursor: 'pointer',
-                                        transition: 'color 0.2s', // Transition for color change
-                                        '&:hover': {
-                                            color: followedItems[index] ? '#E9E9E9' : '#007bbd', // Light gray for hover on "Đã theo dõi", darker blue for "Theo dõi"
-                                        },
-                                        '&:active': {
-                                            color: followedItems[index] ? '#D3D3D3' : '#005a9e', // Darker gray for active on "Đã theo dõi", darker blue for active on "Theo dõi"
-                                        },
-                                    }}
-                                />
-                            </ListItem>
-                        ))}
-                    </List>
+                    </Box>
 
-
-                </Box>
+                </div>
             }
         </Box>
     );

@@ -104,10 +104,48 @@ exports.getUserHasMorePosts = async (req, res) => {
             { $project: { avatar: 1, username: 1, fullname: 1, followings: 1 } }
         ]);
 
+        const author = await User.findById(userId);
         const filteredUsers = usersWithPostCounts.filter(user => !user._id.equals(userId));
+        const usersNotFollowing = [];
+        for (const user of filteredUsers) {
+            if (author.followings.includes(user._id)) {
+                continue;
+            }
+            usersNotFollowing.push(user);
+        }
+
+        console.log(author.followings)
+
+        let postsList = [];
+
+        await Promise.all(
+            usersNotFollowing.map(async (user) => {
+                const populatedUser = await User.findById(user._id).populate({
+                    path: 'posts',
+                    options: { sort: { createdAt: -1 } },
+                    populate: {
+                        path: 'author', // Populate the author details
+                        select: 'username avatar fullname', // Select specific fields
+                    },
+                });
+
+                if (age < 18) {
+                    postsList = postsList.concat(
+                        populatedUser.posts
+                            .filter(post => post.upeighteen !== "yes")
+                            .map(post => post.toObject({ getters: true }))
+                    );
+                } else {
+                    postsList = postsList.concat(
+                        populatedUser.posts.map(post => post.toObject({ getters: true }))
+                    );
+                }
+            })
+        );
 
         res.status(200).json({
-            users: filteredUsers,
+            users: usersNotFollowing,
+            posts: postsList
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -129,42 +167,42 @@ exports.checkUsernameExists = async (req, res, next) => {
 exports.getUsersInteractedWith = async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         const user = await User.findById(userId).select('followings');
-        
+
         if (!user) {
-          return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'User not found' });
         }
-    
+
         const messages = await Message.find({
-          $or: [{ senderId: userId }, { recipientId: userId }]
+            $or: [{ senderId: userId }, { recipientId: userId }]
         });
-    
+
         const messageUserIds = [
-          ...new Set(
-            messages
-              .map((message) => message.senderId)
-              .concat(messages.map((message) => message.recipientId))
-              .filter((id) => id !== userId) 
-          ),
+            ...new Set(
+                messages
+                    .map((message) => message.senderId)
+                    .concat(messages.map((message) => message.recipientId))
+                    .filter((id) => id !== userId)
+            ),
         ];
-    
+
         const allUserIds = [
-          ...new Set([
-            ...messageUserIds,
-            ...user.followings.map((following) => following.toString()), 
-          ]),
+            ...new Set([
+                ...messageUserIds,
+                ...user.followings.map((following) => following.toString()),
+            ]),
         ];
-    
+
         const users = await User.find({
-          _id: { $in: allUserIds },
+            _id: { $in: allUserIds },
         });
-    
+
         res.status(200).json(users);
-      } catch (error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
-      }
+    }
 };
 exports.getFollowDataByUserId = async (req, res) => {
     const { userId } = req.params;
