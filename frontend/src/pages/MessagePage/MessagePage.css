@@ -7,45 +7,76 @@
 }
 
 .contacts-sidebar {
-    width: 30%;
-    border-right: 1px solid #dbdbdb;
-    padding: 15px;
-    /* Reduced padding */
-    background-color: #fff;
-}
-
-.contacts-sidebar h3 {
-    font-size: 1.2em;
-    /* Reduced heading size */
-    margin-bottom: 15px;
-    /* Reduced margin */
-    color: #333;
-}
-
-.contacts-sidebar ul {
+    width: 300px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Chiều cao đầy đủ của cửa sổ */
+    overflow-y: auto; /* Thêm thanh cuộn dọc khi nội dung quá dài */
+  }
+  
+  .contacts-sidebar h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .contacts-sidebar ul {
     list-style-type: none;
     padding: 0;
     margin: 0;
-    overflow-y: auto;
-    height: calc(100vh - 80px);
-}
-
-.contacts-sidebar li {
+    overflow-y: auto; /* Thêm thanh cuộn nếu cần */
+  }
+  
+  .contacts-sidebar li {
     display: flex;
     align-items: center;
-    padding: 8px;
-    /* Further reduced padding for contacts */
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
     cursor: pointer;
-    border-radius: 8px;
-    /* Slightly smaller border radius */
-    transition: background-color 0.3s;
-}
-
-.contacts-sidebar li:hover,
-.contacts-sidebar li.active-contact {
-    background-color: #f1f1f1;
-}
-
+  }
+  
+  .contacts-sidebar li:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .contacts-sidebar .profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .contacts-sidebar .contact-info {
+    flex-grow: 1;
+  }
+  
+  .contacts-sidebar .contact-name {
+    font-weight: bold;
+  }
+  
+  .contacts-sidebar .contact-username {
+    color: gray;
+    font-size: 12px;
+  }
+  
+  .contacts-sidebar .unread-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: red;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+  }
 .profile-pic {
     width: 40px;
     height: 40px;

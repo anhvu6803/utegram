@@ -11,46 +11,50 @@ const socket = io('http://localhost:5000');
 const MessagePage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
-  const [contacts, setContacts] = useState([]); 
-  const [activeChat, setActiveChat] = useState(null);  
-  const [messages, setMessages] = useState([]);  
-  const [newMessage, setNewMessage] = useState(''); 
+  const [contacts, setContacts] = useState([]);
+  const [activeChat, setActiveChat] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
   const messageEndRef = useRef(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);  
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const auth = useContext(AuthContext);
   const userId = auth.userId;
+  const [unreadContacts, setUnreadContacts] = useState([]);
 
-  // Fetch contacts and listen for new messages
-  useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/api/users/contacts/${userId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch contacts');
-        }
-        const data = await response.json();
-        setContacts(data); 
-        
-        if (username) {
-          const contact = data.find(contact => contact.username === username);
-          if (contact) {
-            handleChatClick(contact);  
-          } else {
-            console.error('No user found with the username:', username);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch contacts:', error);
+  const fetchContacts = async () => {
+    try {
+      const allContactsResponse = await fetch(`http://localhost:5000/api/users/contacts/${userId}`);
+      if (!allContactsResponse.ok) {
+        throw new Error('Failed to fetch contacts');
       }
-    };
+      const allContactsData = await allContactsResponse.json();
+      setContacts(allContactsData);
 
+      const unreadContactsResponse = await fetch(`http://localhost:5000/api/messages/unread/?userId=${userId}`);
+      if (!unreadContactsResponse.ok) {
+        throw new Error('Failed to fetch unread contacts');
+      }
+      const unreadContactsData = await unreadContactsResponse.json();
+      setUnreadContacts(unreadContactsData);
+
+      if (username) {
+        const contact = allContactsData.find(contact => contact.username === username);
+        if (contact) {
+          handleChatClick(contact);
+        } else {
+          console.error('No user found with the username:', username);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch contacts:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchContacts();
 
     socket.on('newMessage', (message) => {
-      // Update messages state with new message
       setMessages((prevMessages) => [...prevMessages, message]);
-
-      // Update unread messages count for contacts
       setContacts((prevContacts) =>
         prevContacts.map((contact) =>
           contact._id === message.senderId || contact._id === message.recipientId
@@ -71,36 +75,48 @@ const MessagePage = () => {
     };
   }, [userId, username]);
 
-  // Handle chat click (when a contact is clicked)
   const handleChatClick = async (contact) => {
     setActiveChat(contact);
     setIsCollapsed(true);
 
     try {
+      const markAsReadResponse = await fetch('http://localhost:5000/api/messages/markMessagesAsRead', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId1: userId,
+          userId2: contact._id, 
+        }),
+      });
+
+      if (!markAsReadResponse.ok) {
+        throw new Error('Failed to mark messages as read');
+      }
+      const result = await markAsReadResponse.json();
+      console.log(result.message);
       const response = await fetch(`http://localhost:5000/api/messages/${userId}/${contact._id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch messages');
       }
       const data = await response.json();
-      setMessages(Array.isArray(data) ? data : []);  
+      setMessages(Array.isArray(data) ? data : []);
 
-      // Mark messages as read when chat is opened
       setContacts((prevContacts) =>
         prevContacts.map((prevContact) =>
           prevContact._id === contact._id
-            ? { ...prevContact, unreadMessages: 0 } // Reset unread messages count
+            ? { ...prevContact, unreadMessages: 0 }
             : prevContact
         )
       );
 
       socket.emit('joinRoom', { userId, otherUserId: contact._id });
       navigate(`/messages/${contact.username}`);
+      fetchContacts(); 
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     }
   };
 
-  // Handle sending a message
   const handleSendMessage = async () => {
     if (newMessage.trim() && activeChat) {
       const newMsg = {
@@ -120,7 +136,7 @@ const MessagePage = () => {
           const savedMessage = await response.json();
           setMessages((prevMessages) => [...prevMessages, savedMessage]);
           setNewMessage('');
-          socket.emit('sendMessage', savedMessage);  
+          socket.emit('sendMessage', savedMessage);
 
           setContacts((prevContacts) =>
             prevContacts.map((contact) =>
@@ -136,14 +152,12 @@ const MessagePage = () => {
     }
   };
 
-  // Handle pressing Enter to send a message
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleSendMessage();
     }
   };
 
-  // Scroll to the latest message
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -153,22 +167,52 @@ const MessagePage = () => {
       <OptionBar pages="message" isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
       <div className={`contacts-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-        <h3>Chats</h3>
+        {unreadContacts.length > 0 && (
+          <>
+            <h3>Tin nhắn mới</h3>
+            <ul>
+              {unreadContacts.map((contact) => (
+                <li
+                  key={contact._id}
+                  onClick={() => handleChatClick(contact)}
+                  className={activeChat && activeChat._id === contact._id ? 'active-contact' : ''}>
+                  <img className="profile-pic" src={contact.avatar || imgava} alt={contact.fullname} />
+                  <div className="contact-info">
+                    <div className="contact-name">{contact.fullname}</div>
+                    <div className="contact-username">@{contact.username}</div>
+                  </div>
+                  {contact.unreadMessages > 0 && (
+                    <span className="unread-dot">
+                      {contact.unreadMessages}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        <h3>Liên hệ</h3>
         <ul>
-          {contacts && contacts.length > 0 ? (
-            contacts.map((contact) => (
-              <li
-              key={contact._id}
-              onClick={() => handleChatClick(contact)}
-              className={activeChat && activeChat._id === contact._id ? 'active-contact' : ''}>
-              <img className="profile-pic" src={contact.avatar || imgava} alt={contact.fullname} />
-              <div className="contact-info">
-                <div className="contact-name">{contact.fullname}</div>
-                <div className="contact-username">@{contact.username}</div>
-              </div>
-              <span className="unread-dot"></span>
-            </li>
-            ))
+          {contacts.length > 0 ? (
+            contacts
+              .filter(contact => !unreadContacts.some(unreadContact => unreadContact._id === contact._id))  // Filter out unread contacts
+              .map((contact) => (
+                <li
+                  key={contact._id}
+                  onClick={() => handleChatClick(contact)}
+                  className={activeChat && activeChat._id === contact._id ? 'active-contact' : ''}>
+                  <img className="profile-pic" src={contact.avatar || imgava} alt={contact.fullname} />
+                  <div className="contact-info">
+                    <div className="contact-name">{contact.fullname}</div>
+                    <div className="contact-username">@{contact.username}</div>
+                  </div>
+                  {contact.unreadMessages > 0 && (
+                    <span className="unread-dot">
+                      {contact.unreadMessages}
+                    </span>
+                  )}
+                </li>
+              ))
           ) : (
             <li>No contacts available</li>
           )}
