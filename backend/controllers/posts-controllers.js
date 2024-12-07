@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const FormData = require('form-data');
 const cloudinary = require('cloudinary').v2;
+const caculateDate = require('../utils/caculateDate');
 
 const HttpError = require('../models/http-error');
 const Post = require('../models/PostModel');
@@ -193,6 +194,8 @@ const getPostsByUserFollowing = async (req, res, next) => {
       });
 
       for (const post of userWithPosts.posts) {
+        const days = caculateDate.calculateDaysFrom(post.createdAt);
+        if(days > 7) continue; 
         // Logic for filtering posts based on user's age
         if (age >= 18) {
           // Users aged 18 or older can see all posts

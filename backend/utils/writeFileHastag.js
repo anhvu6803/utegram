@@ -11,7 +11,6 @@ const readFileHastag = () => {
 
             // Chia nội dung thành mảng, mỗi dòng là một tag
             const tags = data.split('\n').filter(Boolean); // .filter(Boolean) để loại bỏ dòng rỗng
-            console.log('Nội dung file:', tags);
 
             resolve(tags);
         });
