@@ -19,7 +19,9 @@ const userSchema = new mongoose.Schema(
     isAdmin: { type: Boolean, default: false },
     banned: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
-    isVerified: { type: Boolean, default: false } 
+    isVerified: { type: Boolean, default: false },
+    deletedPostsCount: { type: Number, default: 0 },    
+    deletedCommentsCount: { type: Number, default: 0 } 
   },
   { timestamps: true }
 );
@@ -36,4 +38,5 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
 module.exports = mongoose.model('User', userSchema);

@@ -90,22 +90,29 @@ const deleteComment = async (req, res) => {
 
   try {
     await ReportComment.deleteMany({ commentId });
+
     const comment = await Comment.findById(commentId);
     if (!comment) {
       return res.status(404).json({ message: 'Bình luận không tồn tại.' });
     }
 
-    await Notify.deleteMany({ postId: comment.post, type: 'post' }); 
-    await Notify.deleteMany({ owner: comment.owner }); 
+    await Notify.deleteMany({ postId: comment.post, type: 'post' });
+    await Notify.deleteMany({ owner: comment.owner });
 
     await Post.updateOne(
       { _id: comment.post },
       { $pull: { comments: commentId } }
     );
 
-    await Comment.deleteMany({ _id: { $in: comment.replies } });
+    if (comment.replies && comment.replies.length > 0) {
+      await Comment.deleteMany({ _id: { $in: comment.replies } });
+    }
 
     await Comment.findByIdAndDelete(commentId);
+
+    await User.findByIdAndUpdate(comment.owner, {
+      $inc: { deletedCommentsCount: 1 }
+    });
 
     res.status(200).json({ message: 'Bình luận và các dữ liệu liên quan đã được xóa thành công.' });
   } catch (error) {
@@ -127,17 +134,16 @@ const deletePost = async (req, res) => {
       await Promise.all(comments.map(async (commentId) => {
         await ReportComment.deleteMany({ commentId });
 
-        await Comment.findByIdAndDelete(commentId);
-
         const comment = await Comment.findById(commentId);
         if (comment && comment.replies && comment.replies.length > 0) {
           await Comment.deleteMany({ _id: { $in: comment.replies } });
         }
+
+        await Comment.findByIdAndDelete(commentId);
       }));
     }
 
     await ReportPost.deleteMany({ postId });
-
     await Notify.deleteMany({ postId });
 
     await User.updateMany(
@@ -151,6 +157,10 @@ const deletePost = async (req, res) => {
     );
 
     await Post.findByIdAndDelete(postId);
+
+    await User.findByIdAndUpdate(post.owner, {
+      $inc: { deletedPostsCount: 1 }
+    });
 
     res.status(200).json({ message: 'Bài viết và các dữ liệu liên quan đã được xóa thành công.' });
   } catch (error) {
