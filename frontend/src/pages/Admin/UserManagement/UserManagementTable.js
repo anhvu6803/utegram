@@ -12,7 +12,6 @@ import {
     Typography,
     Box,
     IconButton,
-    Button,
     Divider,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
@@ -21,11 +20,14 @@ import { toast } from 'react-toastify';
 import BlockIcon from '@mui/icons-material/Block';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 const UserManagementTable = ({ users }) => {
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(false); 
+    const [userInfoModalOpen, setUserInfoModalOpen] = useState(false); 
     const [selectedUser, setSelectedUser] = useState(null);
     const [localUsers, setLocalUsers] = useState(users);
+    const [userInfo, setUserInfo] = useState(null);
     const [processingReport, setProcessingReport] = useState(false);
 
     const toggleBanStatus = async (userId, currentStatus) => {
@@ -60,18 +62,6 @@ const UserManagementTable = ({ users }) => {
             toast.error('An error occurred while updating the user status.');
         }
     };
-
-    const handleViewReport = (user) => {
-        if (processingReport) return;
-        setSelectedUser(user);
-        setOpen(true);
-    };
-
-    const handleClose = () => {
-        setOpen(false);
-        setSelectedUser(null);
-    };
-
     const resolveReport = async (userId) => {
         setProcessingReport(true);
         try {
@@ -109,26 +99,60 @@ const UserManagementTable = ({ users }) => {
         }
     };
 
+    const handleViewReport = (user) => {
+        if (processingReport) return;
+        setSelectedUser(user);
+        setOpen(true);
+    };
+
+    const handleViewUserInfo = async (userId) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/users/${userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setUserInfo(data);
+                setUserInfoModalOpen(true); 
+            } else {
+                toast.error('Failed to fetch user details.');
+            }
+        } catch (error) {
+            console.error('Error fetching user info:', error);
+            toast.error('An error occurred while fetching user details.');
+        }
+    };
+
+    const handleClose = () => {
+        setOpen(false); 
+        setUserInfoModalOpen(false); 
+        setSelectedUser(null);
+        setUserInfo(null); 
+    };
+
+    const modalStyle = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '80%',
+        maxWidth: '800px',
+        bgcolor: 'background.paper',
+        boxShadow: 24,
+        borderRadius: 2,
+        p: 3,
+        maxHeight: '80vh',
+        overflowY: 'auto',
+    };
+
     return (
         <TableContainer component={Paper}>
             <Table>
                 <TableHead sx={{ bgcolor: '#53BDEB' }}>
                     <TableRow>
-                        <TableCell sx={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
-                            Họ và tên
-                        </TableCell>
-                        <TableCell sx={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
-                            Tên người dùng
-                        </TableCell>
-                        <TableCell sx={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
-                            Email
-                        </TableCell>
-                        <TableCell sx={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
-                            Ngày sinh
-                        </TableCell>
-                        <TableCell sx={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
-                            Thao tác
-                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Họ và tên</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Tên người dùng</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Email</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Ngày sinh</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Thao tác</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -148,7 +172,6 @@ const UserManagementTable = ({ users }) => {
                                                 border: 'none',
                                                 padding: '8px 16px',
                                                 borderRadius: '8px',
-                                                fontFamily: 'Open Sans, sans-serif',
                                                 fontWeight: '600',
                                                 cursor: user.isReport && !processingReport ? 'pointer' : 'not-allowed',
                                             }}
@@ -158,6 +181,7 @@ const UserManagementTable = ({ users }) => {
                                             Xem báo cáo
                                         </button>
                                     </Grid>
+
                                     <Grid item>
                                         <Link to={`/profile/${user.username}`} style={{ textDecoration: 'none' }}>
                                             <button
@@ -167,7 +191,6 @@ const UserManagementTable = ({ users }) => {
                                                     border: 'none',
                                                     padding: '8px 16px',
                                                     borderRadius: '8px',
-                                                    fontFamily: 'Open Sans, sans-serif',
                                                     fontWeight: '600',
                                                     cursor: 'pointer',
                                                 }}
@@ -176,6 +199,7 @@ const UserManagementTable = ({ users }) => {
                                             </button>
                                         </Link>
                                     </Grid>
+
                                     <Grid item>
                                         <button
                                             style={{
@@ -199,6 +223,26 @@ const UserManagementTable = ({ users }) => {
                                             )}
                                         </button>
                                     </Grid>
+
+                                    <Grid item>
+                                        <button
+                                            style={{
+                                                backgroundColor: '#1976D2',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '50%',
+                                                width: '40px',
+                                                height: '40px',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                cursor: 'pointer',
+                                            }}
+                                            onClick={() => handleViewUserInfo(user._id)}
+                                        >
+                                            <InfoOutlinedIcon sx={{ color: 'white', fontSize: 24 }} />
+                                        </button>
+                                    </Grid>
                                 </Grid>
                             </TableCell>
                         </TableRow>
@@ -206,86 +250,170 @@ const UserManagementTable = ({ users }) => {
                 </TableBody>
             </Table>
 
+            {/* Report Modal */}
+        
             {selectedUser && (
-                <Modal
-                    open={open}
-                    onClose={handleClose}
-                    aria-labelledby="view-report-modal-title"
-                    aria-describedby="view-report-modal-description"
-                >
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: 'auto',
-                            maxWidth: 400,
-                            bgcolor: 'background.paper',
-                            boxShadow: 24,
-                            borderRadius: 1,
-                            p: 2,
-                            maxHeight: '70vh',
-                            overflowY: 'auto',
-                            zIndex: 9999,
-                        }}
-                    >
+                <Modal open={open} onClose={handleClose}>
+                    <Box sx={{ 
+                        ...modalStyle,
+                        maxWidth: '600px',  
+                        width: 'auto', 
+                    }}>
                         <Grid container justifyContent="space-between" alignItems="center">
-                            <Typography variant="h6" id="view-report-modal-title" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                                 Báo cáo của {selectedUser.fullname}
                             </Typography>
-                            <IconButton onClick={handleClose} color="primary" size="small">
-                                <CloseIcon />
+                            <IconButton onClick={handleClose}>
+                                <CloseIcon sx={{ color: '#333' }} />
                             </IconButton>
                         </Grid>
-                        <Divider sx={{ my: 1 }} />
-                        {selectedUser.reports.map((report, index) => {
-                            const formattedDate = report.createdAt.split('/').reverse().join('-');
-                            const reportDate = new Date(formattedDate);
-
-                            return (
-                                <Box key={index} sx={{ mb: 3 }}>
-                                    <Typography variant="body1">
-                                        <strong>Ngày:</strong>{' '}
-                                        {reportDate.toLocaleDateString('vi-VN', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                        })}
-                                    </Typography>
-                                    <Typography variant="body1">
-                                        <strong>Lý do:</strong> {report.reason}
-                                    </Typography>
-                                </Box>
-                            );
-                        })}
-
-                        <Grid container spacing={1} justifyContent="space-between" sx={{ mt: 1 }}>
-                            <Grid item xs={6}>
-                                <Button
-                                    onClick={handleClose}
-                                    variant="contained"
-                                    color="error"
-                                    sx={{ fontWeight: '600', width: '100%', backgroundColor: '#FF4D4D' }}
-                                >
-                                    Đóng
-                                </Button>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <Button
+                        <Divider sx={{ my: 2 }} />
+                        {selectedUser.reports.map((report, index) => (
+                            <Box key={index} sx={{ mb: 3 }}>
+                                <Typography variant="body1">
+                                    <strong>Ngày:</strong> {new Date(report.createdAt).toLocaleDateString('vi-VN')}
+                                </Typography>
+                                <Typography variant="body1">
+                                    <strong>Lý do:</strong> {report.reason}
+                                </Typography>
+                            </Box>
+                        ))}
+                        <Grid container justifyContent="center" sx={{ mt: 2 }}>
+                            <Grid item>
+                                <button
                                     onClick={() => resolveReport(selectedUser._id)}
-                                    variant="contained"
-                                    color="primary"
-                                    sx={{ fontWeight: '600', width: '100%' }}
+                                    style={{
+                                        backgroundColor: '#4CAF50',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '16px 32px',  
+                                        fontSize: '16px',  
+                                        borderRadius: '8px',
+                                        fontWeight: '600',
+                                        cursor: processingReport ? 'not-allowed' : 'pointer',
+                                        minWidth: '200px',  
+                                        textAlign: 'center', 
+                                    }}
                                     disabled={processingReport}
                                 >
-                                    Đã xử lý
-                                </Button>
+                                    {processingReport ? 'Đang xử lý...' : 'Đã xử lý'}
+                                </button>
                             </Grid>
                         </Grid>
                     </Box>
                 </Modal>
             )}
+            {userInfo && (
+            <Modal open={userInfoModalOpen} onClose={handleClose}>
+                <Box
+                    sx={{
+                        ...modalStyle,
+                        maxWidth: '600px', 
+                        width: '100%', 
+                    }}
+                >
+                    <Grid container justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                        <Grid item xs={12} sx={{ textAlign: 'center' }}>
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    fontWeight: 'bold',
+                                    color: '#333',
+                                    fontSize: '20px',
+                                }}
+                            >
+                                Thông tin người dùng
+                            </Typography>
+                        </Grid>
+                        <IconButton onClick={handleClose} sx={{ position: 'absolute', top: 10, right: 10 }}>
+                            <CloseIcon sx={{ color: '#333' }} />
+                        </IconButton>
+                    </Grid>
+
+                    <Divider sx={{ mb: 2 }} />
+
+                    <Grid container spacing={2} direction="column">
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Tên người dùng:</strong> {userInfo.username}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Họ và tên:</strong> {userInfo.fullname}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Email:</strong> {userInfo.email}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Ngày sinh:</strong> {new Date(userInfo.bornDay).toLocaleDateString('vi-VN')}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Giới tính:</strong> {userInfo.gender}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Bio:</strong> {userInfo.bio || 'Chưa cập nhật'}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Số bài viết:</strong> {userInfo.posts.length}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Số người theo dõi:</strong> {userInfo.followers.length}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Số người đang theo dõi:</strong> {userInfo.followings.length}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Trạng thái tài khoản:</strong> {userInfo.banned ? 'Bị khóa' : 'Hoạt động'}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Quyền hạn:</strong> {userInfo.isAdmin ? 'Quản trị viên' : 'Người dùng'}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Bài viết vi phạm:</strong> {userInfo.deletedPostsCount}
+                            </Typography>
+                        </Grid>
+
+                        <Grid item>
+                            <Typography variant="body1">
+                                <strong>Bình luận vi phạm:</strong> {userInfo.deletedCommentsCount}
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Modal>
+        )}
         </TableContainer>
     );
 };
