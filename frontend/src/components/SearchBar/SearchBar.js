@@ -152,6 +152,7 @@ const SearchForm = () => {
             setSuggestions(response);
 
             setTimeout(() => {
+                window.location.reload();
                 setIsLoading(false);
             }, timeLoading * 1000 + 1000);
 
